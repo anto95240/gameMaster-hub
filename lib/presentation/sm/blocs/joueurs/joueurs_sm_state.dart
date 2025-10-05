@@ -74,7 +74,7 @@ class JoueursSmLoaded extends JoueursSmState {
 
   const JoueursSmLoaded({
     required this.joueurs,
-    this.selectedPosition = 'Tous les postes',
+    this.selectedPosition = 'Tous',
     this.searchQuery = '',
     this.sortField,
     this.sortAscending = true,
@@ -82,7 +82,7 @@ class JoueursSmLoaded extends JoueursSmState {
 
   List<JoueurSmWithStats> get filteredJoueurs {
     var filtered = joueurs.where((item) {
-      final matchesPosition = selectedPosition == 'Tous les postes' ||
+      final matchesPosition = selectedPosition == 'Tous' ||
           _matchesPosition(item.joueur, selectedPosition);
       final matchesSearch = searchQuery.isEmpty ||
           item.joueur.nom.toLowerCase().contains(searchQuery.toLowerCase());
