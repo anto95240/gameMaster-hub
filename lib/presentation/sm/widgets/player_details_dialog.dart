@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gamemaster_hub/domain/common/enums.dart';
 import 'package:gamemaster_hub/domain/sm/entities/joueur_sm.dart';
+import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_bloc.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_event.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_state.dart';
@@ -264,251 +265,306 @@ class _PlayerDetailsDialogState extends State<PlayerDetailsDialog> {
   }
 
   Widget _buildPlayerInfo(BuildContext context, JoueurSm joueur) {
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 40,
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          child: Text(
-            joueur.nom[0],
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
+    final screenType = ResponsiveLayout.getScreenTypeFromWidth(MediaQuery.of(context).size.width);
+    final isMobile = screenType == ScreenType.mobile;
+
+    if (isMobile) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Avatar
+          CircleAvatar(
+            radius: 40,
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            child: Text(
+              joueur.nom[0],
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
-        ),
-        const SizedBox(width: 24),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (isEditing) ...[
-                DropdownButtonFormField<String>(
-                  value: selectedStatus,
-                  decoration: const InputDecoration(
-                    labelText: 'Statut',
-                    border: OutlineInputBorder(),
+          const SizedBox(height: 12),
+
+          // Statut
+          if (isEditing)
+            DropdownButtonFormField<String>(
+              value: selectedStatus,
+              decoration: const InputDecoration(
+                labelText: 'Statut',
+                border: OutlineInputBorder(),
+              ),
+              items: StatusEnum.values
+                  .map((s) => DropdownMenuItem(
+                        value: s.name,
+                        child: Text(s.name),
+                      ))
+                  .toList(),
+              onChanged: (value) => setState(() => selectedStatus = value!),
+            )
+          else
+            Text(
+              joueur.status.name,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          const SizedBox(height: 8),
+
+          // Poste + âge
+          _buildEditableFields(context, joueur), // déjà en colonne/row adaptative
+        ],
+      );
+    } else {
+      // Desktop / tablet : layout original en Row
+      return Row(
+        children: [
+          CircleAvatar(
+            radius: 40,
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            child: Text(
+              joueur.nom[0],
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(width: 24),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (isEditing) ...[
+                  DropdownButtonFormField<String>(
+                    value: selectedStatus,
+                    decoration: const InputDecoration(
+                      labelText: 'Statut',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: StatusEnum.values
+                        .map((s) => DropdownMenuItem(
+                              value: s.name,
+                              child: Text(s.name),
+                            ))
+                        .toList(),
+                    onChanged: (value) => setState(() => selectedStatus = value!),
                   ),
-                  items: StatusEnum.values
-                      .map((s) => DropdownMenuItem(
-                            value: s.name,
-                            child: Text(s.name),
-                          ))
+                ] else ...[
+                  Text(
+                    joueur.status.name,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ],
+                const SizedBox(height: 8),
+                _buildEditableFields(context, joueur),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+  }
+
+  Widget _buildEditableFields(BuildContext context, JoueurSm joueur) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (isEditing)
+          TextField(
+            controller: dureeContratController,
+            decoration: const InputDecoration(
+              labelText: 'Fin de contrat',
+              border: OutlineInputBorder(),
+            ),
+            keyboardType: TextInputType.number,
+          )
+        else
+          Text(
+            "Contrat jusqu'à ${joueur.dureeContrat}",
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+
+        const SizedBox(height: 8),
+
+        Row(
+          children: [
+            if (isEditing)
+              Expanded(
+                child: MultiSelectDialogField<PosteEnum>(
+                  items: PosteEnum.values
+                      .map((p) => MultiSelectItem<PosteEnum>(p, p.name))
                       .toList(),
-                  onChanged: (value) {
+                  title: Text(
+                    "Postes",
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
+                    ),
+                  ),
+                  buttonText: Text(
+                    selectedPostes.map((e) => e.name).join("/"),
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
+                    ),
+                  ),
+                  initialValue: selectedPostes,
+                  itemsTextStyle: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
+                  ),
+                  confirmText: Text(
+                    "OK",
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
+                    ),
+                  ),
+                  cancelText: Text(
+                    "Annuler",
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
+                    ),
+                  ),
+                  onConfirm: (values) {
                     setState(() {
-                      selectedStatus = value!;
+                      selectedPostes = values;
                     });
                   },
                 ),
-              ] else ...[
-                Text(
-                  joueur.status.name,
-                  style: Theme.of(context).textTheme.titleMedium,
+              )
+            else
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: _getPositionColor(joueur.postes.first.name).withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              ],
-              const SizedBox(height: 8),
-              _buildEditableFields(context, joueur),
-            ],
-          ),
+                child: Text(
+                  joueur.postes.map((e) => e.name).join("/"),
+                  style: TextStyle(
+                    color: _getPositionColor(joueur.postes.first.name),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+
+            const SizedBox(width: 12),
+
+            if (isEditing)
+              SizedBox(
+                width: 80,
+                child: TextField(
+                  controller: ageController,
+                  decoration: const InputDecoration(
+                    labelText: 'Âge',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+              )
+            else
+              Text('${joueur.age} ans'),
+          ],
+        ),
+
+        const SizedBox(height: 8),
+
+        Row(
+          children: [
+            if (isEditing)
+              SizedBox(
+                width: 80,
+                child: TextField(
+                  controller: ratingController,
+                  decoration: const InputDecoration(
+                    labelText: 'Note',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: _getRatingColor(joueur.niveauActuel).withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  joueur.niveauActuel.toString(),
+                  style: TextStyle(
+                    color: _getRatingColor(joueur.niveauActuel),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+
+            const SizedBox(width: 8),
+
+            if (isEditing)
+              SizedBox(
+                width: 80,
+                child: TextField(
+                  controller: potentielController,
+                  decoration: const InputDecoration(
+                    labelText: 'Pot.',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: _getProgressionColor(joueur.potentiel).withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  joueur.potentiel.toString(),
+                  style: TextStyle(
+                    color: _getProgressionColor(joueur.potentiel),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        Row(
+          children: [
+            if (isEditing)
+              SizedBox(
+                width: 100,
+                child: TextField(
+                  controller: valueController,
+                  decoration: const InputDecoration(
+                    labelText: 'Val. (M€)',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+              )
+            else
+              Text(
+                "${joueur.montantTransfert} M€",
+                style: Theme.of(context).textTheme.titleMedium
+              ),
+          ],
         ),
       ],
     );
   }
-
-  Widget _buildEditableFields(BuildContext context, JoueurSm joueur) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      if (isEditing)
-        TextField(
-          controller: dureeContratController,
-          decoration: const InputDecoration(
-            labelText: 'Fin de contrat',
-            border: OutlineInputBorder(),
-          ),
-          keyboardType: TextInputType.number,
-        )
-      else
-        Text(
-          "Contrat jusqu'à ${joueur.dureeContrat}",
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-
-      const SizedBox(height: 8),
-
-      Row(
-        children: [
-          if (isEditing)
-            Expanded(
-              child: MultiSelectDialogField<PosteEnum>(
-                items: PosteEnum.values
-                    .map((p) => MultiSelectItem<PosteEnum>(p, p.name))
-                    .toList(),
-                title: Text(
-                  "Postes",
-                  style: TextStyle(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black,
-                  ),
-                ),
-                buttonText: Text(
-                  selectedPostes.map((e) => e.name).join("/"),
-                  style: TextStyle(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black,
-                  ),
-                ),
-                initialValue: selectedPostes,
-                itemsTextStyle: TextStyle(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white
-                      : Colors.black,
-                ),
-                confirmText: Text(
-                  "OK",
-                  style: TextStyle(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black,
-                  ),
-                ),
-                cancelText: Text(
-                  "Annuler",
-                  style: TextStyle(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black,
-                  ),
-                ),
-                onConfirm: (values) {
-                  setState(() {
-                    selectedPostes = values;
-                  });
-                },
-              ),
-            )
-          else
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: _getPositionColor(joueur.postes.first.name).withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                joueur.postes.map((e) => e.name).join("/"),
-                style: TextStyle(
-                  color: _getPositionColor(joueur.postes.first.name),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-
-          const SizedBox(width: 12),
-
-          if (isEditing)
-            SizedBox(
-              width: 80,
-              child: TextField(
-                controller: ageController,
-                decoration: const InputDecoration(
-                  labelText: 'Âge',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-            )
-          else
-            Text('${joueur.age} ans'),
-        ],
-      ),
-
-      const SizedBox(height: 8),
-
-      Row(
-        children: [
-          if (isEditing)
-            SizedBox(
-              width: 80,
-              child: TextField(
-                controller: ratingController,
-                decoration: const InputDecoration(
-                  labelText: 'Note',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-            )
-          else
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: _getRatingColor(joueur.niveauActuel).withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                joueur.niveauActuel.toString(),
-                style: TextStyle(
-                  color: _getRatingColor(joueur.niveauActuel),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-
-          const SizedBox(width: 8),
-
-          if (isEditing)
-            SizedBox(
-              width: 80,
-              child: TextField(
-                controller: potentielController,
-                decoration: const InputDecoration(
-                  labelText: 'Pot.',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-            )
-          else
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: _getProgressionColor(joueur.potentiel).withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                joueur.potentiel.toString(),
-                style: TextStyle(
-                  color: _getProgressionColor(joueur.potentiel),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-
-          const SizedBox(width: 12),
-
-          if (isEditing)
-            SizedBox(
-              width: 100,
-              child: TextField(
-                controller: valueController,
-                decoration: const InputDecoration(
-                  labelText: 'Val. (M€)',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-            )
-          else
-            Text("${joueur.montantTransfert} M€"),
-        ],
-      ),
-    ],
-  );
-}
 
   Widget _buildStatsSection(BuildContext context, String title, List<String> keys) {
     return Card(
@@ -521,30 +577,36 @@ class _PlayerDetailsDialogState extends State<PlayerDetailsDialog> {
           children: [
             Text(title, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 16,
-              runSpacing: 12,
-              children: keys.map((key) {
-                if (!statsControllers.containsKey(key)) return const SizedBox();
-                return SizedBox(
-                  width: 150,
-                  child: isEditing
-                      ? TextField(
-                          controller: statsControllers[key],
-                          decoration: InputDecoration(
-                            labelText: key,
-                            border: const OutlineInputBorder(),
+            Center( // <-- Ajouté pour centrer le Wrap
+              child: Wrap(
+                spacing: 16,
+                runSpacing: 12,
+                alignment: WrapAlignment.center, // facultatif mais cohérent
+                children: keys.map((key) {
+                  if (!statsControllers.containsKey(key)) return const SizedBox();
+                  return SizedBox(
+                    width: 150,
+                    child: isEditing
+                        ? TextField(
+                            controller: statsControllers[key],
+                            decoration: InputDecoration(
+                              labelText: key,
+                              border: const OutlineInputBorder(),
+                            ),
+                            keyboardType: TextInputType.number,
+                          )
+                        : Column(
+                            children: [
+                              Text(
+                                key,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              Text(statsControllers[key]!.text),
+                            ],
                           ),
-                          keyboardType: TextInputType.number,
-                        )
-                      : Column(
-                          children: [
-                            Text(key, style: const TextStyle(fontWeight: FontWeight.bold)),
-                            Text(statsControllers[key]!.text),
-                          ],
-                        ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             ),
           ],
         ),
@@ -553,45 +615,58 @@ class _PlayerDetailsDialogState extends State<PlayerDetailsDialog> {
   }
 
   Widget _buildActions(BuildContext context) {
+    final screenType = ResponsiveLayout.getScreenTypeFromWidth(MediaQuery.of(context).size.width);
+    final isMobile = screenType == ScreenType.mobile;
+
+    // On ne met Expanded que pour desktop/tablet
+    final buttons = <Widget>[
+      if (isEditing)
+        OutlinedButton(
+          onPressed: _cancelEdit,
+          child: const Text('Annuler'),
+        ),
+      OutlinedButton.icon(
+        onPressed: isEditing
+            ? _saveChanges
+            : () {
+                setState(() {
+                  isEditing = true;
+                });
+              },
+        icon: Icon(isEditing ? Icons.save : Icons.edit),
+        label: Text(isEditing ? 'Enregistrer' : 'Modifier'),
+      ),
+      OutlinedButton.icon(
+        onPressed: _deletePlayer,
+        icon: const Icon(Icons.delete),
+        label: const Text('Supprimer'),
+      ),
+    ];
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
       ),
-      child: Row(
-        children: [
-          if (isEditing)
-            Expanded(
-              child: OutlinedButton(
-                onPressed: _cancelEdit,
-                child: const Text('Annuler'),
-              ),
+      child: isMobile
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: buttons
+                  .map((b) => Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: b,
+                      ))
+                  .toList(),
+            )
+          : Row(
+              children: buttons
+                  .map((b) => Expanded(child: Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: b,
+                      )))
+                  .toList(),
             ),
-          if (isEditing) const SizedBox(width: 8),
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: isEditing
-                  ? _saveChanges
-                  : () {
-                      setState(() {
-                        isEditing = true;
-                      });
-                    },
-              icon: Icon(isEditing ? Icons.save : Icons.edit),
-              label: Text(isEditing ? 'Enregistrer' : 'Modifier'),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: _deletePlayer,
-              icon: const Icon(Icons.delete),
-              label: const Text('Supprimer'),
-            ),
-          )
-        ],
-      ),
     );
   }
 
