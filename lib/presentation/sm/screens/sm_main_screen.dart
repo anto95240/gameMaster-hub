@@ -2,16 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../widgets/sm_players_tab.dart';
 import '../../core/blocs/auth/auth_bloc.dart';
 import '../../core/blocs/theme/theme_bloc.dart';
 import '../blocs/joueurs/joueurs_sm_bloc.dart';
 import '../blocs/joueurs/joueurs_sm_event.dart';
-import '../../../data/sm/repositories/joueur_sm_repository_impl.dart';
-import '../../../data/sm/repositories/stats_joueur_sm_repository_impl.dart';
-import '../../../data/sm/datasources/joueur_sm_remote_data_source.dart';
-import '../../../data/sm/datasources/stats_joueur_sm_remote_data_source.dart';
 import '../../core/utils/responsive_layout.dart';
 
 class SMMainScreen extends StatefulWidget {

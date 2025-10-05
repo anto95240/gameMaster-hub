@@ -385,7 +385,6 @@ class SMPlayersTab extends StatelessWidget {
   }
 
   Widget _buildSortControls(BuildContext context, JoueursSmLoaded state, ScreenType screenType) {
-    final isMobile = screenType == ScreenType.mobile;
     final isTablet = screenType == ScreenType.tablet;
     final isLaptop = screenType == ScreenType.laptop;
     

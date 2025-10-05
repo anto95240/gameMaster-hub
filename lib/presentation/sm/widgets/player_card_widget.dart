@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gamemaster_hub/domain/sm/entities/joueur_sm.dart';
-import 'package:gamemaster_hub/domain/sm/entities/stats_joueur_sm.dart';
 import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_state.dart';
 
@@ -22,9 +20,6 @@ class PlayerCardWidget extends StatelessWidget {
     final width = cardWidth ?? MediaQuery.of(context).size.width;
     final screenType = ResponsiveLayout.getScreenTypeFromWidth(width);
     final constraints = ResponsiveLayout.getPlayerCardConstraints(screenType);
-
-    // Calcul de la largeur effective avec contraintes
-    final effectiveWidth = constraints.clampWidth(width);
 
     // Tailles responsives basées sur le screenType
     final isMobile = screenType == ScreenType.mobile;

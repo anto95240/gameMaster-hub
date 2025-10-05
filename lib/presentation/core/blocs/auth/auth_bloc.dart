@@ -86,8 +86,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     try {
       final session = _supabase.auth.currentSession;
-      if (session != null && session.user != null) {
-        emit(AuthAuthenticated(user: session.user!));
+      if (session != null) {
+        emit(AuthAuthenticated(user: session.user));
       } else {
         emit(AuthUnauthenticated());
       }

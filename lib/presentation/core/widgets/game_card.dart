@@ -26,9 +26,6 @@ class GameCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final constraints = ResponsiveLayout.getGameCardConstraints(screenType);
-    final effectiveWidth = cardWidth != null 
-        ? constraints.clampWidth(cardWidth!) 
-        : constraints.optimalWidth;
 
     // Tailles responsives
     final isMobile = screenType == ScreenType.mobile;
