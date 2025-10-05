@@ -72,13 +72,12 @@ class _SMMainScreenState extends State<SMMainScreen>
                   },
                 ),
               ),
-              if (!isMobile)
-                IconButton(
-                  onPressed: () {
-                    context.read<JoueursSmBloc>().add(LoadJoueursSmEvent());
-                  },
-                  icon: const Icon(Icons.sync),
-                ),
+              IconButton(
+                onPressed: () {
+                  context.read<JoueursSmBloc>().add(LoadJoueursSmEvent());
+                },
+                icon: const Icon(Icons.sync),
+              ),
               IconButton(
                 onPressed: () {
                   context.read<AuthBloc>().add(AuthSignOutRequested());
@@ -87,9 +86,7 @@ class _SMMainScreenState extends State<SMMainScreen>
                 icon: const Icon(Icons.account_circle),
               ),
             ],
-            bottom: isMobile
-                ? null
-                : TabBar(
+            bottom: TabBar(
                     controller: _tabController,
                     tabs: const [
                       Tab(
@@ -99,9 +96,7 @@ class _SMMainScreenState extends State<SMMainScreen>
                     ],
                   ),
           ),
-          body: isMobile
-              ? const SMPlayersTab()
-              : TabBarView(
+          body: TabBarView(
                   controller: _tabController,
                   children: const [
                     SMPlayersTab(),
