@@ -7,8 +7,5 @@
         "distDir": "build/web"
       }
     }
-  ],
-  "scripts": {
-    "build": "bash ./vercel_build.sh"
-  }
+  ]
 }
