@@ -23,18 +23,41 @@ class HomeScreen extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(
-            title: isMobile
-                ? const Icon(Icons.sports_esports)
-                : Row(
-                    children: [
-                      Icon(
-                        Icons.sports_esports,
-                        color: Theme.of(context).colorScheme.primary,
+            title: LayoutBuilder(
+              builder: (context, constraints) {
+                double screenWidth = constraints.maxWidth;
+                double fontSize;
+
+                if (screenWidth < 400) {
+                  fontSize = 14; 
+                } else if (screenWidth < 600) {
+                  fontSize = 16;
+                } else if (screenWidth < 900) {
+                  fontSize = 20;
+                } else {
+                  fontSize = 24;
+                }
+
+                return Row(
+                  children: [
+                    Image.asset(
+                      'assets/images/logo.png',
+                      height: 48,
+                      width: 48,
+                      fit: BoxFit.contain,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'GameMaster Hub',
+                      style: TextStyle(
+                        fontSize: fontSize,
+                        fontWeight: FontWeight.bold,
                       ),
-                      const SizedBox(width: 8),
-                      const Text('GameMaster Hub'),
-                    ],
-                  ),
+                    ),
+                  ],
+                );
+              },
+            ),
             actions: [
               IconButton(
                 onPressed: () {

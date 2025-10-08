@@ -56,7 +56,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                 constraints: const BoxConstraints(maxWidth: 420),
                 child: Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(32),
+                    padding: const EdgeInsets.all(20),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -80,23 +80,43 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   Widget _buildLogo() {
     return Column(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.sports_esports,
-              size: 48,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                'GameMaster Hub',
-                style: Theme.of(context).textTheme.displayMedium,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
+        LayoutBuilder(
+          builder: (context, constraints) {
+            double screenWidth = constraints.maxWidth;
+            double fontSize;
+
+            if (screenWidth < 400) {
+              fontSize = 16;
+            } else if (screenWidth < 600) {
+              fontSize = 18;
+            } else if (screenWidth < 900) {
+              fontSize = 20;
+            } else {
+              fontSize = 24;
+            }
+
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/logo.png',
+                  height: 48,
+                  width: 48,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(width: 16),
+                Flexible(
+                  child: Text(
+                    'GameMaster Hub',
+                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                          fontSize: fontSize,
+                        ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
         const SizedBox(height: 8),
         Text(
@@ -190,10 +210,10 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                         ),
                 ),
               ),
-              const SizedBox(height: 24),
-              _buildDivider(),
-              const SizedBox(height: 16),
-              _buildOAuthButtons(),
+              // const SizedBox(height: 24),
+              // _buildDivider(),
+              // const SizedBox(height: 16),
+              // _buildOAuthButtons(),
             ],
           ),
         );
@@ -201,43 +221,43 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildDivider() {
-    return Row(
-      children: [
-        Expanded(child: Divider(color: Theme.of(context).dividerColor)),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            'ou',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ),
-        Expanded(child: Divider(color: Theme.of(context).dividerColor)),
-      ],
-    );
-  }
+  // Widget _buildDivider() {
+  //   return Row(
+  //     children: [
+  //       Expanded(child: Divider(color: Theme.of(context).dividerColor)),
+  //       Padding(
+  //         padding: const EdgeInsets.symmetric(horizontal: 16),
+  //         child: Text(
+  //           'ou',
+  //           style: Theme.of(context).textTheme.bodySmall,
+  //         ),
+  //       ),
+  //       Expanded(child: Divider(color: Theme.of(context).dividerColor)),
+  //     ],
+  //   );
+  // }
 
-  Widget _buildOAuthButtons() {
-    return Row(
-      children: [
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.g_mobiledata),
-            label: const Text('Google'),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.code),
-            label: const Text('GitHub'),
-          ),
-        ),
-      ],
-    );
-  }
+  // Widget _buildOAuthButtons() {
+  //   return Row(
+  //     children: [
+  //       Expanded(
+  //         child: OutlinedButton.icon(
+  //           onPressed: () {},
+  //           icon: const Icon(Icons.g_mobiledata),
+  //           label: const Text('Google'),
+  //         ),
+  //       ),
+  //       const SizedBox(width: 16),
+  //       Expanded(
+  //         child: OutlinedButton.icon(
+  //           onPressed: () {},
+  //           icon: const Icon(Icons.code),
+  //           label: const Text('GitHub'),
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
   
   void _handleSubmit() {
     if (_formKey.currentState!.validate()) {
