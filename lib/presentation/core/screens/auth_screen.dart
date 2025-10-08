@@ -86,7 +86,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
             double fontSize;
 
             if (screenWidth < 400) {
-              fontSize = 16;
+              fontSize = 18;
             } else if (screenWidth < 600) {
               fontSize = 18;
             } else if (screenWidth < 900) {
