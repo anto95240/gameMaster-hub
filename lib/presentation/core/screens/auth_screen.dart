@@ -18,6 +18,8 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
+  bool _obscurePassword = true;
+
   @override
   void initState() {
     super.initState();
@@ -86,7 +88,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
             double fontSize;
 
             if (screenWidth < 400) {
-              fontSize = 18;
+              fontSize = 16;
             } else if (screenWidth < 600) {
               fontSize = 18;
             } else if (screenWidth < 900) {
@@ -127,6 +129,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       ],
     );
   }
+
   Widget _buildTabBar() {
     return Container(
       decoration: BoxDecoration(
@@ -142,7 +145,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
         ),
         indicatorSize: TabBarIndicatorSize.tab,
         dividerColor: Colors.transparent,
-        labelColor: Colors.white,
+        labelColor: Colors.black,
         unselectedLabelColor: Theme.of(context).textTheme.bodyMedium?.color,
         tabs: const [
           Tab(text: 'Connexion'),
@@ -155,12 +158,15 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   Widget _buildForm() {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
+        final isLoading = state is AuthLoading;
+
         return Form(
           key: _formKey,
           child: Column(
             children: [
               TextFormField(
                 controller: _emailController,
+                enabled: !isLoading,
                 decoration: const InputDecoration(
                   labelText: 'Email',
                   prefixIcon: Icon(Icons.email),
@@ -178,10 +184,23 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
+                enabled: !isLoading,
+                obscureText: _obscurePassword,
+                decoration: InputDecoration(
                   labelText: 'Mot de passe',
-                  prefixIcon: Icon(Icons.lock),
+                  prefixIcon: const Icon(Icons.lock),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                  ),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -197,23 +216,29 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: state is AuthLoading ? null : _handleSubmit,
-                  child: state is AuthLoading
-                      ? const CircularProgressIndicator()
+                  onPressed: isLoading ? null : _handleSubmit,
+                  child: isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(_tabController.index == 0 ? 'Se connecter' : 'S\'inscrire'),
+                            Text(_tabController.index == 0
+                                ? 'Se connecter'
+                                : 'S\'inscrire'),
                             const SizedBox(width: 8),
                             const Icon(Icons.arrow_forward),
                           ],
                         ),
                 ),
               ),
-              // const SizedBox(height: 24),
-              // _buildDivider(),
-              // const SizedBox(height: 16),
-              // _buildOAuthButtons(),
             ],
           ),
         );
@@ -221,44 +246,6 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     );
   }
 
-  // Widget _buildDivider() {
-  //   return Row(
-  //     children: [
-  //       Expanded(child: Divider(color: Theme.of(context).dividerColor)),
-  //       Padding(
-  //         padding: const EdgeInsets.symmetric(horizontal: 16),
-  //         child: Text(
-  //           'ou',
-  //           style: Theme.of(context).textTheme.bodySmall,
-  //         ),
-  //       ),
-  //       Expanded(child: Divider(color: Theme.of(context).dividerColor)),
-  //     ],
-  //   );
-  // }
-
-  // Widget _buildOAuthButtons() {
-  //   return Row(
-  //     children: [
-  //       Expanded(
-  //         child: OutlinedButton.icon(
-  //           onPressed: () {},
-  //           icon: const Icon(Icons.g_mobiledata),
-  //           label: const Text('Google'),
-  //         ),
-  //       ),
-  //       const SizedBox(width: 16),
-  //       Expanded(
-  //         child: OutlinedButton.icon(
-  //           onPressed: () {},
-  //           icon: const Icon(Icons.code),
-  //           label: const Text('GitHub'),
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
-  
   void _handleSubmit() {
     if (_formKey.currentState!.validate()) {
       final email = _emailController.text.trim();
@@ -266,12 +253,12 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
 
       if (_tabController.index == 0) {
         context.read<AuthBloc>().add(
-          AuthSignInRequested(email: email, password: password),
-        );
+              AuthSignInRequested(email: email, password: password),
+            );
       } else {
         context.read<AuthBloc>().add(
-          AuthSignUpRequested(email: email, password: password),
-        );
+              AuthSignUpRequested(email: email, password: password),
+            );
       }
     }
   }

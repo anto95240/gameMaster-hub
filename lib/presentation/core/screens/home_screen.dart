@@ -29,7 +29,7 @@ class HomeScreen extends StatelessWidget {
                 double fontSize;
 
                 if (screenWidth < 400) {
-                  fontSize = 18; 
+                  fontSize = 16; 
                 } else if (screenWidth < 600) {
                   fontSize = 18;
                 } else if (screenWidth < 900) {
