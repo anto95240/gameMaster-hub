@@ -38,6 +38,18 @@ class _SMMainScreenState extends State<SMMainScreen>
       builder: (context, constraints) {
         final screenType = ResponsiveLayout.getScreenTypeFromWidth(constraints.maxWidth);
         final isMobile = screenType == ScreenType.mobile;
+        double screenWidth = constraints.maxWidth;
+        double fontSize;
+
+        if (screenWidth < 400) {
+          fontSize = 14; 
+        } else if (screenWidth < 600) {
+          fontSize = 16;
+        } else if (screenWidth < 900) {
+          fontSize = 18;
+        } else {
+          fontSize = 18;
+        }
 
         return Scaffold(
           appBar: AppBar(
@@ -82,14 +94,17 @@ class _SMMainScreenState extends State<SMMainScreen>
               ),
             ],
             bottom: TabBar(
-                    controller: _tabController,
-                    tabs: const [
-                      Tab(
-                        icon: Icon(Icons.group),
-                        text: 'Joueurs',
-                      ),
-                    ],
-                  ),
+              controller: _tabController,
+              labelStyle: TextStyle(
+                fontSize: fontSize, 
+              ),
+              tabs: const [
+                Tab(
+                  icon: Icon(Icons.group),
+                  text: 'Joueurs',
+                ),
+              ],
+            ),
           ),
           body: TabBarView(
                   controller: _tabController,
