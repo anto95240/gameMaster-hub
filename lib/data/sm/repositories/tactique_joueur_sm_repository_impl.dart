@@ -9,13 +9,13 @@ class TactiqueJoueurSmRepositoryImpl implements TactiqueJoueurSmRepository {
   TactiqueJoueurSmRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<List<TactiqueJoueurSm>> getAll() async {
-    return await remoteDataSource.fetchAll();
+  Future<List<TactiqueJoueurSm>> getAll(int saveId) async {
+    return await remoteDataSource.fetchAll(saveId);
   }
 
   @override
-  Future<List<TactiqueJoueurSm>> getByTactiqueId(int tactiqueId) async {
-    final list = await remoteDataSource.fetchAll();
+  Future<List<TactiqueJoueurSm>> getByTactiqueId(int tactiqueId, int saveId) async {
+    final list = await remoteDataSource.fetchAll(saveId);
     return list.where((tj) => tj.tactiqueId == tactiqueId).toList();
   }
 

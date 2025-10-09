@@ -4,6 +4,7 @@ class InstructionDefenseSmModel extends InstructionDefenseSm {
   InstructionDefenseSmModel({
     required super.id,
     required super.tactiqueId,
+    required super.saveId,
     super.pressing,
     super.styleTacle,
     super.ligneDefensive,
@@ -15,6 +16,7 @@ class InstructionDefenseSmModel extends InstructionDefenseSm {
     return InstructionDefenseSmModel(
       id: map['id'],
       tactiqueId: map['tactique_id'],
+      saveId: map['save_id'],
       pressing: map['pressing'],
       styleTacle: map['style_tacle'],
       ligneDefensive: map['ligne_defensive'],
@@ -27,6 +29,7 @@ class InstructionDefenseSmModel extends InstructionDefenseSm {
     return {
       'id': id,
       'tactique_id': tactiqueId,
+      'save_id': saveId,
       'pressing': pressing,
       'style_tacle': styleTacle,
       'ligne_defensive': ligneDefensive,

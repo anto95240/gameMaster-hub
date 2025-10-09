@@ -6,8 +6,12 @@ class InstructionGeneralSmRemoteDataSource {
 
   InstructionGeneralSmRemoteDataSource(this.supabase);
 
-  Future<List<InstructionGeneralSmModel>> fetchInstructions() async {
-    final response = await supabase.from('instruction_general_sm').select().execute();
+  Future<List<InstructionGeneralSmModel>> fetchInstructions(int saveId) async {
+    final response = await supabase
+        .from('instruction_general_sm')
+        .select()
+        .eq('save_id', saveId)
+        . execute();
     final data = response.data as List<dynamic>;
     return data.map((e) => InstructionGeneralSmModel.fromMap(e)).toList();
   }

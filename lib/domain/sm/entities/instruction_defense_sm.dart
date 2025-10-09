@@ -1,6 +1,7 @@
 class InstructionDefenseSm {
   final int id;
   final int tactiqueId;
+  final int saveId;
   final String? pressing;
   final String? styleTacle;
   final String? ligneDefensive;
@@ -10,6 +11,7 @@ class InstructionDefenseSm {
   InstructionDefenseSm({
     required this.id,
     required this.tactiqueId,
+    required this.saveId,
     this.pressing,
     this.styleTacle,
     this.ligneDefensive,

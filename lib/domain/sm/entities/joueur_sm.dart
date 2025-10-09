@@ -2,6 +2,7 @@ import 'package:gamemaster_hub/domain/common/enums.dart';
 
 class JoueurSm {
   final int id;
+  final int saveId; 
   final String nom;
   final int age;
   final List<PosteEnum> postes; // plusieurs postes possibles
@@ -15,6 +16,7 @@ class JoueurSm {
 
   JoueurSm({
     required this.id,
+    required this.saveId,
     required this.nom,
     required this.age,
     required this.postes,

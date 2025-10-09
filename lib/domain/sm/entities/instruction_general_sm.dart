@@ -1,6 +1,7 @@
 class InstructionGeneralSm {
   final int id;
   final int tactiqueId;
+  final int saveId;
   final String? largeur;
   final String? mentalite;
   final String? tempo;
@@ -11,6 +12,7 @@ class InstructionGeneralSm {
   InstructionGeneralSm({
     required this.id,
     required this.tactiqueId,
+    required this.saveId,
     this.largeur,
     this.mentalite,
     this.tempo,

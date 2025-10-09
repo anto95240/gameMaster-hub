@@ -9,18 +9,19 @@ class InstructionDefenseSmRepositoryImpl implements InstructionDefenseSmReposito
   InstructionDefenseSmRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<List<InstructionDefenseSm>> getAllInstructions() async {
-    return await remoteDataSource.fetchInstructions();
+  Future<List<InstructionDefenseSm>> getAllInstructions(int saveId) async {
+    return await remoteDataSource.fetchInstructions(saveId);
   }
 
   @override
-  Future<InstructionDefenseSmModel> getInstructionByTactiqueId(int tactiqueId) async {
-    final list = await remoteDataSource.fetchInstructions();
+  Future<InstructionDefenseSm?> getInstructionByTactiqueId(int tactiqueId, int saveId) async {
+    final list = await remoteDataSource.fetchInstructions(saveId);
     return list.firstWhere(
       (i) => i.tactiqueId == tactiqueId,
       orElse: () => InstructionDefenseSmModel(
         id: -1,
         tactiqueId: tactiqueId,
+        saveId: saveId,
         pressing: '',
         styleTacle: '',
         ligneDefensive: '',

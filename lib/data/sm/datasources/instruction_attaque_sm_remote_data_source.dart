@@ -6,18 +6,27 @@ class InstructionAttaqueSmRemoteDataSource {
 
   InstructionAttaqueSmRemoteDataSource(this.supabase);
 
-  Future<List<InstructionAttaqueSmModel>> fetchInstructions() async {
-    final response = await supabase.from('instruction_attaque_sm').select().execute();
+  Future<List<InstructionAttaqueSmModel>> fetchInstructions(int saveId) async {
+    final response = await supabase
+        .from('instruction_attaque_sm')
+        .select()
+        .eq('save_id', saveId)
+        .execute();
+
     final data = response.data as List<dynamic>;
     return data.map((e) => InstructionAttaqueSmModel.fromMap(e)).toList();
   }
 
   Future<void> insertInstruction(InstructionAttaqueSmModel instruction) async {
-    await supabase.from('instruction_attaque_sm').insert(instruction.toMap()).execute();
+    await supabase
+        .from('instruction_attaque_sm')
+        .insert(instruction.toMap())
+        .execute();
   }
 
   Future<void> updateInstruction(InstructionAttaqueSmModel instruction) async {
-    await supabase.from('instruction_attaque_sm')
+    await supabase
+        .from('instruction_attaque_sm')
         .update(instruction.toMap())
         .eq('id', instruction.id)
         .execute();

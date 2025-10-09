@@ -4,6 +4,7 @@ class InstructionGeneralSmModel extends InstructionGeneralSm {
   InstructionGeneralSmModel({
     required super.id,
     required super.tactiqueId,
+    required super.saveId,
     super.largeur,
     super.mentalite,
     super.tempo,
@@ -16,6 +17,7 @@ class InstructionGeneralSmModel extends InstructionGeneralSm {
     return InstructionGeneralSmModel(
       id: map['id'],
       tactiqueId: map['tactique_id'],
+      saveId: map['save_id'],
       largeur: map['largeur'],
       mentalite: map['mentalite'],
       tempo: map['tempo'],
@@ -29,6 +31,7 @@ class InstructionGeneralSmModel extends InstructionGeneralSm {
     return {
       'id': id,
       'tactique_id': tactiqueId,
+      'save_id': saveId,
       'largeur': largeur,
       'mentalite': mentalite,
       'tempo': tempo,

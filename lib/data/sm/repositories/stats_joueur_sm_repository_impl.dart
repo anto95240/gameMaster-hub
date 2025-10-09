@@ -9,18 +9,19 @@ class StatsJoueurSmRepositoryImpl implements StatsJoueurSmRepository {
   StatsJoueurSmRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<List<StatsJoueurSm>> getAllStats() async {
-    return await remoteDataSource.fetchStats();
+  Future<List<StatsJoueurSm>> getAllStats(int saveId) async {
+    return await remoteDataSource.fetchStats(saveId);
   }
 
   @override
-  Future<StatsJoueurSmModel> getStatsByJoueurId(int joueurId) async {
-    final statsList = await remoteDataSource.fetchStats();
+  Future<StatsJoueurSmModel> getStatsByJoueurId(int joueurId, int saveId) async {
+    final statsList = await remoteDataSource.fetchStats(saveId);
     return statsList.firstWhere(
       (s) => s.joueurId == joueurId,
       orElse: () => StatsJoueurSmModel(
         id: -1,
         joueurId: joueurId,
+        saveId: saveId,
         marquage: 0,
         deplacement: 0,
         frappesLointaines: 0,

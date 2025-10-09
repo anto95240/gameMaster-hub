@@ -9,17 +9,18 @@ class RoleModeleSmRepositoryImpl implements RoleModeleSmRepository {
   RoleModeleSmRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<List<RoleModeleSm>> getAllRoles() async {
-    return await remoteDataSource.fetchRoles();
+  Future<List<RoleModeleSm>> getAllRoles(int saveId) async {
+    return await remoteDataSource.fetchRoles(saveId);
   }
 
   @override
-  Future<RoleModeleSmModel> getRoleByPoste(String poste) async {
-    final roles = await remoteDataSource.fetchRoles();
+  Future<RoleModeleSmModel> getRoleByPoste(String poste, int saveId) async {
+    final roles = await remoteDataSource.fetchRoles(saveId);
     return roles.firstWhere(
       (r) => r.poste == poste,
       orElse: () => RoleModeleSmModel(
         id: -1,
+        saveId: saveId,
         poste: poste,
         role: '',
         description: '',

@@ -6,8 +6,12 @@ class TactiqueModeleSmRemoteDataSource {
 
   TactiqueModeleSmRemoteDataSource(this.supabase);
 
-  Future<List<TactiqueModeleSmModel>> fetchTactiques() async {
-    final response = await supabase.from('tactique_modele_sm').select().execute();
+  Future<List<TactiqueModeleSmModel>> fetchTactiques(int saveId) async {
+    final response = await supabase
+        .from('tactique_modele_sm')
+        .select()
+        .eq('save_id', saveId)
+        .execute();
     final data = response.data as List<dynamic>;
     return data.map((e) => TactiqueModeleSmModel.fromMap(e)).toList();
   }
