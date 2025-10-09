@@ -26,11 +26,11 @@ class JoueursSmBloc extends Bloc<JoueursSmEvent, JoueursSmState> {
   ) async {
     emit(JoueursSmLoading());
     try {
-      final joueurs = await joueurRepository.getAllJoueurs();
+      final joueurs = await joueurRepository.getAllJoueurs(event.saveId);
       final joueursWithStats = <JoueurSmWithStats>[];
 
       for (final joueur in joueurs) {
-        final stats = await statsRepository.getStatsByJoueurId(joueur.id);
+        final stats = await statsRepository.getStatsByJoueurId(joueur.id, event.saveId);
         joueursWithStats.add(JoueurSmWithStats(
           joueur: joueur,
           stats: stats,
@@ -49,7 +49,7 @@ class JoueursSmBloc extends Bloc<JoueursSmEvent, JoueursSmState> {
   ) async {
     try {
       await joueurRepository.insertJoueur(event.joueur);
-      add(LoadJoueursSmEvent());
+      add(LoadJoueursSmEvent(event.joueur.saveId));
     } catch (e) {
       emit(JoueursSmError(e.toString()));
     }
@@ -62,7 +62,7 @@ class JoueursSmBloc extends Bloc<JoueursSmEvent, JoueursSmState> {
     try {
       await joueurRepository.updateJoueur(event.joueur);
       if (event.stats.isNotEmpty) {
-        final stats = await statsRepository.getStatsByJoueurId(event.joueur.id);
+        final stats = await statsRepository.getStatsByJoueurId(event.joueur.id, event.joueur.saveId);
         if (stats != null) {
           final updatedStats = stats.copyWith(
             marquage: event.stats['marquage'],
@@ -94,7 +94,7 @@ class JoueursSmBloc extends Bloc<JoueursSmEvent, JoueursSmState> {
           await statsRepository.updateStats(updatedStats);
         }
       }
-      add(LoadJoueursSmEvent());
+      add(LoadJoueursSmEvent(event.joueur.saveId));
     } catch (e) {
       emit(JoueursSmError(e.toString()));
     }
@@ -106,7 +106,7 @@ class JoueursSmBloc extends Bloc<JoueursSmEvent, JoueursSmState> {
   ) async {
     try {
       await joueurRepository.deleteJoueur(event.joueurId);
-      add(LoadJoueursSmEvent());
+      add(LoadJoueursSmEvent(event.saveId));
     } catch (e) {
       emit(JoueursSmError(e.toString()));
     }

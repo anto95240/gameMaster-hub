@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gamemaster_hub/main.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_bloc.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_event.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_state.dart';
@@ -25,7 +26,7 @@ class SMPlayersTab extends StatelessWidget {
                 Text('Erreur: ${state.message}'),
                 const SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: () => context.read<JoueursSmBloc>().add(LoadJoueursSmEvent()),
+                  onPressed: () => context.read<JoueursSmBloc>().add(LoadJoueursSmEvent(globalSaveId)),
                   child: const Text('Réessayer'),
                 ),
               ],

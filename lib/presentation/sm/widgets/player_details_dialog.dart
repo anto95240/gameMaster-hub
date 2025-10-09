@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gamemaster_hub/domain/common/enums.dart';
 import 'package:gamemaster_hub/domain/sm/entities/joueur_sm.dart';
+import 'package:gamemaster_hub/main.dart';
 import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_bloc.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_event.dart';
@@ -131,7 +132,7 @@ class _PlayerDetailsDialogState extends State<PlayerDetailsDialog> {
       });
 
       if (mounted) {
-        context.read<JoueursSmBloc>().add(LoadJoueursSmEvent());
+        context.read<JoueursSmBloc>().add(LoadJoueursSmEvent(globalSaveId));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('${nameController.text} a été mis à jour')),
         );
@@ -160,7 +161,7 @@ class _PlayerDetailsDialogState extends State<PlayerDetailsDialog> {
           .eq('id', playerId);
 
       if (mounted) {
-        context.read<JoueursSmBloc>().add(LoadJoueursSmEvent());
+        context.read<JoueursSmBloc>().add(LoadJoueursSmEvent(globalSaveId));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('${widget.item.joueur.nom} a été supprimé')),
         );

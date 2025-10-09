@@ -15,6 +15,10 @@ import 'data/sm/repositories/stats_joueur_sm_repository_impl.dart';
 import 'data/sm/datasources/joueur_sm_remote_data_source.dart';
 import 'data/sm/datasources/stats_joueur_sm_remote_data_source.dart';
 
+/// ✅ ID global de sauvegarde actuel
+/// TODO: plus tard, relier à un SaveBloc ou au compte utilisateur
+const int globalSaveId = 1;
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -22,27 +26,26 @@ Future<void> main() async {
   String supabaseKey = '';
 
   if (!kIsWeb) {
-    // Mobile/Desktop : charger .env
+    // 🔹 Mode Mobile/Desktop : charger .env
     await dotenv.load(fileName: ".env");
     supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
     supabaseKey = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
   } else {
-    // Web : essayer d'abord dart-define, sinon fallback sur .env si présent (dev local)
+    // 🔹 Mode Web : tenter dart-define d'abord, sinon fallback .env
     supabaseUrl = const String.fromEnvironment('SUPABASE_URL', defaultValue: '');
     supabaseKey = const String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: '');
 
     if (supabaseUrl.isEmpty || supabaseKey.isEmpty) {
-      // fallback pour dev local Web
       await dotenv.load(fileName: ".env");
       supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
       supabaseKey = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
     }
   }
 
-  // Vérification que les variables sont définies
+  // 🚨 Vérification des clés Supabase
   if (supabaseUrl.isEmpty || supabaseKey.isEmpty) {
     runApp(
-      MaterialApp(
+      const MaterialApp(
         home: Scaffold(
           body: Center(
             child: Text(
@@ -51,7 +54,7 @@ Future<void> main() async {
               'Web prod → --dart-define\n'
               'Web dev → fallback .env',
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 18, color: Colors.red),
+              style: TextStyle(fontSize: 18, color: Colors.red),
             ),
           ),
         ),
@@ -60,26 +63,26 @@ Future<void> main() async {
     return;
   }
 
-  // Initialiser Supabase
+  // ✅ Initialisation Supabase
   await Supabase.initialize(
     url: supabaseUrl,
     anonKey: supabaseKey,
   );
 
-  // Initialiser Hive pour le thème
+  // ✅ Initialisation Hive
   await Hive.initFlutter();
   await Hive.openBox('theme_box');
 
   final supabaseClient = Supabase.instance.client;
 
-  final joueurRepository = JoueurSmRepositoryImpl(
-    JoueurSmRemoteDataSourceImpl(supabaseClient),
-  );
+  // ✅ Repositories
+  final joueurRepository =
+      JoueurSmRepositoryImpl(JoueurSmRemoteDataSourceImpl(supabaseClient));
 
-  final statsRepository = StatsJoueurSmRepositoryImpl(
-    StatsJoueurSmRemoteDataSource(supabaseClient),
-  );
+  final statsRepository =
+      StatsJoueurSmRepositoryImpl(StatsJoueurSmRemoteDataSource(supabaseClient));
 
+  // ✅ Lancement de l’app
   runApp(
     MultiBlocProvider(
       providers: [
@@ -89,7 +92,7 @@ Future<void> main() async {
           create: (_) => JoueursSmBloc(
             joueurRepository: joueurRepository,
             statsRepository: statsRepository,
-          )..add(LoadJoueursSmEvent()),
+          )..add(LoadJoueursSmEvent(globalSaveId)), // 👈 Ajout du saveId ici
         ),
       ],
       child: const GameMasterHubApp(),

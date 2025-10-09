@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gamemaster_hub/domain/common/enums.dart';
+import 'package:gamemaster_hub/main.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_bloc.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_event.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
@@ -263,7 +264,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       });
 
       if (mounted) {
-        context.read<JoueursSmBloc>().add(LoadJoueursSmEvent());
+        context.read<JoueursSmBloc>().add(LoadJoueursSmEvent(globalSaveId));
         Navigator.pop(context);
       }
     }
