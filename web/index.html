@@ -1,3 +1,4 @@
+<!-- web/index.html -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -18,21 +19,59 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="GameMaster Hub - Gestion de parties">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="gamemaster_hub">
+  <meta name="apple-mobile-web-app-title" content="GameMaster Hub">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>gamemaster_hub</title>
+  <title>gameMaster_hub</title>
   <link rel="manifest" href="manifest.json">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then((registration) => {
+            console.log('✅ Service Worker enregistré:', registration.scope);
+            
+            // Vérifie les mises à jour toutes les heures
+            setInterval(() => {
+              registration.update();
+              console.log('🔄 Vérification des mises à jour...');
+            }, 60 * 60 * 1000); // 1 heure
+            
+            // Vérifie immédiatement s'il y a une mise à jour
+            registration.update();
+          })
+          .catch((error) => {
+            console.error('❌ Erreur d\'enregistrement du Service Worker:', error);
+          });
+        
+        // Vérifie aussi quand l'utilisateur revient sur l'onglet
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden) {
+            navigator.serviceWorker.getRegistration().then((reg) => {
+              if (reg) {
+                reg.update();
+                console.log('🔄 Vérification au retour sur l\'onglet...');
+              }
+            });
+          }
+        });
+      });
+    } else {
+      console.warn('⚠️ Service Worker non supporté par ce navigateur');
+    }
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
