@@ -130,8 +130,8 @@ class HomeScreen extends StatelessWidget {
         int totalPlayersSM = 0;
         double averageRatingSM = 0;
 
-        int totalPlayersFM = 0;
-        double averageRatingFM = 0;
+        // int totalPlayersFM = 0;
+        // double averageRatingFM = 0;
 
         if (state is JoueursSmLoaded) {
           final filteredPlayers = state.filteredJoueurs;
@@ -143,8 +143,8 @@ class HomeScreen extends StatelessWidget {
                   totalPlayersSM
               : 0;
 
-          totalPlayersFM = 45;
-          averageRatingFM = 92;
+          // totalPlayersFM = 45;
+          // averageRatingFM = 92;
         }
 
         return LayoutBuilder(
@@ -187,35 +187,35 @@ class HomeScreen extends StatelessWidget {
                     onTap: () => context.go('/sm'),
                   ),
                 ),
-                SizedBox(
-                  width: cardWidth,
-                  child: GameCard(
-                    title: 'Football Manager',
-                    description: 'Gestion avancée et analyse détaillée',
-                    icon: Icons.stadium,
-                    priority: 2,
-                    screenType: screenType,
-                    cardWidth: cardWidth,
-                    stats: {
-                      'Joueurs': '$totalPlayersFM',
-                      'Note équipe': averageRatingFM.toStringAsFixed(0),
-                    },
-                    onTap: () => context.go('/fm'),
-                  ),
-                ),
-                SizedBox(
-                  width: cardWidth,
-                  child: GameCard(
-                    title: 'Star Wars GoH',
-                    description: 'Optimiseur d\'équipe et simulateur',
-                    icon: Icons.rocket_launch,
-                    priority: 3,
-                    screenType: screenType,
-                    cardWidth: cardWidth,
-                    stats: const {'Personnages': '156', 'Puissance': '4.2M'},
-                    onTap: () => context.go('/swgoh'),
-                  ),
-                ),
+                // SizedBox(
+                //   width: cardWidth,
+                //   child: GameCard(
+                //     title: 'Football Manager',
+                //     description: 'Gestion avancée et analyse détaillée',
+                //     icon: Icons.stadium,
+                //     priority: 2,
+                //     screenType: screenType,
+                //     cardWidth: cardWidth,
+                //     stats: {
+                //       'Joueurs': '$totalPlayersFM',
+                //       'Note équipe': averageRatingFM.toStringAsFixed(0),
+                //     },
+                //     onTap: () => context.go('/fm'),
+                //   ),
+                // ),
+                // SizedBox(
+                //   width: cardWidth,
+                //   child: GameCard(
+                //     title: 'SWGOH',
+                //     description: 'Optimiseur d\'équipe et simulateur',
+                //     icon: Icons.rocket_launch,
+                //     priority: 3,
+                //     screenType: screenType,
+                //     cardWidth: cardWidth,
+                //     stats: const {'Personnages': '156', 'Puissance': '4.2M'},
+                //     onTap: () => context.go('/swgoh'),
+                //   ),
+                // ),
               ],
             );
           },
