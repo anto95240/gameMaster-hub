@@ -17,34 +17,34 @@ class SaveRepositoryImpl implements SaveRepository {
   Future<Save?> getSaveById(int saveId) => datasource.getSaveById(saveId);
 
   @override
-Future<int> createSave(Save save) {
-  final saveModel = SaveModel(
-    id: save.id,
-    gameId: save.gameId,
-    userId: save.userId,
-    name: save.name,
-    description: save.description,
-    isActive: save.isActive,
-    numberOfPlayers: save.numberOfPlayers,
-    overallRating: save.overallRating,
-  );
-  return datasource.createSave(saveModel);
-}
+  Future<int> createSave(Save save) {
+    final saveModel = SaveModel(
+      id: save.id,
+      gameId: save.gameId,
+      userId: save.userId,
+      name: save.name,
+      description: save.description,
+      isActive: save.isActive,
+      numberOfPlayers: save.numberOfPlayers,
+      overallRating: save.overallRating,
+    );
+    return datasource.createSave(saveModel);
+  }
 
-@override
-Future<void> updateSave(Save save) {
-  final saveModel = SaveModel(
-    id: save.id,
-    gameId: save.gameId,
-    userId: save.userId,
-    name: save.name,
-    description: save.description,
-    isActive: save.isActive,
-    numberOfPlayers: save.numberOfPlayers,
-    overallRating: save.overallRating,
-  );
-  return datasource.updateSave(saveModel);
-}
+  @override
+  Future<void> updateSave(Save save) {
+    final saveModel = SaveModel(
+      id: save.id,
+      gameId: save.gameId,
+      userId: save.userId,
+      name: save.name,
+      description: save.description,
+      isActive: save.isActive,
+      numberOfPlayers: save.numberOfPlayers,
+      overallRating: save.overallRating,
+    );
+    return datasource.updateSave(saveModel);
+  }
 
   @override
   Future<void> deleteSave(int saveId) => datasource.deleteSave(saveId);

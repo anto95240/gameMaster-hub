@@ -1,6 +1,6 @@
 class Save {
   final int id;
-  final String gameId;
+  final int gameId;
   final String userId;
   final String name;
   final String? description;
