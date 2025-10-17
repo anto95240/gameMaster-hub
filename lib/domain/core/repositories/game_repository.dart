@@ -1,6 +1,9 @@
-import '../entities/game.dart';
+import 'package:gamemaster_hub/domain/core/entities/game.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class GameRepository {
-  Future<List<Game>> getGames();
-  Future<Game?> getGameById(String id);
+  SupabaseClient get supabase;
+
+  Future<List<Game>> getAllGames();
+  Future<Game?> getGameById(int id);
 }

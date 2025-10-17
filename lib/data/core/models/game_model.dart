@@ -2,7 +2,7 @@ import '../../../domain/core/entities/game.dart';
 
 class GameModel extends Game {
   GameModel({
-    required super.id,
+    required super.gameId,
     required super.name,
     super.description,
     super.icon,
@@ -11,7 +11,7 @@ class GameModel extends Game {
 
   factory GameModel.fromMap(Map<String, dynamic> map) {
     return GameModel(
-      id: map['id'],
+      gameId: map['gameId'],
       name: map['name'],
       description: map['description'],
       icon: map['icon'],
@@ -21,7 +21,7 @@ class GameModel extends Game {
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
+      'gameId': gameId,
       'name': name,
       'description': description,
       'icon': icon,

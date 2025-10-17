@@ -26,7 +26,7 @@ class GameDatasource {
 
   // Mettre à jour un jeu
   Future<void> updateGame(GameModel game) async {
-    await supabase.from('game').update(game.toMap()).eq('id', game.id);
+    await supabase.from('game').update(game.toMap()).eq('id', game.gameId);
   }
 
   // Supprimer un jeu
