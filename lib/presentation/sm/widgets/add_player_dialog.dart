@@ -221,6 +221,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
             'duree_contrat': dureeContrat,
             'salaire': salaire,
             'user_id': Supabase.instance.client.auth.currentUser!.id,
+            'save_id': globalSaveId,
           })
           .select('id')
           .single();
@@ -236,6 +237,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       await Supabase.instance.client.from('stats_joueur_sm').insert({
         'user_id': userId,
         'joueur_id': joueurId,
+        'save_id': globalSaveId,
         'marquage': 50,
         'deplacement': 50,
         'frappes_lointaines': 50,
