@@ -18,8 +18,6 @@ class GameRepositoryImpl implements GameRepository {
 
     if (response == null) return [];
 
-    print('🧩 Données brutes depuis Supabase : $response');
-
     return (response as List).map((e) {
       final idValue = e['game_id']; // ✅ CORRECT
       final gameId = idValue is int ? idValue : int.tryParse(idValue.toString()) ?? 0;
