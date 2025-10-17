@@ -5,5 +5,5 @@ abstract class GameRepository {
   SupabaseClient get supabase;
 
   Future<List<Game>> getAllGames();
-  Future<Game?> getGameById(int id);
+  Future<Game?> getGameById(int gameId);
 }

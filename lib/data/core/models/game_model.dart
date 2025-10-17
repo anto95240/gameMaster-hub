@@ -1,4 +1,4 @@
-import '../../../domain/core/entities/game.dart';
+import 'package:gamemaster_hub/domain/core/entities/game.dart';
 
 class GameModel extends Game {
   GameModel({
@@ -11,8 +11,10 @@ class GameModel extends Game {
 
   factory GameModel.fromMap(Map<String, dynamic> map) {
     return GameModel(
-      gameId: map['gameId'],
-      name: map['name'],
+      gameId: map['game_id'] is int
+          ? map['game_id']
+          : int.tryParse(map['game_id'].toString()) ?? 0, // sécurité
+      name: map['name'] ?? '',
       description: map['description'],
       icon: map['icon'],
       route: map['route'],
@@ -21,7 +23,7 @@ class GameModel extends Game {
 
   Map<String, dynamic> toMap() {
     return {
-      'gameId': gameId,
+      'game_id': gameId,
       'name': name,
       'description': description,
       'icon': icon,
