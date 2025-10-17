@@ -1,3 +1,4 @@
+// lib/data/core/datasources/save_datasource.dart
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/save_model.dart';
 
@@ -6,7 +7,6 @@ class SaveDatasource {
 
   SaveDatasource(this.supabase);
 
-  // Récupérer toutes les saves d'un jeu
   Future<List<SaveModel>> getSavesByGame(String gameId) async {
     final userId = supabase.auth.currentUser?.id;
     final response = await supabase
@@ -18,7 +18,6 @@ class SaveDatasource {
     return (response as List).map((e) => SaveModel.fromMap(e)).toList();
   }
 
-  // Récupérer une save par ID
   Future<SaveModel?> getSaveById(int saveId) async {
     final userId = supabase.auth.currentUser?.id;
     final response = await supabase
@@ -31,32 +30,38 @@ class SaveDatasource {
     return SaveModel.fromMap(response);
   }
 
-  // Créer une save
   Future<int> createSave(SaveModel save) async {
     final data = save.toMap();
     final response = await supabase.from('save').insert(data).select().single();
     return response['id'] as int;
   }
 
-  // Mettre à jour une save
   Future<void> updateSave(SaveModel save) async {
     final data = save.toMap();
     await supabase.from('save').update(data).eq('id', save.id);
   }
 
-  // Supprimer une save
   Future<void> deleteSave(int saveId) async {
+    // Supprimer tous les joueurs liés
+    await supabase.from('players').delete().eq('save_id', saveId);
     await supabase.from('save').delete().eq('id', saveId);
   }
 
-  // Compter le nombre de saves par jeu
-  Future<int> countSavesByGame(String gameId) async {
-    final userId = supabase.auth.currentUser?.id;
+  Future<int> countPlayersBySave(int saveId) async {
     final response = await supabase
-        .from('save')
+        .from('players')
         .select('id', const FetchOptions(count: CountOption.exact))
-        .eq('game_id', gameId)
-        .eq('user_id', userId);
+        .eq('save_id', saveId);
     return response.count ?? 0;
+  }
+
+  Future<double> averageRatingBySave(int saveId) async {
+    final response = await supabase
+        .from('players')
+        .select('rating');
+    final players = response as List<dynamic>;
+    if (players.isEmpty) return 0;
+    final sum = players.fold<double>(0, (prev, element) => prev + (element['rating'] ?? 0));
+    return sum / players.length;
   }
 }

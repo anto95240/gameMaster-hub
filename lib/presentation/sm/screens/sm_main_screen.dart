@@ -1,13 +1,14 @@
+// lib/presentation/sm/screens/sm_main_screen.dart
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../widgets/sm_players_tab.dart';
+import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_event.dart';
 import '../../core/blocs/auth/auth_bloc.dart';
 import '../../core/blocs/theme/theme_bloc.dart';
 import '../blocs/joueurs/joueurs_sm_bloc.dart';
-import '../blocs/joueurs/joueurs_sm_event.dart';
+import '../widgets/sm_players_tab.dart';
 import '../../core/utils/responsive_layout.dart';
-import '../../../main.dart'; // 👈 pour accéder à globalSaveId
+import 'package:go_router/go_router.dart';
+import '../../../main.dart'; // globalSaveId
 
 class SMMainScreen extends StatefulWidget {
   const SMMainScreen({super.key});
@@ -41,15 +42,15 @@ class _SMMainScreenState extends State<SMMainScreen>
         final isMobile = screenType == ScreenType.mobile;
         double screenWidth = constraints.maxWidth;
         double fontSize = screenWidth < 400
-                    ? 14
-                    : screenWidth < 600
-                        ? 16
-                        : 18;
+            ? 14
+            : screenWidth < 600
+                ? 16
+                : 18;
 
         return Scaffold(
           appBar: AppBar(
             leading: IconButton(
-              onPressed: () => context.go('/saves'),
+              onPressed: () => context.go('/saves/$globalSaveId'),
               icon: const Icon(Icons.arrow_back),
             ),
             title: isMobile
@@ -69,9 +70,7 @@ class _SMMainScreenState extends State<SMMainScreen>
                 icon: BlocBuilder<ThemeBloc, ThemeState>(
                   builder: (context, state) {
                     return Icon(
-                      state.isDarkMode
-                          ? Icons.light_mode
-                          : Icons.dark_mode,
+                      state.isDarkMode ? Icons.light_mode : Icons.dark_mode,
                     );
                   },
                 ),
@@ -80,7 +79,7 @@ class _SMMainScreenState extends State<SMMainScreen>
                 onPressed: () {
                   context
                       .read<JoueursSmBloc>()
-                      .add(LoadJoueursSmEvent(globalSaveId)); // 👈 ici
+                      .add(LoadJoueursSmEvent(globalSaveId));
                 },
                 icon: const Icon(Icons.sync),
               ),
@@ -94,9 +93,7 @@ class _SMMainScreenState extends State<SMMainScreen>
             ],
             bottom: TabBar(
               controller: _tabController,
-              labelStyle: TextStyle(
-                fontSize: fontSize,
-              ),
+              labelStyle: TextStyle(fontSize: fontSize),
               tabs: const [
                 Tab(
                   icon: Icon(Icons.group),

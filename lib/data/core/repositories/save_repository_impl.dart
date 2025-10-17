@@ -1,8 +1,8 @@
+// lib/data/core/repositories/save_repository_impl.dart
+import 'package:gamemaster_hub/data/core/datasourses/save_datasource.dart';
 import 'package:gamemaster_hub/data/core/models/save_model.dart';
-
 import '../../../domain/core/entities/save.dart';
 import '../../../domain/core/repositories/save_repository.dart';
-import '../datasourses/save_datasource.dart';
 
 class SaveRepositoryImpl implements SaveRepository {
   final SaveDatasource datasource;
@@ -30,6 +30,12 @@ class SaveRepositoryImpl implements SaveRepository {
     );
     return datasource.createSave(saveModel);
   }
+
+  @override
+  Future<int> countPlayersBySave(int saveId) => datasource.countPlayersBySave(saveId);
+
+  @override
+  Future<double> averageRatingBySave(int saveId) => datasource.averageRatingBySave(saveId);
 
   @override
   Future<void> updateSave(Save save) {

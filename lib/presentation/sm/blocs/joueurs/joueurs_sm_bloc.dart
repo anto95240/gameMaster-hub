@@ -21,16 +21,16 @@ class JoueursSmBloc extends Bloc<JoueursSmEvent, JoueursSmState> {
   }
 
   Future<void> _onLoadJoueurs(
-    LoadJoueursSmEvent event,
-    Emitter<JoueursSmState> emit,
-  ) async {
+      LoadJoueursSmEvent event, Emitter<JoueursSmState> emit) async {
     emit(JoueursSmLoading());
     try {
+      // Récupération des joueurs filtrés par saveId
       final joueurs = await joueurRepository.getAllJoueurs(event.saveId);
-      final joueursWithStats = <JoueurSmWithStats>[];
 
+      final List<JoueurSmWithStats> joueursWithStats = [];
       for (final joueur in joueurs) {
-        final stats = await statsRepository.getStatsByJoueurId(joueur.id, event.saveId);
+        final stats =
+            await statsRepository.getStatsByJoueurId(joueur.id, event.saveId);
         joueursWithStats.add(JoueurSmWithStats(
           joueur: joueur,
           stats: stats,
@@ -44,25 +44,26 @@ class JoueursSmBloc extends Bloc<JoueursSmEvent, JoueursSmState> {
   }
 
   Future<void> _onAddJoueur(
-    AddJoueurSmEvent event,
-    Emitter<JoueursSmState> emit,
-  ) async {
+      AddJoueurSmEvent event, Emitter<JoueursSmState> emit) async {
     try {
+      // Ajout du joueur dans la save correspondante
       await joueurRepository.insertJoueur(event.joueur);
-      add(LoadJoueursSmEvent(event.joueur.saveId));
+      add(LoadJoueursSmEvent(event.saveId));
     } catch (e) {
       emit(JoueursSmError(e.toString()));
     }
   }
 
   Future<void> _onUpdateJoueur(
-    UpdateJoueurSmEvent event,
-    Emitter<JoueursSmState> emit,
-  ) async {
+      UpdateJoueurSmEvent event, Emitter<JoueursSmState> emit) async {
     try {
       await joueurRepository.updateJoueur(event.joueur);
+
+      // Mise à jour des stats si présentes
       if (event.stats.isNotEmpty) {
-        final stats = await statsRepository.getStatsByJoueurId(event.joueur.id, event.joueur.saveId);
+        final stats =
+            await statsRepository.getStatsByJoueurId(event.joueur.id, event.saveId);
+
         if (stats != null) {
           final updatedStats = stats.copyWith(
             marquage: event.stats['marquage'],
@@ -94,16 +95,15 @@ class JoueursSmBloc extends Bloc<JoueursSmEvent, JoueursSmState> {
           await statsRepository.updateStats(updatedStats);
         }
       }
-      add(LoadJoueursSmEvent(event.joueur.saveId));
+
+      add(LoadJoueursSmEvent(event.saveId));
     } catch (e) {
       emit(JoueursSmError(e.toString()));
     }
   }
 
   Future<void> _onDeleteJoueur(
-    DeleteJoueurSmEvent event,
-    Emitter<JoueursSmState> emit,
-  ) async {
+      DeleteJoueurSmEvent event, Emitter<JoueursSmState> emit) async {
     try {
       await joueurRepository.deleteJoueur(event.joueurId);
       add(LoadJoueursSmEvent(event.saveId));
@@ -113,9 +113,7 @@ class JoueursSmBloc extends Bloc<JoueursSmEvent, JoueursSmState> {
   }
 
   Future<void> _onFilterJoueurs(
-    FilterJoueursSmEvent event,
-    Emitter<JoueursSmState> emit,
-  ) async {
+      FilterJoueursSmEvent event, Emitter<JoueursSmState> emit) async {
     if (state is JoueursSmLoaded) {
       final currentState = state as JoueursSmLoaded;
       emit(currentState.copyWith(
@@ -126,9 +124,7 @@ class JoueursSmBloc extends Bloc<JoueursSmEvent, JoueursSmState> {
   }
 
   Future<void> _onSortJoueurs(
-    SortJoueursSmEvent event,
-    Emitter<JoueursSmState> emit,
-  ) async {
+      SortJoueursSmEvent event, Emitter<JoueursSmState> emit) async {
     if (state is JoueursSmLoaded) {
       final currentState = state as JoueursSmLoaded;
       SortField? sortField;
