@@ -10,7 +10,7 @@ class SaveRepositoryImpl implements SaveRepository {
   SaveRepositoryImpl(this.datasource);
 
   @override
-  Future<List<Save>> getSavesByGame(String gameId) =>
+  Future<List<Save>> getSavesByGame(int gameId) =>
       datasource.getSavesByGame(gameId);
 
   @override

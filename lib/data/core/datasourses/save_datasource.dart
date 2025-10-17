@@ -7,7 +7,7 @@ class SaveDatasource {
 
   SaveDatasource(this.supabase);
 
-  Future<List<SaveModel>> getSavesByGame(String gameId) async {
+  Future<List<SaveModel>> getSavesByGame(int gameId) async {
     final userId = supabase.auth.currentUser?.id;
     final response = await supabase
         .from('save')

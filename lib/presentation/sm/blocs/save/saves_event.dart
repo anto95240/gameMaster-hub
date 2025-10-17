@@ -7,7 +7,7 @@ abstract class SavesEvent extends Equatable {
 }
 
 class LoadSavesEvent extends SavesEvent {
-  final String gameId;
+  final int gameId;
   LoadSavesEvent(this.gameId);
 
   @override
