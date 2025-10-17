@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamemaster_hub/data/core/repositories/save_repository_impl.dart';
+import 'package:gamemaster_hub/domain/core/entities/game.dart';
+import 'package:gamemaster_hub/domain/core/repositories/save_repository.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_bloc.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_event.dart';
 import 'package:gamemaster_hub/presentation/sm/screens/sm_save_screen.dart';
@@ -30,15 +31,26 @@ class AppRouter {
       ),
       GoRoute(
         path: '/saves/:gameId',
-        name: 'save',
         builder: (context, state) {
-          final gameId = state.pathParameters['gameId']!;
-          final saveRepository = RepositoryProvider.of<SaveRepositoryImpl>(context);
+          final gameIdStr = state.pathParameters['gameId'];
+          final gameId = int.tryParse(gameIdStr ?? '') ?? 0;
 
-          return BlocProvider(
-            create: (_) => SavesBloc(saveRepository)
-              ..add(LoadSavesEvent(gameId)),
-            child: SmSaveScreen(gameId: gameId),
+          final game = state.extra as Game? ??
+              Game(
+                gameId: gameId,
+                name: 'Jeu inconnu',
+              );
+
+          final saveRepo = RepositoryProvider.of<SaveRepository>(context);
+          final savesBloc = SavesBloc(saveRepo)..add(LoadSavesEvent(game.gameId));
+
+          return BlocProvider.value(
+            value: savesBloc,
+            child: SmSaveScreen(
+              gameId: game.gameId,
+              game: game,
+              savesBloc: savesBloc,
+            ),
           );
         },
       ),

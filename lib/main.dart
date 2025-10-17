@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gamemaster_hub/data/core/datasourses/save_datasource.dart';
 import 'package:gamemaster_hub/data/core/repositories/game_repository_impl.dart';
 import 'package:gamemaster_hub/data/core/repositories/save_repository_impl.dart';
+import 'package:gamemaster_hub/domain/core/repositories/game_repository.dart';
+import 'package:gamemaster_hub/domain/core/repositories/save_repository.dart';
 import 'package:gamemaster_hub/presentation/core/blocs/game/game_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -82,8 +84,11 @@ Future<void> main() async {
   final gameRepository = GameRepositoryImpl(Supabase.instance.client);
 
   runApp(
-  RepositoryProvider.value(
-    value: saveRepository,
+  MultiRepositoryProvider(
+    providers: [
+      RepositoryProvider<SaveRepository>.value(value: saveRepository),
+      RepositoryProvider<GameRepository>.value(value: gameRepository),
+    ],
     child: MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => ThemeBloc()),
@@ -102,5 +107,7 @@ Future<void> main() async {
     ),
   ),
 );
+
+
 
 }

@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gamemaster_hub/main.dart';
 import 'package:gamemaster_hub/presentation/core/blocs/game/game_bloc.dart';
+import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_bloc.dart';
+import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_event.dart';
 import 'package:go_router/go_router.dart';
 
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/theme/theme_bloc.dart';
 import '../widgets/game_card.dart';
 import '../utils/responsive_layout.dart';
-import '../../../main.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -23,40 +25,23 @@ class HomeScreen extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(
-            title: LayoutBuilder(
-              builder: (context, constraints) {
-                double screenWidth = constraints.maxWidth;
-                double fontSize;
-
-                if (screenWidth < 400) {
-                  fontSize = 16; 
-                } else if (screenWidth < 600) {
-                  fontSize = 18;
-                } else if (screenWidth < 900) {
-                  fontSize = 20;
-                } else {
-                  fontSize = 24;
-                }
-
-                return Row(
-                  children: [
-                    Image.asset(
-                      'assets/images/logo.png',
-                      height: 48,
-                      width: 48,
-                      fit: BoxFit.contain,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'GameMaster Hub',
-                      style: TextStyle(
-                        fontSize: fontSize,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                );
-              },
+            title: Row(
+              children: [
+                Image.asset(
+                  'assets/images/logo.png',
+                  height: 48,
+                  width: 48,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'GameMaster Hub',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
             actions: [
               IconButton(
@@ -70,6 +55,14 @@ class HomeScreen extends StatelessWidget {
                     );
                   },
                 ),
+              ),
+              IconButton(
+                onPressed: () {
+                  context
+                      .read<JoueursSmBloc>()
+                      .add(LoadJoueursSmEvent(globalSaveId));
+                },
+                icon: const Icon(Icons.sync),
               ),
               IconButton(
                 onPressed: () {
@@ -103,9 +96,9 @@ class HomeScreen extends StatelessWidget {
     final isTablet = screenType == ScreenType.tablet;
     final isLaptop = screenType == ScreenType.laptop;
 
-    return Center( // <-- Ajouté pour centrer horizontalement
+    return Center(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center, // <-- assure le centrage horizontal
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             'Bienvenue dans GameMaster Hub',
@@ -160,14 +153,15 @@ class HomeScreen extends StatelessWidget {
                 child: GameCard(
                   title: game.name,
                   description: game.description ?? '',
-                  icon: Icons.videogame_asset, // ou mapper game.icon en IconData
-                  priority: 1,
+                  icon: Icons.videogame_asset,
                   screenType: screenType,
                   cardWidth: cardWidth,
-                  stats: {}, // stats à ajouter plus tard
+                  stats: {},
                   onTap: () {
-                    context.go(game.route ?? '/saves/$globalSaveId');
+                    print("✅ Cliqué sur gameId = ${game.gameId}, name=${game.name}");
+                    context.go('/saves/${game.gameId}', extra: game);
                   },
+                  color: Colors.green,
                 ),
               );
             }).toList(),
@@ -178,5 +172,4 @@ class HomeScreen extends StatelessWidget {
       },
     );
   }
-
 }
