@@ -1,6 +1,5 @@
-// lib/data/core/repositories/save_repository_impl.dart
 import 'package:gamemaster_hub/data/core/datasourses/save_datasource.dart';
-import 'package:gamemaster_hub/data/core/models/save_model.dart';
+import '../models/save_model.dart';
 import '../../../domain/core/entities/save.dart';
 import '../../../domain/core/repositories/save_repository.dart';
 
@@ -19,7 +18,7 @@ class SaveRepositoryImpl implements SaveRepository {
   @override
   Future<int> createSave(Save save) {
     final saveModel = SaveModel(
-      id: save.id,
+      id: 0, // Supabase générera l'id
       gameId: save.gameId,
       userId: save.userId,
       name: save.name,
@@ -32,26 +31,25 @@ class SaveRepositoryImpl implements SaveRepository {
   }
 
   @override
-  Future<int> countPlayersBySave(int saveId) => datasource.countPlayersBySave(saveId);
-
-  @override
-  Future<double> averageRatingBySave(int saveId) => datasource.averageRatingBySave(saveId);
-
-  @override
-  Future<void> updateSave(Save save) {
-    final saveModel = SaveModel(
-      id: save.id,
-      gameId: save.gameId,
-      userId: save.userId,
-      name: save.name,
-      description: save.description,
-      isActive: save.isActive,
-      numberOfPlayers: save.numberOfPlayers,
-      overallRating: save.overallRating,
-    );
-    return datasource.updateSave(saveModel);
-  }
+  Future<void> updateSave(Save save) => datasource.updateSave(SaveModel(
+        id: save.id,
+        gameId: save.gameId,
+        userId: save.userId,
+        name: save.name,
+        description: save.description,
+        isActive: save.isActive,
+        numberOfPlayers: save.numberOfPlayers,
+        overallRating: save.overallRating,
+      ));
 
   @override
   Future<void> deleteSave(int saveId) => datasource.deleteSave(saveId);
+
+  @override
+  Future<int> countPlayersBySave(int saveId) =>
+      datasource.countPlayersBySave(saveId);
+
+  @override
+  Future<double> averageRatingBySave(int saveId) =>
+      datasource.averageRatingBySave(saveId);
 }

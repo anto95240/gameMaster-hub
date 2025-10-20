@@ -27,7 +27,11 @@ class AppRouter {
       GoRoute(
         path: '/sm',
         name: 'soccer_manager',
-        builder: (context, state) => const SMMainScreen(),
+        builder: (context, state) {
+          // On récupère le saveId depuis l'extra ou fallback global
+          final saveId = state.extra as int? ?? 1;
+          return SMMainScreen(saveId: saveId);
+        },
       ),
       GoRoute(
         path: '/saves/:gameId',
@@ -42,7 +46,8 @@ class AppRouter {
               );
 
           final saveRepo = RepositoryProvider.of<SaveRepository>(context);
-          final savesBloc = SavesBloc(saveRepo)..add(LoadSavesEvent(game.gameId));
+          final savesBloc = SavesBloc(saveRepository: saveRepo)
+            ..add(LoadSavesEvent(gameId: game.gameId));
 
           return BlocProvider.value(
             value: savesBloc,

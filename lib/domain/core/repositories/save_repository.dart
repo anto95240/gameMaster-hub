@@ -8,7 +8,6 @@ abstract class SaveRepository {
   Future<void> updateSave(Save save);
   Future<void> deleteSave(int saveId);
 
-  // Ajout pour nombre de joueurs et moyenne des notes
   Future<int> countPlayersBySave(int saveId);
   Future<double> averageRatingBySave(int saveId);
 }

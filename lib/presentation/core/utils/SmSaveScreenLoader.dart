@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_bloc.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_event.dart';
 import 'package:gamemaster_hub/presentation/sm/screens/sm_save_screen.dart';
 import '../../../domain/core/entities/game.dart';
 import '../../../domain/core/repositories/game_repository.dart';
-import '../../sm/blocs/save/saves_bloc.dart';
 
 class SmSaveScreenLoader extends StatelessWidget {
   final int gameId;
@@ -12,11 +12,11 @@ class SmSaveScreenLoader extends StatelessWidget {
   final GameRepository gameRepository;
 
   const SmSaveScreenLoader({
-    Key? key,
+    super.key,
     required this.gameId,
     required this.savesBloc,
     required this.gameRepository,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +40,7 @@ class SmSaveScreenLoader extends StatelessWidget {
         final game = snapshot.data!;
 
         // Déclenche l'événement de chargement des saves
-        savesBloc.add(LoadSavesEvent(game.gameId));
+        savesBloc.add(LoadSavesEvent(gameId: game.gameId));
 
         return BlocProvider.value(
           value: savesBloc,

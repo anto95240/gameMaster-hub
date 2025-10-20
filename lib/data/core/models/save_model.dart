@@ -1,4 +1,3 @@
-// lib/data/core/models/save_model.dart
 import '../../../domain/core/entities/save.dart';
 
 class SaveModel extends Save {

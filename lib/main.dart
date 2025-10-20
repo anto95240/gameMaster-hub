@@ -84,30 +84,28 @@ Future<void> main() async {
   final gameRepository = GameRepositoryImpl(Supabase.instance.client);
 
   runApp(
-  MultiRepositoryProvider(
-    providers: [
-      RepositoryProvider<SaveRepository>.value(value: saveRepository),
-      RepositoryProvider<GameRepository>.value(value: gameRepository),
-    ],
-    child: MultiBlocProvider(
+    MultiRepositoryProvider(
       providers: [
-        BlocProvider(create: (_) => ThemeBloc()),
-        BlocProvider(create: (_) => AuthBloc()),
-        BlocProvider(
-          create: (_) => JoueursSmBloc(
-            joueurRepository: joueurRepository,
-            statsRepository: statsRepository,
-          )..add(LoadJoueursSmEvent(globalSaveId)),
-        ),
-        BlocProvider(
-          create: (_) => GameBloc(gameRepository)..add(LoadGames()),
-        ),
+        RepositoryProvider<SaveRepository>.value(value: saveRepository),
+        RepositoryProvider<GameRepository>.value(value: gameRepository),
       ],
-      child: const GameMasterHubApp(),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => ThemeBloc()),
+          BlocProvider(create: (_) => AuthBloc()),
+          BlocProvider(
+            create: (_) => JoueursSmBloc(
+              joueurRepository: joueurRepository,
+              statsRepository: statsRepository,
+            )..add(LoadJoueursSmEvent(globalSaveId)),
+          ),
+          BlocProvider(
+            create: (_) => GameBloc(gameRepository)..add(LoadGames()),
+          ),
+        ],
+        child: const GameMasterHubApp(),
+      ),
     ),
-  ),
-);
-
-
+  );
 
 }

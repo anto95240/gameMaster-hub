@@ -1,4 +1,3 @@
-// lib/domain/core/entities/save.dart
 class Save {
   final int id;
   final int gameId;

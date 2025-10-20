@@ -1,4 +1,3 @@
-// lib/presentation/sm/screens/sm_main_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_event.dart';
@@ -8,10 +7,10 @@ import '../blocs/joueurs/joueurs_sm_bloc.dart';
 import '../widgets/sm_players_tab.dart';
 import '../../core/utils/responsive_layout.dart';
 import 'package:go_router/go_router.dart';
-import '../../../main.dart'; // globalSaveId
 
 class SMMainScreen extends StatefulWidget {
-  const SMMainScreen({super.key});
+  final int saveId;
+  const SMMainScreen({super.key, required this.saveId});
 
   @override
   State<SMMainScreen> createState() => _SMMainScreenState();
@@ -25,6 +24,7 @@ class _SMMainScreenState extends State<SMMainScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 1, vsync: this);
+    // Bloc global déjà initialisé, pas besoin de reload ici
   }
 
   @override
@@ -50,7 +50,7 @@ class _SMMainScreenState extends State<SMMainScreen>
         return Scaffold(
           appBar: AppBar(
             leading: IconButton(
-              onPressed: () => context.go('/saves/$globalSaveId'),
+              onPressed: () => context.go('/saves/${widget.saveId}'),
               icon: const Icon(Icons.arrow_back),
             ),
             title: isMobile
@@ -79,7 +79,7 @@ class _SMMainScreenState extends State<SMMainScreen>
                 onPressed: () {
                   context
                       .read<JoueursSmBloc>()
-                      .add(LoadJoueursSmEvent(globalSaveId));
+                      .add(LoadJoueursSmEvent(widget.saveId));
                 },
                 icon: const Icon(Icons.sync),
               ),
