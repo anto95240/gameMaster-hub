@@ -1,10 +1,11 @@
 // app.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'presentation/core/navigation/app_router.dart';
-import 'presentation/core/themes/app_theme.dart';
-import 'presentation/core/blocs/theme/theme_bloc.dart';
-import 'presentation/core/widgets/update_notify.dart';
+
+import 'package:gamemaster_hub/presentation/core/blocs/theme/theme_bloc.dart';
+import 'package:gamemaster_hub/presentation/core/navigation/app_router.dart';
+import 'package:gamemaster_hub/presentation/core/themes/app_theme.dart';
+import 'package:gamemaster_hub/presentation/core/widgets/update_notify.dart';
 
 class GameMasterHubApp extends StatelessWidget {
   const GameMasterHubApp({super.key});

@@ -1,5 +1,4 @@
-// lib/domain/core/repositories/save_repository.dart
-import '../entities/save.dart';
+import 'package:gamemaster_hub/domain/core/entities/save.dart';
 
 abstract class SaveRepository {
   Future<List<Save>> getSavesByGame(int gameId);

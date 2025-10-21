@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/instruction_defense_sm_model.dart';
+
+import 'package:gamemaster_hub/data/sm/models/instruction_defense_sm_model.dart';
 
 class InstructionDefenseSmRemoteDataSource {
   final SupabaseClient supabase;

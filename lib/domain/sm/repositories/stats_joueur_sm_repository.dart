@@ -1,4 +1,4 @@
-import '../entities/stats_joueur_sm.dart';
+import 'package:gamemaster_hub/domain/sm/entities/stats_joueur_sm.dart';
 
 abstract class StatsJoueurSmRepository {
   Future<List<StatsJoueurSm>> getAllStats(int saveId);

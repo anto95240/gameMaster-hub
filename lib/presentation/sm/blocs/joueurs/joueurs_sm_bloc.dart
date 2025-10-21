@@ -1,8 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:gamemaster_hub/domain/sm/repositories/joueur_sm_repository.dart';
 import 'package:gamemaster_hub/domain/sm/repositories/stats_joueur_sm_repository.dart';
-import 'joueurs_sm_event.dart';
-import 'joueurs_sm_state.dart';
+import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_event.dart';
+import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_state.dart';
 
 class JoueursSmBloc extends Bloc<JoueursSmEvent, JoueursSmState> {
   final JoueurSmRepository joueurRepository;

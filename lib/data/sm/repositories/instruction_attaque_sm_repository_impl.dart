@@ -1,7 +1,7 @@
+import 'package:gamemaster_hub/data/sm/datasources/instruction_attaque_sm_remote_data_source.dart';
+import 'package:gamemaster_hub/data/sm/models/instruction_attaque_sm_model.dart';
 import 'package:gamemaster_hub/domain/sm/entities/instruction_attaque_sm.dart';
 import 'package:gamemaster_hub/domain/sm/repositories/instruction_attaque_sm_repository.dart';
-import '../datasources/instruction_attaque_sm_remote_data_source.dart';
-import '../models/instruction_attaque_sm_model.dart';
 
 class InstructionAttaqueSmRepositoryImpl implements InstructionAttaqueSmRepository {
   final InstructionAttaqueSmRemoteDataSource remoteDataSource;

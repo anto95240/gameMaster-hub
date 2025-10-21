@@ -1,7 +1,7 @@
+import 'package:gamemaster_hub/data/sm/datasources/tactique_joueur_sm_remote_data_source.dart';
+import 'package:gamemaster_hub/data/sm/models/tactique_joueur_sm_model.dart';
 import 'package:gamemaster_hub/domain/sm/entities/tactique_joueur_sm.dart';
 import 'package:gamemaster_hub/domain/sm/repositories/tactique_joueur_sm_repository.dart';
-import '../datasources/tactique_joueur_sm_remote_data_source.dart';
-import '../models/tactique_joueur_sm_model.dart';
 
 class TactiqueJoueurSmRepositoryImpl implements TactiqueJoueurSmRepository {
   final TactiqueJoueurSmRemoteDataSource remoteDataSource;

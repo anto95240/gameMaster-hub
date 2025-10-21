@@ -1,4 +1,4 @@
-import '../../../domain/core/entities/save.dart';
+import 'package:gamemaster_hub/domain/core/entities/save.dart';
 
 class SaveModel extends Save {
   SaveModel({

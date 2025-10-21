@@ -1,8 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:gamemaster_hub/domain/core/entities/save.dart';
 import 'package:gamemaster_hub/domain/core/repositories/save_repository.dart';
-import 'saves_event.dart';
-import 'saves_state.dart';
+import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_event.dart';
+import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_state.dart';
 
 class SavesBloc extends Bloc<SavesEvent, SavesState> {
   final SaveRepository saveRepository;

@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamemaster_hub/main.dart';
-import 'package:gamemaster_hub/presentation/core/blocs/game/game_bloc.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_bloc.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_event.dart';
 import 'package:go_router/go_router.dart';
 
-import '../blocs/auth/auth_bloc.dart';
-import '../blocs/theme/theme_bloc.dart';
-import '../widgets/game_card.dart';
-import '../utils/responsive_layout.dart';
+import 'package:gamemaster_hub/presentation/core/blocs/game/game_bloc.dart';
+import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
+import 'package:gamemaster_hub/presentation/core/widgets/custom_app_bar.dart';
+import 'package:gamemaster_hub/presentation/core/widgets/game_card.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -23,55 +19,20 @@ class HomeScreen extends StatelessWidget {
         final horizontalPadding = ResponsiveLayout.getHorizontalPadding(constraints.maxWidth);
         final verticalPadding = ResponsiveLayout.getVerticalPadding(constraints.maxWidth);
 
+        final isMobileOrTablet = screenType == ScreenType.mobile || screenType == ScreenType.tablet;
+        double screenWidth = constraints.maxWidth;
+        double fontSize = screenWidth < 400
+            ? 14
+            : screenWidth < 600
+                ? 16
+                : 18;
+
         return Scaffold(
-          appBar: AppBar(
-            title: Row(
-              children: [
-                Image.asset(
-                  'assets/images/logo.png',
-                  height: 48,
-                  width: 48,
-                  fit: BoxFit.contain,
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  'GameMaster Hub',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              IconButton(
-                onPressed: () {
-                  context.read<ThemeBloc>().add(ToggleTheme());
-                },
-                icon: BlocBuilder<ThemeBloc, ThemeState>(
-                  builder: (context, state) {
-                    return Icon(
-                      state.isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                    );
-                  },
-                ),
-              ),
-              IconButton(
-                onPressed: () {
-                  context
-                      .read<JoueursSmBloc>()
-                      .add(LoadJoueursSmEvent(globalSaveId));
-                },
-                icon: const Icon(Icons.sync),
-              ),
-              IconButton(
-                onPressed: () {
-                  context.read<AuthBloc>().add(AuthSignOutRequested());
-                  context.go('/auth');
-                },
-                icon: const Icon(Icons.account_circle),
-              ),
-            ],
+          appBar: CustomAppBar(
+            title: 'GameMaster Hub',
+            isHomePage: true,
+            isMobile: isMobileOrTablet,
+            mobileTitleSize: fontSize,
           ),
           body: SingleChildScrollView(
             padding: EdgeInsets.symmetric(
@@ -123,13 +84,10 @@ class HomeScreen extends StatelessWidget {
   Widget _buildGamesGrid(BuildContext context, double width) {
     return BlocBuilder<GameBloc, GameState>(
       builder: (context, state) {
-        if (state is GamesLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is GamesError) {
-          return Center(child: Text('Erreur: ${state.message}'));
-        } else if (state is GamesLoaded) {
+        if (state is GamesLoading) return const Center(child: CircularProgressIndicator());
+        if (state is GamesError) return Center(child: Text('Erreur: ${state.message}'));
+        if (state is GamesLoaded) {
           final games = state.games;
-
           final screenType = ResponsiveLayout.getScreenTypeFromWidth(width);
           final cardConstraints = ResponsiveLayout.getGameCardConstraints(screenType);
           final spacing = screenType == ScreenType.mobile ? 16.0 : 24.0;
@@ -157,18 +115,14 @@ class HomeScreen extends StatelessWidget {
                   screenType: screenType,
                   cardWidth: cardWidth,
                   stats: {},
-                  onTap: () {
-                    print("✅ Cliqué sur gameId = ${game.gameId}, name=${game.name}");
-                    context.go('/saves/${game.gameId}', extra: game);
-                  },
+                  onTap: () => context.go('/saves/${game.gameId}', extra: game),
                   color: Colors.green,
                 ),
               );
             }).toList(),
           );
-        } else {
-          return const SizedBox();
         }
+        return const SizedBox();
       },
     );
   }

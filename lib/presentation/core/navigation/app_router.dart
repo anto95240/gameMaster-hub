@@ -1,14 +1,14 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamemaster_hub/domain/core/entities/game.dart';
-import 'package:gamemaster_hub/domain/core/repositories/save_repository.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_bloc.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_event.dart';
-import 'package:gamemaster_hub/presentation/sm/screens/sm_save_screen.dart';
 import 'package:go_router/go_router.dart';
 
-import '../screens/auth_screen.dart';
-import '../screens/home_screen.dart';
-import '../../sm/screens/sm_main_screen.dart';
+import 'package:gamemaster_hub/domain/core/entities/game.dart';
+import 'package:gamemaster_hub/domain/core/repositories/save_repository.dart';
+import 'package:gamemaster_hub/presentation/core/screens/auth_screen.dart';
+import 'package:gamemaster_hub/presentation/core/screens/home_screen.dart';
+import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_bloc.dart';
+import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_event.dart';
+import 'package:gamemaster_hub/presentation/sm/screens/sm_main_screen.dart';
+import 'package:gamemaster_hub/presentation/sm/screens/sm_save_screen.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(

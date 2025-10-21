@@ -1,4 +1,4 @@
-import '../entities/tactique_modele_sm.dart';
+import 'package:gamemaster_hub/domain/sm/entities/tactique_modele_sm.dart';
 
 abstract class TactiqueModeleSmRepository {
   Future<List<TactiqueModeleSm>> getAllTactiques(int saveId);

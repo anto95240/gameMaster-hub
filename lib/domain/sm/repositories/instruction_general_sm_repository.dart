@@ -1,4 +1,4 @@
-import '../entities/instruction_general_sm.dart';
+import 'package:gamemaster_hub/domain/sm/entities/instruction_general_sm.dart';
 
 abstract class InstructionGeneralSmRepository {
   Future<List<InstructionGeneralSm>> getAllInstructions(int saveId);

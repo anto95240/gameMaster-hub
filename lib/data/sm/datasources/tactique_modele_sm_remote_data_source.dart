@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/tactique_modele_sm_model.dart';
+
+import 'package:gamemaster_hub/data/sm/models/tactique_modele_sm_model.dart';
 
 class TactiqueModeleSmRemoteDataSource {
   final SupabaseClient supabase;

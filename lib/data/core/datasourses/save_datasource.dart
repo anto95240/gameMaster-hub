@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/save_model.dart';
+
+import 'package:gamemaster_hub/data/core/models/save_model.dart';
 
 class SaveDatasource {
   final SupabaseClient supabase;

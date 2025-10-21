@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+
 import 'package:gamemaster_hub/domain/sm/entities/joueur_sm.dart';
 
 abstract class JoueursSmEvent extends Equatable {

@@ -1,6 +1,7 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'package:gamemaster_hub/domain/core/entities/game.dart';
 import 'package:gamemaster_hub/domain/core/repositories/game_repository.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class GameRepositoryImpl implements GameRepository {
   @override

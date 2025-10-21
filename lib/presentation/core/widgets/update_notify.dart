@@ -1,7 +1,6 @@
-// lib/presentation/core/widgets/update_notifier.dart
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-// Imports conditionnels pour le web uniquement
+
 import 'dart:html' as html show window, MessageEvent;
 
 class UpdateNotifier extends StatefulWidget {

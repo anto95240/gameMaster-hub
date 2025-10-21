@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/stats_joueur_sm_model.dart';
+
+import 'package:gamemaster_hub/data/sm/models/stats_joueur_sm_model.dart';
 
 class StatsJoueurSmRemoteDataSource {
   final SupabaseClient supabase;

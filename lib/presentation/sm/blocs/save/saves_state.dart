@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+
 import 'package:gamemaster_hub/domain/core/entities/save.dart';
 
 abstract class SavesState extends Equatable {
