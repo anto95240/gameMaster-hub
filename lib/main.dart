@@ -21,7 +21,6 @@ import 'package:gamemaster_hub/presentation/core/blocs/theme/theme_bloc.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_bloc.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_event.dart';
 
-/// ✅ ID global de sauvegarde actuel
 const int globalSaveId = 1;
 
 Future<void> main() async {
@@ -74,7 +73,6 @@ Future<void> main() async {
 
   final supabaseClient = Supabase.instance.client;
 
-  // ✅ Repositories
   final joueurRepository =
       JoueurSmRepositoryImpl(JoueurSmRemoteDataSourceImpl(supabaseClient));
   final statsRepository =

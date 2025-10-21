@@ -1,3 +1,4 @@
+// presentation/core/screens/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -10,22 +11,14 @@ import 'package:gamemaster_hub/presentation/core/widgets/game_card.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  @override 
+  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final screenType = ResponsiveLayout.getScreenTypeFromWidth(constraints.maxWidth);
-        final isMobile = screenType == ScreenType.mobile;
-        final horizontalPadding = ResponsiveLayout.getHorizontalPadding(constraints.maxWidth);
-        final verticalPadding = ResponsiveLayout.getVerticalPadding(constraints.maxWidth);
-
         final isMobileOrTablet = screenType == ScreenType.mobile || screenType == ScreenType.tablet;
         double screenWidth = constraints.maxWidth;
-        double fontSize = screenWidth < 400
-            ? 14
-            : screenWidth < 600
-                ? 16
-                : 18;
+        double fontSize = screenWidth < 400 ? 14 : screenWidth < 600 ? 16 : 18;
 
         return Scaffold(
           appBar: CustomAppBar(
@@ -35,14 +28,11 @@ class HomeScreen extends StatelessWidget {
             mobileTitleSize: fontSize,
           ),
           body: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              horizontal: horizontalPadding,
-              vertical: verticalPadding,
-            ),
+            padding: const EdgeInsets.all(16),
             child: Column(
               children: [
                 _buildWelcomeSection(context, screenType),
-                SizedBox(height: isMobile ? 32 : 48),
+                const SizedBox(height: 32),
                 _buildGamesGrid(context, constraints.maxWidth),
               ],
             ),
@@ -64,16 +54,16 @@ class HomeScreen extends StatelessWidget {
           Text(
             'Bienvenue dans GameMaster Hub',
             style: Theme.of(context).textTheme.displayLarge?.copyWith(
-              fontSize: isMobile ? 28 : (isTablet ? 36 : (isLaptop ? 42 : 48)),
-            ),
+                  fontSize: isMobile ? 28 : (isTablet ? 36 : (isLaptop ? 42 : 48)),
+                ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: isMobile ? 12 : 16),
           Text(
             'Choisissez votre jeu et optimisez vos performances',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontSize: isMobile ? 14 : (isTablet ? 16 : 18),
-            ),
+                  fontSize: isMobile ? 14 : (isTablet ? 16 : 18),
+                ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -114,7 +104,9 @@ class HomeScreen extends StatelessWidget {
                   icon: Icons.videogame_asset,
                   screenType: screenType,
                   cardWidth: cardWidth,
-                  stats: {},
+                  stats: {
+                    'Saves': '${game.savesCount}',
+                  },
                   onTap: () => context.go('/saves/${game.gameId}', extra: game),
                   color: Colors.green,
                 ),

@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart'; 
-
+import 'package:flutter/material.dart';
 import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
 
 class GameCard extends StatelessWidget {
@@ -10,7 +9,7 @@ class GameCard extends StatelessWidget {
   final double? cardWidth;
   final Map<String, String> stats;
   final VoidCallback onTap;
-  final Color color; // couleur directe au lieu de priority
+  final Color color;
 
   const GameCard({
     super.key,
@@ -21,13 +20,12 @@ class GameCard extends StatelessWidget {
     this.cardWidth,
     required this.stats,
     required this.onTap,
-    required this.color, // obligatoire maintenant
+    required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
     final constraints = ResponsiveLayout.getGameCardConstraints(screenType);
-
     final isMobile = screenType == ScreenType.mobile;
     final isTablet = screenType == ScreenType.tablet;
     final isLaptop = screenType == ScreenType.laptop;
@@ -35,10 +33,15 @@ class GameCard extends StatelessWidget {
     final iconSize = isMobile ? 40.0 : (isTablet ? 48.0 : (isLaptop ? 54.0 : 60.0));
     final titleSize = isMobile ? 18.0 : (isTablet ? 20.0 : (isLaptop ? 22.0 : 24.0));
     final descriptionSize = isMobile ? 12.0 : (isTablet ? 13.0 : 14.0);
-    final statLabelSize = isMobile ? 11.0 : (isTablet ? 12.0 : 13.0);
-    final statValueSize = isMobile ? 16.0 : (isTablet ? 18.0 : (isLaptop ? 20.0 : 22.0));
+    final statLabelSize = isMobile ? 10.0 : (isTablet ? 11.0 : 12.0);
+    final statValueSize = isMobile ? 14.0 : (isTablet ? 16.0 : 18.0);
     final padding = isMobile ? 16.0 : (isTablet ? 18.0 : (isLaptop ? 20.0 : 24.0));
     final spacing = isMobile ? 12.0 : (isTablet ? 14.0 : 16.0);
+
+    // carré responsive pour la stat
+    double statSquareSize = (cardWidth ?? constraints.maxWidth) / 5;
+    if (statSquareSize > 60) statSquareSize = 60;
+    if (statSquareSize < 40) statSquareSize = 40;
 
     return ConstrainedBox(
       constraints: BoxConstraints(
@@ -49,9 +52,7 @@ class GameCard extends StatelessWidget {
       ),
       child: Card(
         elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
@@ -69,14 +70,8 @@ class GameCard extends StatelessWidget {
                         color: color.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(
-                        icon,
-                        size: iconSize,
-                        color: color,
-                      ),
+                      child: Icon(icon, size: iconSize, color: color),
                     ),
-                    const Spacer(),
-                    _buildBadge(color, isMobile),
                   ],
                 ),
                 SizedBox(height: spacing),
@@ -103,15 +98,35 @@ class GameCard extends StatelessWidget {
                 Divider(height: 1, color: Theme.of(context).dividerColor),
                 SizedBox(height: spacing),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: stats.entries.map((entry) {
-                    return Expanded(
-                      child: _buildStatItem(
-                        context,
-                        entry.key,
-                        entry.value,
-                        statLabelSize,
-                        statValueSize,
+                    return Container(
+                      width: statSquareSize,
+                      height: statSquareSize,
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            entry.value,
+                            style: TextStyle(
+                              fontSize: statValueSize,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green[800],
+                            ),
+                          ),
+                          Text(
+                            entry.key,
+                            style: TextStyle(
+                              fontSize: statLabelSize,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   }).toList(),
@@ -121,54 +136,6 @@ class GameCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildBadge(Color color, bool isMobile) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 8.0 : 10.0,
-        vertical: isMobile ? 4.0 : 6.0,
-      ),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Icon(Icons.circle, size: isMobile ? 12 : 14, color: color),
-    );
-  }
-
-  Widget _buildStatItem(
-    BuildContext context,
-    String label,
-    String value,
-    double labelSize,
-    double valueSize,
-  ) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          value,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontSize: valueSize,
-                fontWeight: FontWeight.bold,
-              ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontSize: labelSize,
-                color: Theme.of(context).textTheme.bodySmall?.color,
-              ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-        ),
-      ],
     );
   }
 }

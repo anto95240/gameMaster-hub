@@ -1,5 +1,5 @@
+// presentation/core/blocs/game/game_bloc.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:gamemaster_hub/domain/core/entities/game.dart';
 import 'package:gamemaster_hub/domain/core/repositories/game_repository.dart';
 
@@ -24,9 +24,8 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     on<LoadGames>((event, emit) async {
       emit(GamesLoading());
       try {
-        final games = await repository.getAllGames();
+        final games = await repository.getAllGamesWithSaves();
         emit(GamesLoaded(games));
-
       } catch (e) {
         emit(GamesError(e.toString()));
       }

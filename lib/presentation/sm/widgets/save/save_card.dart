@@ -36,8 +36,8 @@ class SaveCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _infoCard('Joueurs', '${save.numberOfPlayers}', Colors.teal),
-                  _infoCard('Note', save.overallRating.toStringAsFixed(0), Colors.orange),
+                  _infoCard('Joueurs', '${save.numberOfPlayers}', Colors.lightGreen),
+                  _infoCard('Note', save.overallRating.toStringAsFixed(0), Colors.lightGreen),
                 ],
               ),
             ],
@@ -63,12 +63,20 @@ class SaveCard extends StatelessWidget {
         ],
       );
 
-  Widget _infoCard(String title, String value, Color color) => Column(
-        children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
-          Text(value, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 15)),
-        ],
-      );
+  Widget _infoCard(String title, String value, Color color) => Container(
+    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+    decoration: BoxDecoration(
+      color: Colors.green.withOpacity(0.1), // fond vert clair
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Column(
+      children: [
+        Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
+        Text(value, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 15)),
+      ],
+    ),
+  );
+
 
   Future<void> _editSave(BuildContext context) async {
     final result = await showDialog<Map<String, String>>(context: context, builder: (_) => SaveDialog(save: save));

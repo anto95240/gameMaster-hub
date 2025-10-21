@@ -84,14 +84,23 @@ class SmSaveScreen extends StatelessWidget {
                     ? 2
                     : 1;
 
+        // Ajustement du childAspectRatio pour des cartes plus hautes
+        double aspectRatio = count == 1
+            ? 1.8
+            : count == 2
+                ? 1.6
+                : count == 3
+                    ? 1.5
+                    : 1.4;
+
         return Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.fromLTRB(12, 50, 12, 12), 
           child: GridView.builder(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: count,
               mainAxisSpacing: 16,
               crossAxisSpacing: 16,
-              childAspectRatio: 2.1,
+              childAspectRatio: aspectRatio,
             ),
             itemCount: saves.length,
             itemBuilder: (_, i) => SaveCard(save: saves[i], gameId: gameId),
