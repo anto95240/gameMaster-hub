@@ -14,6 +14,7 @@ class SavesBloc extends Bloc<SavesEvent, SavesState> {
       try {
         final saves = await saveRepository.getSavesByGame(event.gameId);
         final updatedSaves = await _computeStats(saves);
+        saves.sort((a, b) => a.id.compareTo(b.id));
         emit(SavesLoaded(updatedSaves));
       } catch (e) {
         emit(SavesError(e.toString()));

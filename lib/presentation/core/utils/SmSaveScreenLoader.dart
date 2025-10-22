@@ -48,8 +48,8 @@ class SmSaveScreenLoader extends StatelessWidget {
           value: savesBloc,
           child: SmSaveScreen(
             gameId: game.gameId,
-            game: game,
-            savesBloc: savesBloc,
+            // game: game,
+            // savesBloc: savesBloc,
           ),
         );
       },

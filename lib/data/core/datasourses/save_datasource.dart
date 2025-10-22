@@ -44,7 +44,6 @@ class SaveDatasource {
   }
 
   Future<void> deleteSave(int saveId) async {
-    // Supprimer tous les joueurs liés
     await supabase.from('joueur_sm').delete().eq('save_id', saveId);
     await supabase.from('save').delete().eq('id', saveId);
   }

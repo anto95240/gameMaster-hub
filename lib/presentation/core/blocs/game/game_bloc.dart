@@ -25,6 +25,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       emit(GamesLoading());
       try {
         final games = await repository.getAllGamesWithSaves();
+        games.sort((a, b) => a.gameId.compareTo(b.gameId));
         emit(GamesLoaded(games));
       } catch (e) {
         emit(GamesError(e.toString()));

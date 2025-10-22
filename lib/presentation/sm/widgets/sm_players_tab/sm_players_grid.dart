@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_state.dart';
 import 'package:gamemaster_hub/presentation/sm/widgets/sm_players_tab/player_card_widget.dart';
@@ -8,8 +7,14 @@ import 'package:gamemaster_hub/presentation/sm/widgets/player/player_details_dia
 class SMPlayersGrid extends StatelessWidget {
   final JoueursSmLoaded state;
   final double width;
+  final int saveId;
 
-  const SMPlayersGrid({super.key, required this.state, required this.width});
+  const SMPlayersGrid({
+    super.key,
+    required this.state,
+    required this.width,
+    required this.saveId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +71,10 @@ class SMPlayersGrid extends StatelessWidget {
   void _showPlayerDetails(BuildContext context, JoueurSmWithStats item) {
     showDialog(
       context: context,
-      builder: (dialogContext) => PlayerDetailsDialog(item: item),
+      builder: (dialogContext) => PlayerDetailsDialog(
+        item: item,
+        saveId: saveId,
+      ),
     );
   }
 }

@@ -19,9 +19,6 @@ import 'package:gamemaster_hub/presentation/core/blocs/auth/auth_bloc.dart';
 import 'package:gamemaster_hub/presentation/core/blocs/game/game_bloc.dart';
 import 'package:gamemaster_hub/presentation/core/blocs/theme/theme_bloc.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_bloc.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_event.dart';
-
-const int globalSaveId = 1;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,8 +31,10 @@ Future<void> main() async {
     supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
     supabaseKey = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
   } else {
-    supabaseUrl = const String.fromEnvironment('SUPABASE_URL', defaultValue: '');
-    supabaseKey = const String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: '');
+    supabaseUrl =
+        const String.fromEnvironment('SUPABASE_URL', defaultValue: '');
+    supabaseKey =
+        const String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: '');
     if (supabaseUrl.isEmpty || supabaseKey.isEmpty) {
       await dotenv.load(fileName: ".env");
       supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
@@ -63,29 +62,27 @@ Future<void> main() async {
     return;
   }
 
-  await Supabase.initialize(
-    url: supabaseUrl,
-    anonKey: supabaseKey,
-  );
-
+  await Supabase.initialize(url: supabaseUrl, anonKey: supabaseKey);
   await Hive.initFlutter();
   await Hive.openBox('theme_box');
 
   final supabaseClient = Supabase.instance.client;
 
+  // 🔹 Repositories
+  final saveRepository = SaveRepositoryImpl(SaveDatasource(supabaseClient));
+  final gameRepository = GameRepositoryImpl(supabaseClient);
   final joueurRepository =
       JoueurSmRepositoryImpl(JoueurSmRemoteDataSourceImpl(supabaseClient));
   final statsRepository =
       StatsJoueurSmRepositoryImpl(StatsJoueurSmRemoteDataSource(supabaseClient));
-  final saveRepository = SaveRepositoryImpl(SaveDatasource(supabaseClient));
-
-  final gameRepository = GameRepositoryImpl(Supabase.instance.client);
 
   runApp(
     MultiRepositoryProvider(
       providers: [
         RepositoryProvider<SaveRepository>.value(value: saveRepository),
         RepositoryProvider<GameRepository>.value(value: gameRepository),
+        RepositoryProvider<JoueurSmRepositoryImpl>.value(value: joueurRepository),
+        RepositoryProvider<StatsJoueurSmRepositoryImpl>.value(value: statsRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -95,15 +92,12 @@ Future<void> main() async {
             create: (_) => JoueursSmBloc(
               joueurRepository: joueurRepository,
               statsRepository: statsRepository,
-            )..add(LoadJoueursSmEvent(globalSaveId)),
+            ),
           ),
-          BlocProvider(
-            create: (_) => GameBloc(gameRepository)..add(LoadGames()),
-          ),
+          BlocProvider(create: (_) => GameBloc(gameRepository)..add(LoadGames())),
         ],
         child: const GameMasterHubApp(),
       ),
     ),
   );
-
 }

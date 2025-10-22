@@ -19,7 +19,7 @@ class GameDatasource {
     final response = await supabase
         .from('game')
         .select()
-        .eq('gameId', id) // ✅ colonne correcte
+        .eq('gameId', id)
         .maybeSingle();
 
     if (response == null) return null;

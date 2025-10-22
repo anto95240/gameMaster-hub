@@ -7,7 +7,9 @@ import 'package:gamemaster_hub/presentation/sm/widgets/player/player_actions.dar
 
 class PlayerDetailsDialog extends StatefulWidget {
   final JoueurSmWithStats item;
-  const PlayerDetailsDialog({super.key, required this.item});
+  final int saveId; // ← ajouté
+
+  const PlayerDetailsDialog({super.key, required this.item, required this.saveId});
 
   @override
   State<PlayerDetailsDialog> createState() => _PlayerDetailsDialogState();
@@ -45,6 +47,7 @@ class _PlayerDetailsDialogState extends State<PlayerDetailsDialog> {
               isEditing: isEditing,
               onCancel: () => toggleEditing(false),
               onEditChanged: toggleEditing,
+              saveId: widget.saveId, // ← ajouté
             ),
           ],
         ),

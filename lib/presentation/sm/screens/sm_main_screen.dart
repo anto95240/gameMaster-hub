@@ -10,7 +10,9 @@ import 'package:gamemaster_hub/presentation/core/widgets/custom_app_bar.dart';
 
 class SMMainScreen extends StatefulWidget {
   final int saveId;
-  const SMMainScreen({super.key, required this.saveId});
+  final Game? game; // ← Game passé depuis la page save
+
+  const SMMainScreen({super.key, required this.saveId, this.game});
 
   @override
   State<SMMainScreen> createState() => _SMMainScreenState();
@@ -18,25 +20,26 @@ class SMMainScreen extends StatefulWidget {
 
 class _SMMainScreenState extends State<SMMainScreen> with TickerProviderStateMixin {
   late TabController _tabController;
-  Game? currentGame;
+  late Game currentGame;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 1, vsync: this);
 
-    // récupère le Game correspondant à cette saveId si disponible
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    // Si le Game est passé depuis la route, on l'utilise
+    if (widget.game != null) {
+      currentGame = widget.game!;
+    } else {
+      // Sinon on tente de récupérer depuis le GameBloc
       final games = context.read<GameBloc>().state is GamesLoaded
           ? (context.read<GameBloc>().state as GamesLoaded).games
           : [];
-      setState(() {
-        currentGame = games.firstWhere(
-          (g) => g.gameId == widget.saveId, // ou adapter selon gameId dans save
-          orElse: () => Game(gameId: 0, name: 'Jeu inconnu'),
-        );
-      });
-    });
+      currentGame = games.firstWhere(
+        (g) => g.gameId == widget.saveId,
+        orElse: () => Game(gameId: widget.saveId, name: 'Jeu inconnu'),
+      );
+    }
   }
 
   @override
@@ -62,20 +65,16 @@ class _SMMainScreenState extends State<SMMainScreen> with TickerProviderStateMix
           appBar: CustomAppBar(
             title: 'Soccer Manager',
             onBackPressed: () {
-              // navigation vers SmSaveScreen avec le Game courant
-              if (currentGame != null) {
-                context.go('/saves/${currentGame!.gameId}', extra: currentGame);
-              } else {
-                context.go('/'); // fallback
-              }
-            },            
+              // Navigation vers la page save avec le Game correct
+              context.go('/saves/${currentGame.gameId}');
+            },
             isMobile: isMobileOrTablet,
             mobileTitleSize: fontSize,
           ),
           body: TabBarView(
             controller: _tabController,
-            children: const [
-              SMPlayersTab(),
+            children: [
+              SMPlayersTab(saveId: widget.saveId, game: currentGame),
             ],
           ),
         );

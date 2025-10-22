@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gamemaster_hub/domain/core/entities/game.dart';
 
-import 'package:gamemaster_hub/main.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_bloc.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_event.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_state.dart';
@@ -10,12 +10,17 @@ import 'package:gamemaster_hub/presentation/sm/widgets/sm_players_tab/sm_players
 import 'package:gamemaster_hub/presentation/sm/widgets/sm_players_tab/sm_players_grid.dart';
 import 'package:gamemaster_hub/presentation/sm/widgets/sm_players_tab/sm_players_header.dart';
 
-
 class SMPlayersTab extends StatelessWidget {
-  const SMPlayersTab({super.key});
+  final int saveId;
+  final Game game;
+
+  const SMPlayersTab({super.key, required this.saveId, required this.game});
 
   @override
   Widget build(BuildContext context) {
+    // Charge les joueurs dès l'ouverture de l'onglet
+    context.read<JoueursSmBloc>().add(LoadJoueursSmEvent(saveId));
+
     return BlocBuilder<JoueursSmBloc, JoueursSmState>(
       builder: (context, state) {
         if (state is JoueursSmLoading) {
@@ -28,9 +33,8 @@ class SMPlayersTab extends StatelessWidget {
                 Text('Erreur: ${state.message}'),
                 const SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: () => context.read<JoueursSmBloc>().add(
-                        LoadJoueursSmEvent(globalSaveId),
-                      ),
+                  onPressed: () =>
+                      context.read<JoueursSmBloc>().add(LoadJoueursSmEvent(saveId)),
                   child: const Text('Réessayer'),
                 ),
               ],
@@ -39,14 +43,10 @@ class SMPlayersTab extends StatelessWidget {
         } else if (state is JoueursSmLoaded) {
           return LayoutBuilder(
             builder: (context, constraints) {
-              final horizontalPadding = 16.0;
-              final verticalPadding = 16.0;
-
               return Stack(
                 children: [
                   Padding(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: horizontalPadding, vertical: verticalPadding),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -55,7 +55,7 @@ class SMPlayersTab extends StatelessWidget {
                         SMPlayersFilters(state: state, width: constraints.maxWidth),
                         const SizedBox(height: 16),
                         Expanded(
-                          child: SMPlayersGrid(state: state, width: constraints.maxWidth),
+                          child: SMPlayersGrid(state: state, width: constraints.maxWidth, saveId: saveId),
                         ),
                       ],
                     ),
@@ -81,7 +81,7 @@ class SMPlayersTab extends StatelessWidget {
   void _showAddPlayerDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (dialogContext) => const AddPlayerDialog(),
+      builder: (dialogContext) => AddPlayerDialog(saveId: saveId),
     );
   }
 }

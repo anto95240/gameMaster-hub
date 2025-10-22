@@ -18,7 +18,7 @@ class SaveRepositoryImpl implements SaveRepository {
   @override
   Future<int> createSave(Save save) {
     final saveModel = SaveModel(
-      id: 0, // Supabase générera l'id
+      id: 0,
       gameId: save.gameId,
       userId: save.userId,
       name: save.name,

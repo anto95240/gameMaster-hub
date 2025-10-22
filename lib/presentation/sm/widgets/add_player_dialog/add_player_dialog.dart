@@ -4,7 +4,9 @@ import 'package:gamemaster_hub/presentation/sm/widgets/add_player_dialog/player_
 import 'package:gamemaster_hub/presentation/sm/widgets/add_player_dialog/player_submit_handler.dart';
 
 class AddPlayerDialog extends StatefulWidget {
-  const AddPlayerDialog({super.key});
+  final int saveId; // ← ajouté
+
+  const AddPlayerDialog({super.key, required this.saveId});
 
   @override
   State<AddPlayerDialog> createState() => _AddPlayerDialogState();
@@ -51,6 +53,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                           context,
                           _formKey,
                           formData,
+                          widget.saveId, // ← ajouté
                         ),
                         child: const Text("Ajouter"),
                       ),

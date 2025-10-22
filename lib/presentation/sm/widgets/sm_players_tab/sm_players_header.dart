@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_state.dart';
 
@@ -35,11 +34,15 @@ class SMPlayersHeader extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 24),
-        _buildStatCard(
-            context, 'Joueurs', totalPlayers.toString(), Icons.people, screenType),
+        _buildStatCard(context, 'Joueurs', totalPlayers.toString(), Icons.people, screenType),
         const SizedBox(width: 16),
         _buildStatCard(
-              context, 'Note', averageNiveauActuel.toStringAsFixed(0), Icons.star, screenType),
+          context,
+          'Note',
+          averageNiveauActuel.toStringAsFixed(0),
+          Icons.star,
+          screenType,
+        ),
       ],
     );
   }
@@ -63,6 +66,7 @@ class SMPlayersHeader extends StatelessWidget {
           const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min, // ✅ important pour éviter erreurs flex
             children: [
               Text(
                 label,
