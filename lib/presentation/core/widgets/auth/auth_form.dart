@@ -34,6 +34,7 @@ class _AuthFormState extends State<AuthForm> {
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
+                height: 56,
                 child: ElevatedButton(
                   onPressed: loading ? null : _submit,
                   child: loading

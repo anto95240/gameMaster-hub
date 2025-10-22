@@ -16,16 +16,12 @@ class HomeScreen extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final screenType = ResponsiveLayout.getScreenTypeFromWidth(constraints.maxWidth);
-        final isMobileOrTablet = screenType == ScreenType.mobile || screenType == ScreenType.tablet;
-        double screenWidth = constraints.maxWidth;
-        double fontSize = screenWidth < 400 ? 14 : screenWidth < 600 ? 16 : 18;
-
+        
         return Scaffold(
-          appBar: CustomAppBar(
+          appBar: const CustomAppBar(
             title: 'GameMaster Hub',
             isHomePage: true,
-            isMobile: isMobileOrTablet,
-            mobileTitleSize: fontSize,
+            showLogo: true,
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16),

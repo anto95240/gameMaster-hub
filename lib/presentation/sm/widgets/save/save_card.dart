@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:gamemaster_hub/domain/core/entities/game.dart';
 import 'package:gamemaster_hub/domain/core/entities/save.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_bloc.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_event.dart';
@@ -11,8 +12,9 @@ import 'package:gamemaster_hub/presentation/sm/widgets/save/save_dialog.dart';
 class SaveCard extends StatelessWidget {
   final Save save;
   final int gameId;
+  final Game game;
 
-  const SaveCard({super.key, required this.save, required this.gameId});
+  const SaveCard({super.key, required this.save, required this.gameId, required this.game});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +24,7 @@ class SaveCard extends StatelessWidget {
       elevation: 2,
       child: InkWell(
         borderRadius: BorderRadius.circular(10),
-        onTap: () => context.go('/sm/${save.id}', extra: gameId),
+        onTap: () => context.go('/sm/${save.id}', extra: {'game': game, 'save': save}),
         child: Padding(
           padding: const EdgeInsets.all(10),
           child: Column(

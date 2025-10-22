@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:gamemaster_hub/domain/core/entities/game.dart';
+import 'package:gamemaster_hub/domain/core/entities/save.dart';
 import 'package:gamemaster_hub/domain/core/repositories/save_repository.dart';
 import 'package:gamemaster_hub/presentation/core/screens/auth_screen.dart';
 import 'package:gamemaster_hub/presentation/core/screens/home_screen.dart';
@@ -40,7 +41,10 @@ class AppRouter {
             });
             return const SizedBox.shrink();
           }
-          return SMMainScreen(saveId: saveId);
+          final extraData = state.extra as Map<String, dynamic>?;
+          final game = extraData?['game'] as Game?;
+          final save = extraData?['save'] as Save?;
+          return SMMainScreen(saveId: saveId, game: game, save: save);
         },
       ),
       GoRoute(
@@ -64,9 +68,7 @@ class AppRouter {
 
           return BlocProvider.value(
             value: savesBloc,
-            child: SmSaveScreen(gameId: game.gameId, 
-            // game: game, savesBloc: savesBloc
-            ),
+            child: SmSaveScreen(gameId: game.gameId, game: game),
           );
         },
       ),

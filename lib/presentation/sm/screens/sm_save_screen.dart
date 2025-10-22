@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:gamemaster_hub/domain/core/entities/game.dart';
 import 'package:gamemaster_hub/domain/core/entities/save.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_bloc.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_event.dart';
@@ -12,8 +13,9 @@ import 'package:gamemaster_hub/presentation/sm/widgets/save/save_card.dart';
 
 class SmSaveScreen extends StatelessWidget {
   final int gameId;
+  final Game game;
 
-  const SmSaveScreen({super.key, required this.gameId});
+  const SmSaveScreen({super.key, required this.gameId, required this.game});
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +27,8 @@ class SmSaveScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Saves du jeu $gameId',
-        onBackPressed: () => context.go('/saves/$gameId'), // gameId pour revenir
+        title: 'Saves du jeu ${game.name}',
+        onBackPressed: () => context.go('/'),
         onSync: () => savesBloc.add(LoadSavesEvent(gameId: gameId)),
       ),
       body: BlocBuilder<SavesBloc, SavesState>(
@@ -67,7 +69,7 @@ class SmSaveScreen extends StatelessWidget {
                     ),
                     itemBuilder: (context, index) {
                       final save = saves[index];
-                      return SaveCard(save: save, gameId: gameId);
+                      return SaveCard(save: save, gameId: gameId, game: game);
                     },
                   ),
                 );

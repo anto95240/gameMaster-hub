@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gamemaster_hub/presentation/core/blocs/auth/auth_bloc.dart';
+import 'package:gamemaster_hub/presentation/core/blocs/theme/theme_bloc.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool isHomePage;
-  final bool isMobile;
-  final double? mobileTitleSize;
+  final bool showLogo;
   final VoidCallback? onBackPressed;
   final VoidCallback? onSync;
 
@@ -13,8 +15,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     super.key,
     required this.title,
     this.isHomePage = false,
-    this.isMobile = false,
-    this.mobileTitleSize,
+    this.showLogo = false,
     this.onBackPressed,
     this.onSync,
   });
@@ -24,29 +25,64 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? const Color(0xFF2C2C3A) : const Color(0xFFE5E7EB);
+    
     return AppBar(
-      backgroundColor: Colors.green,
-      centerTitle: true,
-      leading: isHomePage
-          ? null
-          : IconButton(
+      backgroundColor: bgColor,
+      centerTitle: false,
+      automaticallyImplyLeading: false,
+      title: Row(
+        children: [
+          if (!isHomePage && !showLogo)
+            IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: onBackPressed ?? () => context.pop(),
+              padding: EdgeInsets.zero,
             ),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontSize: isMobile ? (mobileTitleSize ?? 18) : 22,
-          fontWeight: FontWeight.bold,
-        ),
+          if (showLogo) ...[
+            Image.asset(
+              'assets/images/logo.png',
+              height: 32,
+              width: 32,
+              errorBuilder: (context, error, stackTrace) => 
+                const Icon(Icons.gamepad, size: 32),
+            ),
+            const SizedBox(width: 12),
+          ],
+          Flexible(
+            child: Text(
+              title,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
       actions: [
+        IconButton(
+          icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+          tooltip: 'Changer le thème',
+          onPressed: () {
+            context.read<ThemeBloc>().add(ToggleTheme());
+          },
+        ),
         if (onSync != null)
           IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Rafraîchir',
+            icon: const Icon(Icons.sync),
+            tooltip: 'Synchroniser',
             onPressed: onSync,
           ),
+        IconButton(
+          icon: const Icon(Icons.logout),
+          tooltip: 'Déconnexion',
+          onPressed: () {
+            context.read<AuthBloc>().add(AuthSignOutRequested());
+          },
+        ),
+        const SizedBox(width: 8),
       ],
     );
   }
