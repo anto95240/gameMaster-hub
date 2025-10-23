@@ -20,6 +20,39 @@ class SMPlayersHeader extends StatelessWidget {
     final titleSize = screenType == ScreenType.mobile
         ? 20.0
         : (screenType == ScreenType.tablet ? 24.0 : 28.0);
+    
+    final isMobile = screenType == ScreenType.mobile;
+
+    if (isMobile) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            'Gestion des Joueurs',
+            style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                  fontSize: titleSize,
+                  fontWeight: FontWeight.bold,
+                ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildStatCard(context, 'Joueurs', totalPlayers.toString(), Icons.people, screenType),
+              const SizedBox(width: 16),
+              _buildStatCard(
+                context,
+                'Note',
+                averageNiveauActuel.toStringAsFixed(0),
+                Icons.star,
+                screenType,
+              ),
+            ],
+          ),
+        ],
+      );
+    }
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +99,7 @@ class SMPlayersHeader extends StatelessWidget {
           const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min, // ✅ important pour éviter erreurs flex
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 label,

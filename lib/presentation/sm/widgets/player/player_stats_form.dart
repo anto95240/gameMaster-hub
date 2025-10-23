@@ -66,6 +66,13 @@ class _PlayerStatsFormState extends State<PlayerStatsForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Text(
+          'Statistiques détaillées',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        const SizedBox(height: 16),
         _buildStatsSection('Technique', [
           'marquage', 'deplacement', 'frappes_lointaines', 'passes_longues',
           'coups_francs', 'tacles', 'finition', 'centres', 'passes', 'corners',

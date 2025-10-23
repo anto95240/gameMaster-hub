@@ -10,6 +10,8 @@ import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_event.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_state.dart';
 import 'package:gamemaster_hub/presentation/core/widgets/custom_app_bar.dart';
 import 'package:gamemaster_hub/presentation/sm/widgets/save/save_card.dart';
+import 'package:gamemaster_hub/presentation/sm/widgets/save/save_dialog.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SmSaveScreen extends StatelessWidget {
   final int gameId;
@@ -82,6 +84,37 @@ class SmSaveScreen extends StatelessWidget {
           return const Center(child: Text('Chargement...'));
         },
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddSaveDialog(context),
+        tooltip: 'Ajouter une sauvegarde',
+        child: const Icon(Icons.add),
+      ),
     );
+  }
+
+  void _showAddSaveDialog(BuildContext context) async {
+    final result = await showDialog(
+      context: context,
+      builder: (ctx) => const SaveDialog(save: null),
+    );
+
+    if (result != null && result is Map<String, dynamic>) {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Utilisateur non connecté')),
+          );
+        }
+        return;
+      }
+
+      context.read<SavesBloc>().add(AddSaveEvent(
+        gameId: gameId,
+        userId: userId,
+        name: result['name'],
+        description: result['description'],
+      ));
+    }
   }
 }
