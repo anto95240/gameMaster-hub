@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:gamemaster_hub/presentation/core/blocs/auth/auth_bloc.dart';
 import 'package:gamemaster_hub/presentation/core/widgets/auth/auth_form.dart';
 import 'package:gamemaster_hub/presentation/core/widgets/auth/auth_logo.dart';

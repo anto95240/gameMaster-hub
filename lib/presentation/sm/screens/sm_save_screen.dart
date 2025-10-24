@@ -1,8 +1,6 @@
-// sm_save_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:gamemaster_hub/domain/core/entities/game.dart';
 import 'package:gamemaster_hub/domain/core/entities/save.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_bloc.dart';
@@ -21,10 +19,8 @@ class SmSaveScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 🔹 Bloc stable: on crée ou on réutilise
     final savesBloc = context.read<SavesBloc>();
 
-    // On recharge les saves à chaque entrée sur l'écran
     savesBloc.add(LoadSavesEvent(gameId: gameId));
 
     return Scaffold(
@@ -49,7 +45,6 @@ class SmSaveScreen extends StatelessWidget {
               builder: (context, constraints) {
                 final screenWidth = constraints.maxWidth;
 
-                // 🔹 Déterminer le nombre de colonnes responsive
                 int crossAxisCount = 2;
                 if (screenWidth < 400) crossAxisCount = 1;
                 else if (screenWidth < 800) crossAxisCount = 2;
@@ -66,8 +61,7 @@ class SmSaveScreen extends StatelessWidget {
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: crossAxisCount,
                       crossAxisSpacing: spacing,
-                      // mainAxisSpacing: spacing,
-                      childAspectRatio: cardWidth / 170, // cards plus compactes
+                      childAspectRatio: cardWidth / 170, 
                     ),
                     itemBuilder: (context, index) {
                       final save = saves[index];

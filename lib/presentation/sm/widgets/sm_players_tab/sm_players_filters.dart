@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_bloc.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_event.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_state.dart';
@@ -58,7 +57,7 @@ class SMPlayersFilters extends StatelessWidget {
   ) {
     return DropdownButtonFormField<String>(
       value: selectedPosition,
-      isExpanded: true, // 🔹 Évite le débordement horizontal
+      isExpanded: true,
       decoration: const InputDecoration(
         labelText: 'Position',
         border: OutlineInputBorder(),

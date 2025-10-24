@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamemaster_hub/domain/sm/entities/joueur_sm.dart';
 import 'package:gamemaster_hub/domain/sm/entities/stats_joueur_sm.dart';
 import 'package:gamemaster_hub/domain/sm/entities/stats_gardien_sm.dart';
 import 'package:gamemaster_hub/domain/sm/repositories/joueur_sm_repository.dart';
@@ -26,7 +25,6 @@ class JoueursSmBloc extends Bloc<JoueursSmEvent, JoueursSmState> {
     on<SortJoueursSmEvent>(_onSortJoueurs);
   }
 
-  // 🟢 Charger les joueurs + leurs stats
   Future<void> _onLoadJoueurs(
       LoadJoueursSmEvent event, Emitter<JoueursSmState> emit) async {
     emit(JoueursSmLoading());
@@ -50,7 +48,6 @@ class JoueursSmBloc extends Bloc<JoueursSmEvent, JoueursSmState> {
     }
   }
 
-  // 🟡 Ajouter un joueur
   Future<void> _onAddJoueur(
       AddJoueurSmEvent event, Emitter<JoueursSmState> emit) async {
     try {
@@ -58,7 +55,6 @@ class JoueursSmBloc extends Bloc<JoueursSmEvent, JoueursSmState> {
 
       final isGK = event.joueur.postes.any((p) => p.name == 'GK');
 
-      // Crée automatiquement des stats de base après ajout du joueur
       if (isGK) {
         final newStats = StatsGardienSm(
           id: 0,
@@ -106,7 +102,6 @@ class JoueursSmBloc extends Bloc<JoueursSmEvent, JoueursSmState> {
     }
   }
 
-  // 🔵 Mettre à jour un joueur et ses stats
   Future<void> _onUpdateJoueur(
       UpdateJoueurSmEvent event, Emitter<JoueursSmState> emit) async {
     try {
@@ -192,7 +187,6 @@ class JoueursSmBloc extends Bloc<JoueursSmEvent, JoueursSmState> {
     }
   }
 
-  // 🔴 Supprimer un joueur
   Future<void> _onDeleteJoueur(
       DeleteJoueurSmEvent event, Emitter<JoueursSmState> emit) async {
     try {
@@ -203,7 +197,6 @@ class JoueursSmBloc extends Bloc<JoueursSmEvent, JoueursSmState> {
     }
   }
 
-  // 🔍 Filtrer les joueurs
   Future<void> _onFilterJoueurs(
       FilterJoueursSmEvent event, Emitter<JoueursSmState> emit) async {
     if (state is JoueursSmLoaded) {
@@ -215,7 +208,6 @@ class JoueursSmBloc extends Bloc<JoueursSmEvent, JoueursSmState> {
     }
   }
 
-  // 🔽 Trier les joueurs
   Future<void> _onSortJoueurs(
       SortJoueursSmEvent event, Emitter<JoueursSmState> emit) async {
     if (state is JoueursSmLoaded) {

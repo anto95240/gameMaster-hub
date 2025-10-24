@@ -1,8 +1,6 @@
-// save_card.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:gamemaster_hub/domain/core/entities/game.dart';
 import 'package:gamemaster_hub/domain/core/entities/save.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_bloc.dart';
@@ -55,52 +53,52 @@ class SaveCard extends StatelessWidget {
   }
 
   Widget _cardHeader(BuildContext context) => Row(
-        children: [
-          Expanded(
-            child: Text(
-              save.name,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+    children: [
+      Expanded(
+        child: Text(
+          save.name,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      IconButton(
+        icon: const Icon(Icons.edit, color: Colors.blue, size: 18),
+        onPressed: () => _editSave(context),
+      ),
+      IconButton(
+        icon: const Icon(Icons.delete, color: Colors.red, size: 18),
+        onPressed: () => context.read<SavesBloc>().add(
+              DeleteSaveEvent(saveId: save.id, gameId: gameId),
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.edit, color: Colors.blue, size: 18),
-            onPressed: () => _editSave(context),
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.red, size: 18),
-            onPressed: () => context.read<SavesBloc>().add(
-                  DeleteSaveEvent(saveId: save.id, gameId: gameId),
-                ),
-          ),
-        ],
-      );
+      ),
+    ],
+  );
 
   Widget _infoCard(String title, String value, Color color) => Container(
-        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 10),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(6),
+    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 10),
+    decoration: BoxDecoration(
+      color: color.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(6),
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(title, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
+        Text(
+          value,
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+          ),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(title, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
-            Text(
-              value,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-              ),
-            ),
-          ],
-        ),
-      );
+      ],
+    ),
+  );
 
   Future<void> _editSave(BuildContext context) async {
     final result = await showDialog<Map<String, String>>(
@@ -109,13 +107,13 @@ class SaveCard extends StatelessWidget {
     );
     if (result != null && context.mounted) {
       context.read<SavesBloc>().add(
-            UpdateSaveEvent(
-              saveId: save.id,
-              gameId: gameId,
-              name: result['name'] ?? '',
-              description: result['description'] ?? '',
-            ),
-          );
+        UpdateSaveEvent(
+          saveId: save.id,
+          gameId: gameId,
+          name: result['name'] ?? '',
+          description: result['description'] ?? '',
+        ),
+      );
     }
   }
 }

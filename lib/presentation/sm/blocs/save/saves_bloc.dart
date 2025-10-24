@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:gamemaster_hub/domain/core/entities/save.dart';
 import 'package:gamemaster_hub/domain/core/repositories/save_repository.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_event.dart';
@@ -24,7 +23,7 @@ class SavesBloc extends Bloc<SavesEvent, SavesState> {
     on<AddSaveEvent>((event, emit) async {
       try {
         final saveToCreate = Save(
-          id: 0, // Supabase génère l'id automatiquement
+          id: 0,
           gameId: event.gameId,
           userId: event.userId,
           name: event.name,
@@ -72,7 +71,6 @@ class SavesBloc extends Bloc<SavesEvent, SavesState> {
     });
   }
 
-  /// 🧮 Calcule les stats à partir du repository
   Future<List<Save>> _computeStats(List<Save> saves) async {
     final List<Save> updated = [];
     for (final save in saves) {
@@ -83,11 +81,10 @@ class SavesBloc extends Bloc<SavesEvent, SavesState> {
         updated.add(
           save.copyWith(
             numberOfPlayers: count,
-            overallRating: avg.roundToDouble(), // arrondi sans décimale
+            overallRating: avg.roundToDouble(),
           ),
         );
       } catch (_) {
-        // En cas d'erreur, on garde la save telle quelle
         updated.add(save);
       }
     }

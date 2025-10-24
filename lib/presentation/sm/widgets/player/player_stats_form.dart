@@ -14,10 +14,10 @@ class PlayerStatsForm extends StatefulWidget {
   });
 
   @override
-  State<PlayerStatsForm> createState() => _PlayerStatsFormState();
+  State<PlayerStatsForm> createState() => PlayerStatsFormState();
 }
 
-class _PlayerStatsFormState extends State<PlayerStatsForm> {
+class PlayerStatsFormState extends State<PlayerStatsForm> {
   late Map<String, TextEditingController> statsControllers;
   late bool isGardien;
 
@@ -36,7 +36,6 @@ class _PlayerStatsFormState extends State<PlayerStatsForm> {
     if (stats == null) return;
 
     if (stats is StatsJoueurSm) {
-      // ⚽ Joueur de champ
       statsControllers = {
         'marquage': TextEditingController(text: stats.marquage.toString()),
         'deplacement': TextEditingController(text: stats.deplacement.toString()),
@@ -65,7 +64,6 @@ class _PlayerStatsFormState extends State<PlayerStatsForm> {
         'leadership': TextEditingController(text: stats.leadership.toString()),
       };
     } else if (stats is StatsGardienSm) {
-      // 🧤 Gardien
       statsControllers = {
         'autorite_surface': TextEditingController(text: stats.autoriteSurface.toString()),
         'distribution': TextEditingController(text: stats.distribution.toString()),
@@ -91,6 +89,17 @@ class _PlayerStatsFormState extends State<PlayerStatsForm> {
       c.dispose();
     }
     super.dispose();
+  }
+
+  Map<String, int> getStatsData() {
+    final stats = <String, int>{};
+    
+    for (final entry in statsControllers.entries) {
+      final value = int.tryParse(entry.value.text) ?? 0;
+      stats[entry.key] = value;
+    }
+    
+    return stats;
   }
 
   @override

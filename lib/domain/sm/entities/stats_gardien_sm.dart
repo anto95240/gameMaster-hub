@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 class StatsGardienSm extends Equatable {
   final int id;
   final int joueurId;
-  final int saveId; // ✅ ajouté
+  final int saveId;
   final int autoriteSurface;
   final int distribution;
   final int captation;

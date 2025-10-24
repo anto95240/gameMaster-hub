@@ -1,5 +1,4 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import 'package:gamemaster_hub/data/sm/models/tactique_joueur_sm_model.dart';
 
 class TactiqueJoueurSmRemoteDataSource {

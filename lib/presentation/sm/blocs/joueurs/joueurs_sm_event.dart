@@ -8,7 +8,6 @@ abstract class JoueursSmEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-// 🔹 Charger les joueurs
 class LoadJoueursSmEvent extends JoueursSmEvent {
   final int saveId;
   const LoadJoueursSmEvent(this.saveId);
@@ -17,7 +16,6 @@ class LoadJoueursSmEvent extends JoueursSmEvent {
   List<Object?> get props => [saveId];
 }
 
-// 🔹 Ajouter un joueur
 class AddJoueurSmEvent extends JoueursSmEvent {
   final JoueurSm joueur;
   final int saveId;
@@ -28,7 +26,6 @@ class AddJoueurSmEvent extends JoueursSmEvent {
   List<Object?> get props => [joueur, saveId];
 }
 
-// 🔹 Mettre à jour un joueur
 class UpdateJoueurSmEvent extends JoueursSmEvent {
   final JoueurSm joueur;
   final Map<String, int> stats;
@@ -40,7 +37,6 @@ class UpdateJoueurSmEvent extends JoueursSmEvent {
   List<Object?> get props => [joueur, stats, saveId];
 }
 
-// 🔹 Supprimer un joueur
 class DeleteJoueurSmEvent extends JoueursSmEvent {
   final int joueurId;
   final int saveId;
@@ -51,7 +47,6 @@ class DeleteJoueurSmEvent extends JoueursSmEvent {
   List<Object?> get props => [joueurId, saveId];
 }
 
-// 🔹 Filtrer
 class FilterJoueursSmEvent extends JoueursSmEvent {
   final String position;
   final String searchQuery;
@@ -65,7 +60,6 @@ class FilterJoueursSmEvent extends JoueursSmEvent {
   List<Object?> get props => [position, searchQuery];
 }
 
-// 🔹 Trier
 class SortJoueursSmEvent extends JoueursSmEvent {
   final String sortField;
   final bool ascending;

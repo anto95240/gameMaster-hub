@@ -37,7 +37,7 @@ Color getRatingColor(int rating) {
 }
 
 Color getProgressionColor(int potentiel) {
-  if (potentiel > 0) return Colors.green;
-  if (potentiel < 0) return Colors.red;
-  return Colors.grey;
+  if (potentiel >= 90) return Colors.lightGreen;
+  if (potentiel >= 80) return Colors.cyan;
+  return Colors.amber;
 }

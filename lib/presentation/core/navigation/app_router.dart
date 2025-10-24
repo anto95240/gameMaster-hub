@@ -1,10 +1,7 @@
-// 📁 lib/presentation/core/navigation/app_router.dart
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:gamemaster_hub/domain/core/entities/game.dart';
 import 'package:gamemaster_hub/domain/core/entities/save.dart';
 import 'package:gamemaster_hub/domain/core/repositories/save_repository.dart';
@@ -16,7 +13,7 @@ import 'package:gamemaster_hub/presentation/sm/screens/sm_save_screen.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_bloc.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_event.dart';
 
-/// ✅ Classe utilitaire pour rafraîchir GoRouter quand le AuthBloc change
+/// Classe utilitaire pour rafraîchir GoRouter quand le AuthBloc change
 class GoRouterRefreshStream extends ChangeNotifier {
   late final StreamSubscription _subscription;
 
@@ -43,15 +40,15 @@ class AppRouter {
       redirect: (context, state) {
         final authState = context.read<AuthBloc>().state;
 
-        // ✅ Changement ici : utiliser state.uri.path au lieu de state.subloc
+        // Changement ici : utiliser state.uri.path au lieu de state.subloc
         final isAuthRoute = state.uri.path == '/auth';
 
-        // 🔒 Si non connecté → /auth
+        // Si non connecté → /auth
         if (authState is AuthUnauthenticated && !isAuthRoute) {
           return '/auth';
         }
 
-        // 🔐 Si déjà connecté → empêcher d’aller sur /auth
+        // Si déjà connecté → empêcher d’aller sur /auth
         if (authState is AuthAuthenticated && isAuthRoute) {
           return '/';
         }

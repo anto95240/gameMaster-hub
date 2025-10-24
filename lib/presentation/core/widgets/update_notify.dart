@@ -18,14 +18,12 @@ class _UpdateNotifierState extends State<UpdateNotifier> {
   @override
   void initState() {
     super.initState();
-    // Écoute uniquement sur le web
     if (kIsWeb) {
       _setupServiceWorkerListener();
     }
   }
 
   void _setupServiceWorkerListener() {
-    // Écoute les messages du service worker
     html.window.navigator.serviceWorker?.addEventListener('message', (event) {
       final messageEvent = event as html.MessageEvent;
       final data = messageEvent.data;
@@ -115,7 +113,6 @@ class _UpdateNotifierState extends State<UpdateNotifier> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      // Remplacé IconButton par GestureDetector pour éviter le problème de Tooltip
                       GestureDetector(
                         onTap: () {
                           setState(() {

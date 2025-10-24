@@ -10,14 +10,13 @@ import 'package:gamemaster_hub/data/core/datasourses/save_datasource.dart';
 import 'package:gamemaster_hub/data/core/repositories/game_repository_impl.dart';
 import 'package:gamemaster_hub/data/core/repositories/save_repository_impl.dart';
 
-// ⚽️ Données Football Manager
+// ⚽️ Données Soccer Manager
 import 'package:gamemaster_hub/data/sm/datasources/joueur_sm_remote_data_source.dart';
 import 'package:gamemaster_hub/data/sm/datasources/stats_joueur_sm_remote_data_source.dart';
 import 'package:gamemaster_hub/data/sm/datasources/stats_gardien_sm_remote_data_source.dart';
 import 'package:gamemaster_hub/data/sm/repositories/joueur_sm_repository_impl.dart';
 import 'package:gamemaster_hub/data/sm/repositories/stats_joueur_sm_repository_impl.dart';
 import 'package:gamemaster_hub/data/sm/repositories/stats_gardien_sm_repository_impl.dart';
-
 import 'package:gamemaster_hub/domain/core/repositories/game_repository.dart';
 import 'package:gamemaster_hub/domain/core/repositories/save_repository.dart';
 import 'package:gamemaster_hub/presentation/core/blocs/auth/auth_bloc.dart';
@@ -31,7 +30,6 @@ Future<void> main() async {
   String supabaseUrl = '';
   String supabaseKey = '';
 
-  // 🔹 Chargement de la config Supabase
   if (!kIsWeb) {
     await dotenv.load(fileName: ".env");
     supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
@@ -46,7 +44,6 @@ Future<void> main() async {
     }
   }
 
-  // 🔸 Si erreur de clé → écran clair
   if (supabaseUrl.isEmpty || supabaseKey.isEmpty) {
     runApp(
       const MaterialApp(
@@ -67,14 +64,14 @@ Future<void> main() async {
     return;
   }
 
-  // 🔹 Initialisation
+  // Initialisation
   await Supabase.initialize(url: supabaseUrl, anonKey: supabaseKey);
   await Hive.initFlutter();
   await Hive.openBox('theme_box');
 
   final supabaseClient = Supabase.instance.client;
 
-  // 🔹 Repositories
+  // Repositories
   final saveRepository = SaveRepositoryImpl(SaveDatasource(supabaseClient));
   final gameRepository = GameRepositoryImpl(supabaseClient);
 
@@ -83,11 +80,11 @@ Future<void> main() async {
   final statsRepository =
       StatsJoueurSmRepositoryImpl(StatsJoueurSmRemoteDataSource(supabaseClient));
 
-  // 🧤 Repository gardien
+  // Repository gardien
   final statsGardienRepository = StatsGardienSmRepositoryImpl(
       StatsGardienSmRemoteDataSource(supabaseClient));
 
-  // 🔹 Lancement de l’app
+  // Lancement de l’app
   runApp(
     MultiRepositoryProvider(
       providers: [
@@ -105,7 +102,7 @@ Future<void> main() async {
             create: (_) => JoueursSmBloc(
               joueurRepository: joueurRepository,
               statsRepository: statsRepository,
-              gardienRepository: statsGardienRepository, // ✅ AJOUTÉ ICI
+              gardienRepository: statsGardienRepository,
             ),
           ),
           BlocProvider(create: (_) => GameBloc(gameRepository)..add(LoadGames())),

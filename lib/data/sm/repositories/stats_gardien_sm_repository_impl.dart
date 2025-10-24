@@ -8,6 +8,12 @@ class StatsGardienSmRepositoryImpl implements StatsGardienSmRepository {
   StatsGardienSmRepositoryImpl(this.remoteDataSource);
 
   @override
+  Future<List<StatsGardienSm>> getAllStats(int saveId) async {
+    final data = await remoteDataSource.fetchStats(saveId);
+    return data.map((e) => StatsGardienSmModel.fromMap(e)).toList();
+  }
+
+  @override
   Future<StatsGardienSm?> getStatsByJoueurId(int joueurId, int saveId) async {
     final data = await remoteDataSource.fetchStatsGardien(joueurId, saveId);
     if (data == null) return null;
@@ -57,5 +63,10 @@ class StatsGardienSmRepositoryImpl implements StatsGardienSmRepository {
       'concentration': stats.concentration,
       'leadership': stats.leadership,
     });
+  }
+
+  @override
+  Future<void> deleteStats(int id) async {
+    await remoteDataSource.deleteStats(id);
   }
 }

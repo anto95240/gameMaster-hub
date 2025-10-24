@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_state.dart';
+import 'package:gamemaster_hub/presentation/sm/widgets/player/player_utils.dart';
 
 class PlayerCardWidget extends StatelessWidget {
   final JoueurSmWithStats item;
@@ -105,20 +106,18 @@ class PlayerCardWidget extends StatelessWidget {
                         ],
                       ),
                     ),
-                    // 🔹 Badge note
                     _buildRatingBadge(
                       context,
                       joueur.niveauActuel,
                       badgeTextSize,
-                      _getRatingColor(joueur.niveauActuel),
+                      getRatingColor(joueur.niveauActuel),
                     ),
                     SizedBox(width: spacing * 0.5),
-                    // 🔹 Badge potentiel
                     _buildRatingBadge(
                       context,
                       joueur.potentiel,
                       badgeTextSize,
-                      _getPotentialColor(joueur.potentiel),
+                      getProgressionColor(joueur.potentiel),
                     ),
                   ],
                 ),
@@ -176,17 +175,5 @@ class PlayerCardWidget extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Color _getRatingColor(int rating) {
-    if (rating >= 85) return Colors.green;
-    if (rating >= 80) return Colors.blue;
-    return Colors.orange;
-  }
-
-  Color _getPotentialColor(int potential) {
-    if (potential >= 90) return Colors.lightGreen;
-    if (potential >= 80) return Colors.cyan;
-    return Colors.amber;
   }
 }

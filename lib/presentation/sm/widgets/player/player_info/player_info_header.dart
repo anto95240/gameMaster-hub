@@ -5,12 +5,14 @@ class PlayerInfoHeader extends StatelessWidget {
   final JoueurSmWithStats item;
   final bool isEditing;
   final ValueChanged<bool> onEditingChanged;
+  final TextEditingController? nameController;
 
   const PlayerInfoHeader({
     super.key,
     required this.item,
     required this.isEditing,
     required this.onEditingChanged,
+    this.nameController,
   });
 
   @override
@@ -35,7 +37,7 @@ class PlayerInfoHeader extends StatelessWidget {
           Expanded(
             child: isEditing
                 ? TextField(
-                    controller: TextEditingController(text: joueur.nom),
+                    controller: nameController ?? TextEditingController(text: joueur.nom),
                     decoration: const InputDecoration(
                       labelText: 'Nom du joueur',
                       border: OutlineInputBorder(),

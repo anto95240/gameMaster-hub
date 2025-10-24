@@ -1,5 +1,4 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import 'package:gamemaster_hub/data/core/models/save_model.dart';
 
 class SaveDatasource {
@@ -33,7 +32,7 @@ class SaveDatasource {
   }
 
   Future<int> createSave(SaveModel save) async {
-    final data = save.toMap()..remove('id'); // Supabase génère l'id
+    final data = save.toMap()..remove('id');
     final response = await supabase.from('save').insert(data).select().single();
     return response['id'] as int;
   }

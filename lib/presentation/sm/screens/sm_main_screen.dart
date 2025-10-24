@@ -5,7 +5,6 @@ import 'package:gamemaster_hub/domain/core/entities/save.dart';
 import 'package:gamemaster_hub/domain/core/repositories/save_repository.dart';
 import 'package:gamemaster_hub/presentation/core/blocs/game/game_bloc.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:gamemaster_hub/presentation/sm/screens/sm_players_tab.dart';
 import 'package:gamemaster_hub/presentation/core/widgets/custom_app_bar.dart';
 
@@ -36,7 +35,6 @@ class _SMMainScreenState extends State<SMMainScreen> with TickerProviderStateMix
 
   Future<void> _initializeData() async {
     try {
-      // Si game et save sont passés en extras, on les utilise directement
       if (widget.game != null && widget.save != null) {
         setState(() {
           currentGame = widget.game;
@@ -46,7 +44,6 @@ class _SMMainScreenState extends State<SMMainScreen> with TickerProviderStateMix
         return;
       }
 
-      // Sinon, on charge le save depuis la base de données
       final saveRepo = context.read<SaveRepository>();
       final save = await saveRepo.getSaveById(widget.saveId);
       
@@ -58,7 +55,6 @@ class _SMMainScreenState extends State<SMMainScreen> with TickerProviderStateMix
         return;
       }
 
-      // Ensuite on récupère le game correspondant
       final gameBloc = context.read<GameBloc>();
       final games = gameBloc.state is GamesLoaded
           ? (gameBloc.state as GamesLoaded).games

@@ -54,17 +54,17 @@ class JoueurSmModel extends JoueurSm {
   }
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'save_id': saveId,
-        'nom': nom,
-        'age': age,
-        'postes': postes.map((p) => p.name).toList(),
-        'niveau_actuel': niveauActuel,
-        'potentiel': potentiel,
-        'montant_transfert': montantTransfert,
-        'status': status.name,
-        'duree_contrat': dureeContrat,
-        'salaire': salaire,
-        'user_id': userId,
-      };
+    'id': id,
+    'save_id': saveId,
+    'nom': nom,
+    'age': age,
+    'postes': postes.map((p) => p.name).toList(),
+    'niveau_actuel': niveauActuel,
+    'potentiel': potentiel,
+    'montant_transfert': montantTransfert,
+    'status': status.name,
+    'duree_contrat': dureeContrat,
+    'salaire': salaire,
+    'user_id': userId,
+  };
 }

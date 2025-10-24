@@ -1,15 +1,11 @@
-// 📁 presentation/core/screens/home_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:gamemaster_hub/presentation/core/blocs/game/game_bloc.dart';
 import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
 import 'package:gamemaster_hub/presentation/core/widgets/custom_app_bar.dart';
 import 'package:gamemaster_hub/presentation/core/widgets/game_card.dart';
 
-/// 🔹 Helper : convertit un nom d'icône (stocké dans Supabase) en IconData Flutter
 IconData getIconFromName(String? iconName) {
   switch (iconName) {
     case 'sports_soccer':
@@ -142,7 +138,6 @@ class HomeScreen extends StatelessWidget {
                   stats: {
                     'Saves': '${game.savesCount}',
                   },
-                  // 🔹 Si la route commence par '/', on utilise context.go()
                   onTap: () {
                     if (route.startsWith('/')) {
                       context.go(route, extra: game);

@@ -1,12 +1,11 @@
 import 'package:equatable/equatable.dart';
 import 'package:gamemaster_hub/domain/sm/entities/joueur_sm.dart';
-import 'package:gamemaster_hub/domain/sm/entities/stats_joueur_sm.dart';
 
 enum SortField { name, rating, age, potential, transferValue, salary }
 
 class JoueurSmWithStats {
   final JoueurSm joueur;
-  final dynamic stats; // ⚠️ peut être StatsJoueurSm ou StatsGardienSm
+  final dynamic stats;
 
   JoueurSmWithStats({required this.joueur, this.stats});
 

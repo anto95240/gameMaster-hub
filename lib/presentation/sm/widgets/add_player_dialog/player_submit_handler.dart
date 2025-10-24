@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_bloc.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_event.dart';
 import 'player_form_fields.dart';
@@ -10,8 +9,18 @@ Future<void> handlePlayerSubmit(
     BuildContext context,
     GlobalKey<FormState> formKey,
     PlayerFormData formData,
-    int saveId // ← Nouveau paramètre
+    int saveId
     ) async {
+  if (formData.postesSelectionnes.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Veuillez sélectionner au moins un poste'),
+        backgroundColor: Colors.red,
+      ),
+    );
+    return;
+  }
+
   if (!formKey.currentState!.validate()) return;
 
   formKey.currentState!.save();
@@ -34,40 +43,66 @@ Future<void> handlePlayerSubmit(
 
   if (joueurId != null) {
     final userId = Supabase.instance.client.auth.currentUser!.id;
+    final isGK = formData.postesSelectionnes.any((p) => p.name == 'GK');
 
-    await Supabase.instance.client.from('stats_joueur_sm').insert({
-      'user_id': userId,
-      'joueur_id': joueurId,
-      'save_id': saveId,
-      for (final attr in [
-        'marquage',
-        'deplacement',
-        'frappes_lointaines',
-        'passes_longues',
-        'coups_francs',
-        'tacles',
-        'finition',
-        'centres',
-        'passes',
-        'corners',
-        'positionnement',
-        'dribble',
-        'controle',
-        'penalties',
-        'creativite',
-        'stabilite_aerienne',
-        'vitesse',
-        'endurance',
-        'force',
-        'distance_parcourue',
-        'agressivite',
-        'sang_froid',
-        'concentration',
-        'flair',
-        'leadership',
-      ])
-        attr: 50,
-    });
+    if (isGK) {
+      await Supabase.instance.client.from('stats_gardien_sm').insert({
+        'user_id': userId,
+        'joueur_id': joueurId,
+        'save_id': saveId,
+        for (final attr in [
+          'autorite_surface',
+          'distribution',
+          'captation',
+          'duels',
+          'arrets',
+          'positionnement',
+          'penalties',
+          'stabilite_aerienne',
+          'vitesse',
+          'force',
+          'agressivite',
+          'sang_froid',
+          'concentration',
+          'leadership',
+        ])
+          attr: 50,
+      });
+    } else {
+      await Supabase.instance.client.from('stats_joueur_sm').insert({
+        'user_id': userId,
+        'joueur_id': joueurId,
+        'save_id': saveId,
+        for (final attr in [
+          'marquage',
+          'deplacement',
+          'frappes_lointaines',
+          'passes_longues',
+          'coups_francs',
+          'tacles',
+          'finition',
+          'centres',
+          'passes',
+          'corners',
+          'positionnement',
+          'dribble',
+          'controle',
+          'penalties',
+          'creativite',
+          'stabilite_aerienne',
+          'vitesse',
+          'endurance',
+          'force',
+          'distance_parcourue',
+          'agressivite',
+          'sang_froid',
+          'concentration',
+          'flair',
+          'leadership',
+        ])
+          attr: 50,
+      });
+    }
 
     if (context.mounted) {
       context.read<JoueursSmBloc>().add(LoadJoueursSmEvent(saveId));

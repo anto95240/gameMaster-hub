@@ -18,7 +18,6 @@ class SMPlayersTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Charge les joueurs dès l'ouverture de l'onglet
     context.read<JoueursSmBloc>().add(LoadJoueursSmEvent(saveId));
 
     return BlocBuilder<JoueursSmBloc, JoueursSmState>(

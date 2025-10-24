@@ -7,7 +7,6 @@ class GameRepositoryImpl implements GameRepository {
 
   GameRepositoryImpl(this.supabase);
 
-  /// 🔹 Helper pour extraire le count des saves
   int extractSavesCount(Map<String, dynamic> e) {
     final saves = e['save'];
     if (saves is List && saves.isNotEmpty) {
@@ -19,7 +18,6 @@ class GameRepositoryImpl implements GameRepository {
     return 0;
   }
 
-  /// 🔹 Récupère tous les jeux
   @override
   Future<List<Game>> getAllGames() async {
     final response = await supabase
@@ -45,7 +43,6 @@ class GameRepositoryImpl implements GameRepository {
     }).toList();
   }
 
-  /// 🔹 Récupère un jeu par ID
   @override
   Future<Game?> getGameById(int id) async {
     final response = await supabase
@@ -70,7 +67,6 @@ class GameRepositoryImpl implements GameRepository {
     );
   }
 
-  /// 🔹 Récupère tous les jeux avec le nombre de saves
   @override
   Future<List<Game>> getAllGamesWithSaves() async {
     final response = await supabase
@@ -96,7 +92,6 @@ class GameRepositoryImpl implements GameRepository {
     }).toList();
   }
 
-  /// 🔹 Récupère un jeu par ID avec le nombre de saves
   @override
   Future<Game?> getGameByIdWithSaves(int id) async {
     final response = await supabase

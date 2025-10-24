@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:gamemaster_hub/presentation/core/blocs/auth/auth_bloc.dart';
 
 class AuthForm extends StatefulWidget {

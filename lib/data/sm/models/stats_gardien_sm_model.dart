@@ -4,7 +4,7 @@ class StatsGardienSmModel extends StatsGardienSm {
   StatsGardienSmModel({
     required super.id,
     required super.joueurId,
-    required super.saveId, // ✅ ajouté
+    required super.saveId,
     super.autoriteSurface,
     super.distribution,
     super.captation,
@@ -25,7 +25,7 @@ class StatsGardienSmModel extends StatsGardienSm {
     return StatsGardienSmModel(
       id: map['id'],
       joueurId: map['joueur_id'],
-      saveId: map['save_id'], // ✅ ajouté
+      saveId: map['save_id'],
       autoriteSurface: map['autorite_surface'] ?? 0,
       distribution: map['distribution'] ?? 0,
       captation: map['captation'] ?? 0,
@@ -44,22 +44,22 @@ class StatsGardienSmModel extends StatsGardienSm {
   }
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'joueur_id': joueurId,
-        'save_id': saveId,
-        'autorite_surface': autoriteSurface,
-        'distribution': distribution,
-        'captation': captation,
-        'duels': duels,
-        'arrets': arrets,
-        'positionnement': positionnement,
-        'penalties': penalties,
-        'stabilite_aerienne': stabiliteAerienne,
-        'vitesse': vitesse,
-        'force': force,
-        'agressivite': agressivite,
-        'sang_froid': sangFroid,
-        'concentration': concentration,
-        'leadership': leadership,
-      };
+    'id': id,
+    'joueur_id': joueurId,
+    'save_id': saveId,
+    'autorite_surface': autoriteSurface,
+    'distribution': distribution,
+    'captation': captation,
+    'duels': duels,
+    'arrets': arrets,
+    'positionnement': positionnement,
+    'penalties': penalties,
+    'stabilite_aerienne': stabiliteAerienne,
+    'vitesse': vitesse,
+    'force': force,
+    'agressivite': agressivite,
+    'sang_froid': sangFroid,
+    'concentration': concentration,
+    'leadership': leadership,
+  };
 }

@@ -30,37 +30,37 @@ class _PlayerStatsGardienFormState extends State<PlayerStatsGardienForm> {
 
     if (stats != null) {
       statsControllers['autorite_surface'] =
-          TextEditingController(text: stats.autoriteSurface?.toString() ?? '');
+          TextEditingController(text: stats.autoriteSurface.toString());
       statsControllers['distribution'] =
-          TextEditingController(text: stats.distribution?.toString() ?? '');
+          TextEditingController(text: stats.distribution.toString());
       statsControllers['captation'] =
-          TextEditingController(text: stats.captation?.toString() ?? '');
+          TextEditingController(text: stats.captation.toString());
       statsControllers['duels'] =
-          TextEditingController(text: stats.duels?.toString() ?? '');
+          TextEditingController(text: stats.duels.toString());
       statsControllers['arrets'] =
-          TextEditingController(text: stats.arrets?.toString() ?? '');
+          TextEditingController(text: stats.arrets.toString());
       statsControllers['positionnement'] =
-          TextEditingController(text: stats.positionnement?.toString() ?? '');
+          TextEditingController(text: stats.positionnement.toString());
       statsControllers['penalties'] =
-          TextEditingController(text: stats.penalties?.toString() ?? '');
+          TextEditingController(text: stats.penalties.toString());
 
       // Physique
       statsControllers['stabilite_aerienne'] =
-          TextEditingController(text: stats.stabiliteAerienne?.toString() ?? '');
+          TextEditingController(text: stats.stabiliteAerienne.toString());
       statsControllers['vitesse'] =
-          TextEditingController(text: stats.vitesse?.toString() ?? '');
+          TextEditingController(text: stats.vitesse.toString());
       statsControllers['force'] =
-          TextEditingController(text: stats.force?.toString() ?? '');
+          TextEditingController(text: stats.force.toString());
 
       // Mental
       statsControllers['agressivite'] =
-          TextEditingController(text: stats.agressivite?.toString() ?? '');
+          TextEditingController(text: stats.agressivite.toString());
       statsControllers['sang_froid'] =
-          TextEditingController(text: stats.sangFroid?.toString() ?? '');
+          TextEditingController(text: stats.sangFroid.toString());
       statsControllers['concentration'] =
-          TextEditingController(text: stats.concentration?.toString() ?? '');
+          TextEditingController(text: stats.concentration.toString());
       statsControllers['leadership'] =
-          TextEditingController(text: stats.leadership?.toString() ?? '');
+          TextEditingController(text: stats.leadership.toString());
     }
   }
 

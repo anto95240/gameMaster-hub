@@ -21,7 +21,7 @@ class PlayerAvatar extends StatelessWidget {
       width: avatarSize,
       height: avatarSize,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary, // ✅ corrigé (plus de const)
+        color: Theme.of(context).colorScheme.primary,
         shape: BoxShape.circle,
         border: Border.all(
           color: Theme.of(context).brightness == Brightness.dark
@@ -37,8 +37,8 @@ class PlayerAvatar extends StatelessWidget {
             fontSize: fontSize,
             fontWeight: FontWeight.bold,
             color: Theme.of(context).brightness == Brightness.dark
-                ? const Color(0xFF0A0F1E) // 🌓 Bleu nuit foncé pour contraste
-                : Colors.white, // ☀️ Blanc sur fond bleu foncé
+                ? const Color(0xFF0A0F1E)
+                : Colors.white,
           ),
         ),
       ),

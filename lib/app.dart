@@ -1,8 +1,5 @@
-// 📁 lib/app.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:gamemaster_hub/presentation/core/blocs/theme/theme_bloc.dart';
 import 'package:gamemaster_hub/presentation/core/navigation/app_router.dart';
 import 'package:gamemaster_hub/presentation/core/themes/app_theme.dart';

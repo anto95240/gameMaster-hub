@@ -5,7 +5,7 @@ class JoueurSm {
   final int saveId; 
   final String nom;
   final int age;
-  final List<PosteEnum> postes; // plusieurs postes possibles
+  final List<PosteEnum> postes;
   final int niveauActuel;
   final int potentiel;
   final int montantTransfert;

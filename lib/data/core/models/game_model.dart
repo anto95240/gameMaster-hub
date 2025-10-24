@@ -1,4 +1,3 @@
-// data/models/game_model.dart
 import 'package:gamemaster_hub/domain/core/entities/game.dart';
 
 class GameModel extends Game {

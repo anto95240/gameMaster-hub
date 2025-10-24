@@ -1,4 +1,3 @@
-// domain/core/entities/game.dart
 class Game {
   final int gameId;
   final String name;
