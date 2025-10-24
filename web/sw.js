@@ -1,5 +1,5 @@
 // web/sw.js - Service Worker avec notification de mise à jour
-const CACHE_NAME = 'game-master-hub-v1.0.0';
+const CACHE_NAME = 'game-master-hub-v1.1.0';
 
 self.addEventListener('install', (event) => {
   console.log('Service Worker: Installation en cours...');
