@@ -1,29 +1,77 @@
-// lib/presentation/sm/screens/sm_main_screen.dart
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../widgets/sm_players_tab.dart';
-import '../../core/blocs/auth/auth_bloc.dart';
-import '../../core/blocs/theme/theme_bloc.dart';
-import '../blocs/joueurs/joueurs_sm_bloc.dart';
-import '../blocs/joueurs/joueurs_sm_event.dart';
-import '../../core/utils/responsive_layout.dart';
+import 'package:go_router/go_router.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
+import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
 class SMMainScreen extends StatefulWidget {
-  const SMMainScreen({super.key});
+  final int saveId;
+  final Game? game;
+  final Save? save;
+
+  const SMMainScreen({super.key, required this.saveId, this.game, this.save});
 
   @override
   State<SMMainScreen> createState() => _SMMainScreenState();
 }
 
-class _SMMainScreenState extends State<SMMainScreen>
-    with TickerProviderStateMixin {
+class _SMMainScreenState extends State<SMMainScreen> with TickerProviderStateMixin {
   late TabController _tabController;
+  Game? currentGame;
+  Save? currentSave;
+  bool isLoading = true;
+  String? errorMessage;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 1, vsync: this);
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    try {
+      if (widget.game != null && widget.save != null) {
+        setState(() {
+          currentGame = widget.game;
+          currentSave = widget.save;
+          isLoading = false;
+        });
+        return;
+      }
+
+      final saveRepo = context.read<SaveRepository>();
+      final save = await saveRepo.getSaveById(widget.saveId);
+      
+      if (save == null) {
+        setState(() {
+          errorMessage = 'Save non trouvée';
+          isLoading = false;
+        });
+        return;
+      }
+
+      final gameBloc = context.read<GameBloc>();
+      final games = gameBloc.state is GamesLoaded
+          ? (gameBloc.state as GamesLoaded).games
+          : [];
+      
+      final game = games.firstWhere(
+        (g) => g.gameId == save.gameId,
+        orElse: () => Game(gameId: save.gameId, name: 'Jeu inconnu'),
+      );
+
+      setState(() {
+        currentGame = game;
+        currentSave = save;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Erreur lors du chargement: $e';
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -34,84 +82,53 @@ class _SMMainScreenState extends State<SMMainScreen>
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final screenType = ResponsiveLayout.getScreenTypeFromWidth(constraints.maxWidth);
-        final isMobile = screenType == ScreenType.mobile;
-        double screenWidth = constraints.maxWidth;
-        double fontSize;
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
 
-        if (screenWidth < 400) {
-          fontSize = 14; 
-        } else if (screenWidth < 600) {
-          fontSize = 16;
-        } else if (screenWidth < 900) {
-          fontSize = 18;
-        } else {
-          fontSize = 18;
-        }
-
-        return Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              onPressed: () => context.go('/'),
-              icon: const Icon(Icons.arrow_back),
-            ),
-            title: isMobile
-                ? const Icon(Icons.sports_soccer)
-                : const Row(
-                    children: [
-                      Icon(Icons.sports_soccer),
-                      SizedBox(width: 8),
-                      Text('Soccer Manager'),
-                    ],
-                  ),
-            actions: [
-              IconButton(
-                onPressed: () {
-                  context.read<ThemeBloc>().add(ToggleTheme());
-                },
-                icon: BlocBuilder<ThemeBloc, ThemeState>(
-                  builder: (context, state) {
-                    return Icon(
-                      state.isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                    );
-                  },
-                ),
-              ),
-              IconButton(
-                onPressed: () {
-                  context.read<JoueursSmBloc>().add(LoadJoueursSmEvent());
-                },
-                icon: const Icon(Icons.sync),
-              ),
-              IconButton(
-                onPressed: () {
-                  context.read<AuthBloc>().add(AuthSignOutRequested());
-                  context.go('/auth');
-                },
-                icon: const Icon(Icons.account_circle),
+    if (errorMessage != null || currentGame == null || currentSave == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Erreur')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(errorMessage ?? 'Données non disponibles'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => context.go('/'),
+                child: const Text('Retour à l\'accueil'),
               ),
             ],
-            bottom: TabBar(
-              controller: _tabController,
-              labelStyle: TextStyle(
-                fontSize: fontSize, 
-              ),
-              tabs: const [
-                Tab(
-                  icon: Icon(Icons.group),
-                  text: 'Joueurs',
-                ),
-              ],
-            ),
+          ),
+        ),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+
+        return Scaffold(
+          appBar: CustomAppBar(
+            title: '${currentGame!.name} - ${currentSave!.name}',
+            onBackPressed: () {
+              context.go('/saves/${currentGame!.gameId}', extra: currentGame);
+            },
+            onSync: () {
+              setState(() {
+                isLoading = true;
+              });
+              _initializeData();
+            },
           ),
           body: TabBarView(
-                  controller: _tabController,
-                  children: const [
-                    SMPlayersTab(),
-                  ],
-                ),
+            controller: _tabController,
+            children: [
+              SMPlayersTab(saveId: widget.saveId, game: currentGame!),
+            ],
+          ),
         );
       },
     );

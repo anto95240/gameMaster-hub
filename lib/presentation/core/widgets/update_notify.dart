@@ -1,7 +1,6 @@
-// lib/presentation/core/widgets/update_notifier.dart
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-// Imports conditionnels pour le web uniquement
+
 import 'dart:html' as html show window, MessageEvent;
 
 class UpdateNotifier extends StatefulWidget {
@@ -19,14 +18,12 @@ class _UpdateNotifierState extends State<UpdateNotifier> {
   @override
   void initState() {
     super.initState();
-    // Écoute uniquement sur le web
     if (kIsWeb) {
       _setupServiceWorkerListener();
     }
   }
 
   void _setupServiceWorkerListener() {
-    // Écoute les messages du service worker
     html.window.navigator.serviceWorker?.addEventListener('message', (event) {
       final messageEvent = event as html.MessageEvent;
       final data = messageEvent.data;
@@ -116,7 +113,6 @@ class _UpdateNotifierState extends State<UpdateNotifier> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      // Remplacé IconButton par GestureDetector pour éviter le problème de Tooltip
                       GestureDetector(
                         onTap: () {
                           setState(() {

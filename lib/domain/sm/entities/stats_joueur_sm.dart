@@ -1,6 +1,7 @@
 class StatsJoueurSm {
   final int id;
   final int joueurId;
+  final int saveId;
   final int marquage;
   final int deplacement;
   final int frappesLointaines;
@@ -29,6 +30,7 @@ class StatsJoueurSm {
 
   StatsJoueurSm({
     required this.id,
+    required this.saveId,
     required this.joueurId,
     required this.marquage,
     required this.deplacement,
@@ -60,6 +62,7 @@ class StatsJoueurSm {
   StatsJoueurSm copyWith({
     int? id,
     int? joueurId,
+    int? saveId,
     int? marquage,
     int? deplacement,
     int? frappesLointaines,
@@ -89,6 +92,7 @@ class StatsJoueurSm {
     return StatsJoueurSm(
       id: id ?? this.id,
       joueurId: joueurId ?? this.joueurId,
+      saveId: saveId ?? this.saveId,
       marquage: marquage ?? this.marquage,
       deplacement: deplacement ?? this.deplacement,
       frappesLointaines: frappesLointaines ?? this.frappesLointaines,

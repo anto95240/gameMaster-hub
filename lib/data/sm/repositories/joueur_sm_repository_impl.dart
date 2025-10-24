@@ -1,8 +1,5 @@
-import 'package:gamemaster_hub/domain/common/enums.dart';
-import 'package:gamemaster_hub/domain/sm/entities/joueur_sm.dart';
-import 'package:gamemaster_hub/domain/sm/repositories/joueur_sm_repository.dart';
-import '../datasources/joueur_sm_remote_data_source.dart';
-import '../models/joueur_sm_model.dart';
+import 'package:gamemaster_hub/data/data_export.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class JoueurSmRepositoryImpl implements JoueurSmRepository {
   final JoueurSmRemoteDataSource remoteDataSource;
@@ -10,18 +7,19 @@ class JoueurSmRepositoryImpl implements JoueurSmRepository {
   JoueurSmRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<List<JoueurSm>> getAllJoueurs() async {
-    final models = await remoteDataSource.fetchJoueurs();
+  Future<List<JoueurSm>> getAllJoueurs(int saveId) async {
+    final models = await remoteDataSource.fetchJoueurs(saveId);
     return models.map((m) => m.toEntity()).toList();
   }
 
   @override
-  Future<JoueurSm> getJoueurById(int id) async {
-    final models = await remoteDataSource.fetchJoueurs();
+  Future<JoueurSm> getJoueurById(int id, int saveId) async {
+    final models = await remoteDataSource.fetchJoueurs(saveId);
     final model = models.firstWhere(
       (j) => j.id == id,
       orElse: () => JoueurSmModel(
         id: -1,
+        saveId: saveId,
         nom: 'Inconnu',
         age: 0,
         postes: [PosteEnum.GK],

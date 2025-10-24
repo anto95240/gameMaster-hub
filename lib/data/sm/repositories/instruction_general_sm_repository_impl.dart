@@ -1,7 +1,5 @@
-import 'package:gamemaster_hub/domain/sm/entities/instruction_general_sm.dart';
-import 'package:gamemaster_hub/domain/sm/repositories/instruction_general_sm_repository.dart';
-import '../datasources/instruction_general_sm_remote_data_source.dart';
-import '../models/instruction_general_sm_model.dart';
+import 'package:gamemaster_hub/data/data_export.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class InstructionGeneralSmRepositoryImpl implements InstructionGeneralSmRepository {
   final InstructionGeneralSmRemoteDataSource remoteDataSource;
@@ -9,18 +7,19 @@ class InstructionGeneralSmRepositoryImpl implements InstructionGeneralSmReposito
   InstructionGeneralSmRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<List<InstructionGeneralSm>> getAllInstructions() async {
-    return await remoteDataSource.fetchInstructions();
+  Future<List<InstructionGeneralSm>> getAllInstructions(int saveId) async {
+    return await remoteDataSource.fetchInstructions(saveId);
   }
 
   @override
-  Future<InstructionGeneralSmModel> getInstructionByTactiqueId(int tactiqueId) async {
-    final list = await remoteDataSource.fetchInstructions();
+  Future<InstructionGeneralSmModel> getInstructionByTactiqueId(int tactiqueId, int saveId) async {
+    final list = await remoteDataSource.fetchInstructions(saveId);
     return list.firstWhere(
       (i) => i.tactiqueId == tactiqueId,
       orElse: () => InstructionGeneralSmModel(
         id: -1,
         tactiqueId: tactiqueId,
+        saveId: saveId,
         largeur: '',
         mentalite: '',
         tempo: '',

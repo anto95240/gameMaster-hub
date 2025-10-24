@@ -1,9 +1,10 @@
-import 'package:gamemaster_hub/domain/sm/entities/instruction_attaque_sm.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class InstructionAttaqueSmModel extends InstructionAttaqueSm {
   InstructionAttaqueSmModel({
     required super.id,
     required super.tactiqueId,
+    required super.saveId,
     super.stylePasse,
     super.styleAttaque,
     super.attaquants,
@@ -16,6 +17,7 @@ class InstructionAttaqueSmModel extends InstructionAttaqueSm {
     return InstructionAttaqueSmModel(
       id: map['id'],
       tactiqueId: map['tactique_id'],
+      saveId: map['save_id'],
       stylePasse: map['style_passe'],
       styleAttaque: map['style_attaque'],
       attaquants: map['attaquants'],
@@ -29,6 +31,7 @@ class InstructionAttaqueSmModel extends InstructionAttaqueSm {
     return {
       'id': id,
       'tactique_id': tactiqueId,
+      'save_id': saveId,
       'style_passe': stylePasse,
       'style_attaque': styleAttaque,
       'attaquants': attaquants,

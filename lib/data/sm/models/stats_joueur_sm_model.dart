@@ -1,9 +1,10 @@
-import 'package:gamemaster_hub/domain/sm/entities/stats_joueur_sm.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class StatsJoueurSmModel extends StatsJoueurSm {
   StatsJoueurSmModel({
     required super.id,
     required super.joueurId,
+    required super.saveId,
     required super.marquage,
     required super.deplacement,
     required super.frappesLointaines,
@@ -35,6 +36,7 @@ class StatsJoueurSmModel extends StatsJoueurSm {
     return StatsJoueurSmModel(
       id: map['id'],
       joueurId: map['joueur_id'],
+      saveId: map['save_id'],
       marquage: map['marquage'] ?? 0,
       deplacement: map['deplacement'] ?? 0,
       frappesLointaines: map['frappes_lointaines'] ?? 0,
@@ -67,6 +69,7 @@ class StatsJoueurSmModel extends StatsJoueurSm {
     return {
       'id': id,
       'joueur_id': joueurId,
+      'save_id': saveId,
       'marquage': marquage,
       'deplacement': deplacement,
       'frappes_lointaines': frappesLointaines,

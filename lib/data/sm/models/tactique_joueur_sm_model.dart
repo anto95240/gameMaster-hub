@@ -1,10 +1,11 @@
-import 'package:gamemaster_hub/domain/sm/entities/tactique_joueur_sm.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class TactiqueJoueurSmModel extends TactiqueJoueurSm {
   TactiqueJoueurSmModel({
     required super.id,
     required super.tactiqueId,
     required super.joueurId,
+    required super.saveId,
     super.roleId,
   });
 
@@ -13,6 +14,7 @@ class TactiqueJoueurSmModel extends TactiqueJoueurSm {
       id: map['id'],
       tactiqueId: map['tactique_id'],
       joueurId: map['joueur_id'],
+      saveId: map['save_id'],
       roleId: map['role_id'],
     );
   }
@@ -22,6 +24,7 @@ class TactiqueJoueurSmModel extends TactiqueJoueurSm {
       'id': id,
       'tactique_id': tactiqueId,
       'joueur_id': joueurId,
+      'save_id': saveId,
       'role_id': roleId,
     };
   }

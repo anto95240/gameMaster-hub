@@ -1,7 +1,5 @@
-import 'package:gamemaster_hub/domain/sm/entities/role_modele_sm.dart';
-import 'package:gamemaster_hub/domain/sm/repositories/role_sm_repository.dart';
-import '../datasources/role_sm_remote_data_source.dart';
-import '../models/role_sm_model.dart';
+import 'package:gamemaster_hub/data/data_export.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class RoleModeleSmRepositoryImpl implements RoleModeleSmRepository {
   final RoleModeleSmRemoteDataSource remoteDataSource;
@@ -9,17 +7,18 @@ class RoleModeleSmRepositoryImpl implements RoleModeleSmRepository {
   RoleModeleSmRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<List<RoleModeleSm>> getAllRoles() async {
-    return await remoteDataSource.fetchRoles();
+  Future<List<RoleModeleSm>> getAllRoles(int saveId) async {
+    return await remoteDataSource.fetchRoles(saveId);
   }
 
   @override
-  Future<RoleModeleSmModel> getRoleByPoste(String poste) async {
-    final roles = await remoteDataSource.fetchRoles();
+  Future<RoleModeleSmModel> getRoleByPoste(String poste, int saveId) async {
+    final roles = await remoteDataSource.fetchRoles(saveId);
     return roles.firstWhere(
       (r) => r.poste == poste,
       orElse: () => RoleModeleSmModel(
         id: -1,
+        saveId: saveId,
         poste: poste,
         role: '',
         description: '',

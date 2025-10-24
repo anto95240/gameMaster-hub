@@ -1,20 +1,18 @@
-// app.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'presentation/core/navigation/app_router.dart';
-import 'presentation/core/themes/app_theme.dart';
-import 'presentation/core/blocs/theme/theme_bloc.dart';
-import 'presentation/core/widgets/update_notify.dart';
+import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
 class GameMasterHubApp extends StatelessWidget {
   const GameMasterHubApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final router = AppRouter.createRouter(context);
+
     return BlocBuilder<ThemeBloc, ThemeState>(
       builder: (context, state) {
         return MaterialApp.router(
-          routerConfig: AppRouter.router,
+          routerConfig: router,
           title: 'GameMaster Hub',
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,

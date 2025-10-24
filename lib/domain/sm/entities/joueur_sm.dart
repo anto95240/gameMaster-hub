@@ -1,10 +1,11 @@
-import 'package:gamemaster_hub/domain/common/enums.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class JoueurSm {
   final int id;
+  final int saveId; 
   final String nom;
   final int age;
-  final List<PosteEnum> postes; // plusieurs postes possibles
+  final List<PosteEnum> postes;
   final int niveauActuel;
   final int potentiel;
   final int montantTransfert;
@@ -15,6 +16,7 @@ class JoueurSm {
 
   JoueurSm({
     required this.id,
+    required this.saveId,
     required this.nom,
     required this.age,
     required this.postes,

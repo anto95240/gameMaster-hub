@@ -1,13 +1,17 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/role_sm_model.dart';
+import 'package:gamemaster_hub/data/data_export.dart';
 
 class RoleModeleSmRemoteDataSource {
   final SupabaseClient supabase;
 
   RoleModeleSmRemoteDataSource(this.supabase);
 
-  Future<List<RoleModeleSmModel>> fetchRoles() async {
-    final response = await supabase.from('role_modele_sm').select().execute();
+  Future<List<RoleModeleSmModel>> fetchRoles(int saveId) async {
+    final response = await supabase
+        .from('role_modele_sm')
+        .select()
+        .eq('save_id', saveId)
+        .execute();
     final data = response.data as List<dynamic>;
     return data.map((e) => RoleModeleSmModel.fromMap(e)).toList();
   }

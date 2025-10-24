@@ -1,13 +1,17 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/stats_joueur_sm_model.dart';
+import 'package:gamemaster_hub/data/data_export.dart';
 
 class StatsJoueurSmRemoteDataSource {
   final SupabaseClient supabase;
 
   StatsJoueurSmRemoteDataSource(this.supabase);
 
-  Future<List<StatsJoueurSmModel>> fetchStats() async {
-    final response = await supabase.from('stats_joueur_sm').select().execute();
+  Future<List<StatsJoueurSmModel>> fetchStats(int saveId) async {
+    final response = await supabase
+        .from('stats_joueur_sm')
+        .select()        
+        .eq('save_id', saveId)
+        .execute();
     final data = response.data as List<dynamic>;
     return data.map((e) => StatsJoueurSmModel.fromMap(e)).toList();
   }

@@ -1,7 +1,5 @@
-import 'package:gamemaster_hub/domain/sm/entities/tactique_joueur_sm.dart';
-import 'package:gamemaster_hub/domain/sm/repositories/tactique_joueur_sm_repository.dart';
-import '../datasources/tactique_joueur_sm_remote_data_source.dart';
-import '../models/tactique_joueur_sm_model.dart';
+import 'package:gamemaster_hub/data/data_export.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class TactiqueJoueurSmRepositoryImpl implements TactiqueJoueurSmRepository {
   final TactiqueJoueurSmRemoteDataSource remoteDataSource;
@@ -9,13 +7,13 @@ class TactiqueJoueurSmRepositoryImpl implements TactiqueJoueurSmRepository {
   TactiqueJoueurSmRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<List<TactiqueJoueurSm>> getAll() async {
-    return await remoteDataSource.fetchAll();
+  Future<List<TactiqueJoueurSm>> getAll(int saveId) async {
+    return await remoteDataSource.fetchAll(saveId);
   }
 
   @override
-  Future<List<TactiqueJoueurSm>> getByTactiqueId(int tactiqueId) async {
-    final list = await remoteDataSource.fetchAll();
+  Future<List<TactiqueJoueurSm>> getByTactiqueId(int tactiqueId, int saveId) async {
+    final list = await remoteDataSource.fetchAll(saveId);
     return list.where((tj) => tj.tactiqueId == tactiqueId).toList();
   }
 

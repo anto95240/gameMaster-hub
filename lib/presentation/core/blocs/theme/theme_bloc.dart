@@ -23,13 +23,12 @@ class ThemeState extends Equatable {
 
 // Bloc
 class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
-  final Box _box = Hive.box('theme_box'); // box déjà ouverte
+  final Box _box = Hive.box('theme_box');
 
   ThemeBloc() : super(const ThemeState(isDarkMode: true)) {
     on<LoadTheme>(_onLoadTheme);
     on<ToggleTheme>(_onToggleTheme);
 
-    // Charger le thème au démarrage
     add(LoadTheme());
   }
 

@@ -7,7 +7,6 @@ class ResponsiveLayout {
   static const double mobileBreakpoint = 768;   // < 768px = mobile
   static const double tabletBreakpoint = 1024;  // 768-1023px = tablet
   static const double laptopBreakpoint = 1440;  // 1024-1439px = laptop
-  // >= 1440px = laptopL
 
   static ScreenType getScreenType(BuildContext context) {
     return getScreenTypeFromWidth(MediaQuery.of(context).size.width);

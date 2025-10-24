@@ -1,33 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
+import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
 class GameCard extends StatelessWidget {
   final String title;
   final String description;
   final IconData icon;
-  final int priority;
   final ScreenType screenType;
   final double? cardWidth;
   final Map<String, String> stats;
   final VoidCallback onTap;
+  final Color color;
 
   const GameCard({
     super.key,
     required this.title,
     required this.description,
     required this.icon,
-    required this.priority,
     required this.screenType,
     this.cardWidth,
     required this.stats,
     required this.onTap,
+    required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
     final constraints = ResponsiveLayout.getGameCardConstraints(screenType);
-
-    // Tailles responsives
     final isMobile = screenType == ScreenType.mobile;
     final isTablet = screenType == ScreenType.tablet;
     final isLaptop = screenType == ScreenType.laptop;
@@ -35,23 +33,20 @@ class GameCard extends StatelessWidget {
     final iconSize = isMobile ? 40.0 : (isTablet ? 48.0 : (isLaptop ? 54.0 : 60.0));
     final titleSize = isMobile ? 18.0 : (isTablet ? 20.0 : (isLaptop ? 22.0 : 24.0));
     final descriptionSize = isMobile ? 12.0 : (isTablet ? 13.0 : 14.0);
-    final statLabelSize = isMobile ? 11.0 : (isTablet ? 12.0 : 13.0);
-    final statValueSize = isMobile ? 16.0 : (isTablet ? 18.0 : (isLaptop ? 20.0 : 22.0));
+    final statLabelSize = isMobile ? 10.0 : (isTablet ? 11.0 : 12.0);
+    final statValueSize = isMobile ? 14.0 : (isTablet ? 16.0 : 18.0);
     final padding = isMobile ? 16.0 : (isTablet ? 18.0 : (isLaptop ? 20.0 : 24.0));
     final spacing = isMobile ? 12.0 : (isTablet ? 14.0 : 16.0);
 
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        minWidth: constraints.minWidth,
-        maxWidth: constraints.maxWidth,
-        minHeight: constraints.minHeight,
-        maxHeight: constraints.maxHeight,
-      ),
+    double statSquareSize = (cardWidth ?? constraints.maxWidth) / 5;
+    if (statSquareSize > 60) statSquareSize = 60;
+    if (statSquareSize < 40) statSquareSize = 40;
+
+    return SizedBox(
+      width: cardWidth ?? constraints.maxWidth,
       child: Card(
         elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
@@ -66,17 +61,11 @@ class GameCard extends StatelessWidget {
                     Container(
                       padding: EdgeInsets.all(isMobile ? 10.0 : 12.0),
                       decoration: BoxDecoration(
-                        color: _getPriorityColor(priority).withOpacity(0.1),
+                        color: color.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(
-                        icon,
-                        size: iconSize,
-                        color: _getPriorityColor(priority),
-                      ),
+                      child: Icon(icon, size: iconSize, color: color),
                     ),
-                    const Spacer(),
-                    _buildPriorityBadge(priority, isMobile),
                   ],
                 ),
                 SizedBox(height: spacing),
@@ -103,15 +92,35 @@ class GameCard extends StatelessWidget {
                 Divider(height: 1, color: Theme.of(context).dividerColor),
                 SizedBox(height: spacing),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: stats.entries.map((entry) {
-                    return Expanded(
-                      child: _buildStatItem(
-                        context,
-                        entry.key,
-                        entry.value,
-                        statLabelSize,
-                        statValueSize,
+                    return Container(
+                      width: statSquareSize,
+                      height: statSquareSize,
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            entry.value,
+                            style: TextStyle(
+                              fontSize: statValueSize,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green[800],
+                            ),
+                          ),
+                          Text(
+                            entry.key,
+                            style: TextStyle(
+                              fontSize: statLabelSize,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   }).toList(),
@@ -122,73 +131,5 @@ class GameCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Widget _buildPriorityBadge(int priority, bool isMobile) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 8.0 : 10.0,
-        vertical: isMobile ? 4.0 : 6.0,
-      ),
-      decoration: BoxDecoration(
-        color: _getPriorityColor(priority).withOpacity(0.2),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        'P$priority',
-        style: TextStyle(
-          color: _getPriorityColor(priority),
-          fontWeight: FontWeight.bold,
-          fontSize: isMobile ? 11.0 : 12.0,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatItem(
-    BuildContext context,
-    String label,
-    String value,
-    double labelSize,
-    double valueSize,
-  ) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          value,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontSize: valueSize,
-                fontWeight: FontWeight.bold,
-              ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontSize: labelSize,
-                color: Theme.of(context).textTheme.bodySmall?.color,
-              ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-
-  Color _getPriorityColor(int priority) {
-    switch (priority) {
-      case 1:
-        return Colors.green;
-      case 2:
-        return Colors.blue;
-      case 3:
-        return Colors.orange;
-      default:
-        return Colors.grey;
-    }
   }
 }

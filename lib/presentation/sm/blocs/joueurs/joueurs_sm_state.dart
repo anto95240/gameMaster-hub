@@ -1,56 +1,26 @@
 import 'package:equatable/equatable.dart';
-import 'package:gamemaster_hub/domain/sm/entities/joueur_sm.dart';
-import 'package:gamemaster_hub/domain/sm/entities/stats_joueur_sm.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
-enum SortField {
-  name,
-  rating,
-  age,
-  potential,
-  transferValue,
-  salary,
-}
+enum SortField { name, rating, age, potential, transferValue, salary }
 
 class JoueurSmWithStats {
   final JoueurSm joueur;
-  final StatsJoueurSm? stats;
+  final dynamic stats;
 
-  JoueurSmWithStats({
-    required this.joueur,
-    this.stats,
-  });
+  JoueurSmWithStats({required this.joueur, this.stats});
 
   double get averageRating {
     if (stats == null) return 0.0;
-    final allStats = [
-      stats!.marquage,
-      stats!.deplacement,
-      stats!.frappesLointaines,
-      stats!.passesLongues,
-      stats!.coupsFrancs,
-      stats!.tacles,
-      stats!.finition,
-      stats!.centres,
-      stats!.passes,
-      stats!.corners,
-      stats!.positionnement,
-      stats!.dribble,
-      stats!.controle,
-      stats!.penalties,
-      stats!.creativite,
-      stats!.stabiliteAerienne,
-      stats!.vitesse,
-      stats!.endurance,
-      stats!.force,
-      stats!.distanceParcourue,
-      stats!.agressivite,
-      stats!.sangFroid,
-      stats!.concentration,
-      stats!.flair,
-      stats!.leadership,
-    ];
-    final sum = allStats.reduce((a, b) => a + b);
-    return sum / allStats.length;
+    try {
+      final values = stats.toJson().values
+          .whereType<num>()
+          .map((v) => v.toDouble())
+          .toList();
+      if (values.isEmpty) return 0.0;
+      return values.reduce((a, b) => a + b) / values.length;
+    } catch (_) {
+      return 0.0;
+    }
   }
 }
 
@@ -91,51 +61,46 @@ class JoueursSmLoaded extends JoueursSmState {
 
     if (sortField != null) {
       filtered.sort((a, b) {
-        int comparison = 0;
+        int comp = 0;
         switch (sortField!) {
           case SortField.name:
-            comparison = a.joueur.nom.compareTo(b.joueur.nom);
+            comp = a.joueur.nom.compareTo(b.joueur.nom);
             break;
           case SortField.rating:
-            comparison = a.averageRating.compareTo(b.averageRating);
+            comp = a.averageRating.compareTo(b.averageRating);
             break;
           case SortField.age:
-            comparison = a.joueur.age.compareTo(b.joueur.age);
+            comp = a.joueur.age.compareTo(b.joueur.age);
             break;
           case SortField.potential:
-            comparison = a.joueur.potentiel.compareTo(b.joueur.potentiel);
+            comp = a.joueur.potentiel.compareTo(b.joueur.potentiel);
             break;
           case SortField.transferValue:
-            comparison = a.joueur.montantTransfert.compareTo(b.joueur.montantTransfert);
+            comp = a.joueur.montantTransfert.compareTo(b.joueur.montantTransfert);
             break;
           case SortField.salary:
-            comparison = a.joueur.salaire.compareTo(b.joueur.salaire);
+            comp = a.joueur.salaire.compareTo(b.joueur.salaire);
             break;
         }
-        return sortAscending ? comparison : -comparison;
+        return sortAscending ? comp : -comp;
       });
     }
 
     return filtered;
   }
 
-  bool _matchesPosition(JoueurSm joueur, String position) {
-    final filters = _getPositionFilter(position);
-    return filters.any((pos) => joueur.postes.any((p) => p.name == pos));
-  }
-
-  List<String> _getPositionFilter(String position) {
-    switch (position) {
+  bool _matchesPosition(JoueurSm joueur, String pos) {
+    switch (pos) {
       case 'Gardien':
-        return ['GK'];
+        return joueur.postes.any((p) => p.name == 'GK');
       case 'Défenseur':
-        return ['DC', 'DG', 'DD', 'DOG', 'DOD'];
+        return joueur.postes.any((p) => ['DC', 'DG', 'DD'].contains(p.name));
       case 'Milieu':
-        return ['MC', 'MDC', 'MOC', 'MD', 'MG'];
+        return joueur.postes.any((p) => ['MC', 'MDC', 'MOC'].contains(p.name));
       case 'Attaquant':
-        return ['BU', 'MOD', 'MOG'];
+        return joueur.postes.any((p) => ['BU', 'MOG', 'MOD'].contains(p.name));
       default:
-        return [];
+        return true;
     }
   }
 
@@ -156,12 +121,12 @@ class JoueursSmLoaded extends JoueursSmState {
   }
 
   @override
-  List<Object?> get props => [joueurs, selectedPosition, searchQuery, sortField, sortAscending];
+  List<Object?> get props =>
+      [joueurs, selectedPosition, searchQuery, sortField, sortAscending];
 }
 
 class JoueursSmError extends JoueursSmState {
   final String message;
-
   const JoueursSmError(this.message);
 
   @override

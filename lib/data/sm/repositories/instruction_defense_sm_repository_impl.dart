@@ -1,7 +1,5 @@
-import 'package:gamemaster_hub/domain/sm/entities/instruction_defense_sm.dart';
-import 'package:gamemaster_hub/domain/sm/repositories/instruction_defense_sm_repository.dart';
-import '../datasources/instruction_defense_sm_remote_data_source.dart';
-import '../models/instruction_defense_sm_model.dart';
+import 'package:gamemaster_hub/data/data_export.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class InstructionDefenseSmRepositoryImpl implements InstructionDefenseSmRepository {
   final InstructionDefenseSmRemoteDataSource remoteDataSource;
@@ -9,18 +7,19 @@ class InstructionDefenseSmRepositoryImpl implements InstructionDefenseSmReposito
   InstructionDefenseSmRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<List<InstructionDefenseSm>> getAllInstructions() async {
-    return await remoteDataSource.fetchInstructions();
+  Future<List<InstructionDefenseSm>> getAllInstructions(int saveId) async {
+    return await remoteDataSource.fetchInstructions(saveId);
   }
 
   @override
-  Future<InstructionDefenseSmModel> getInstructionByTactiqueId(int tactiqueId) async {
-    final list = await remoteDataSource.fetchInstructions();
+  Future<InstructionDefenseSm?> getInstructionByTactiqueId(int tactiqueId, int saveId) async {
+    final list = await remoteDataSource.fetchInstructions(saveId);
     return list.firstWhere(
       (i) => i.tactiqueId == tactiqueId,
       orElse: () => InstructionDefenseSmModel(
         id: -1,
         tactiqueId: tactiqueId,
+        saveId: saveId,
         pressing: '',
         styleTacle: '',
         ligneDefensive: '',

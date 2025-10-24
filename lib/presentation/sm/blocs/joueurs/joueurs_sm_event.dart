@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:gamemaster_hub/domain/sm/entities/joueur_sm.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 abstract class JoueursSmEvent extends Equatable {
   const JoueursSmEvent();
@@ -8,34 +8,43 @@ abstract class JoueursSmEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class LoadJoueursSmEvent extends JoueursSmEvent {}
+class LoadJoueursSmEvent extends JoueursSmEvent {
+  final int saveId;
+  const LoadJoueursSmEvent(this.saveId);
+
+  @override
+  List<Object?> get props => [saveId];
+}
 
 class AddJoueurSmEvent extends JoueursSmEvent {
   final JoueurSm joueur;
+  final int saveId;
 
-  const AddJoueurSmEvent(this.joueur);
+  const AddJoueurSmEvent(this.joueur, this.saveId);
 
   @override
-  List<Object?> get props => [joueur];
+  List<Object?> get props => [joueur, saveId];
 }
 
 class UpdateJoueurSmEvent extends JoueursSmEvent {
   final JoueurSm joueur;
   final Map<String, int> stats;
+  final int saveId;
 
-  const UpdateJoueurSmEvent(this.joueur, this.stats);
+  const UpdateJoueurSmEvent(this.joueur, this.stats, this.saveId);
 
   @override
-  List<Object?> get props => [joueur, stats];
+  List<Object?> get props => [joueur, stats, saveId];
 }
 
 class DeleteJoueurSmEvent extends JoueursSmEvent {
   final int joueurId;
+  final int saveId;
 
-  const DeleteJoueurSmEvent(this.joueurId);
+  const DeleteJoueurSmEvent(this.joueurId, this.saveId);
 
   @override
-  List<Object?> get props => [joueurId];
+  List<Object?> get props => [joueurId, saveId];
 }
 
 class FilterJoueursSmEvent extends JoueursSmEvent {
@@ -52,12 +61,12 @@ class FilterJoueursSmEvent extends JoueursSmEvent {
 }
 
 class SortJoueursSmEvent extends JoueursSmEvent {
-  final String sortField; // le champ sur lequel trier
-  final bool ascending;   // true = ascendant, false = descendant
+  final String sortField;
+  final bool ascending;
 
   const SortJoueursSmEvent({
     required this.sortField,
-    this.ascending = true, // par défaut ascendant
+    this.ascending = true,
   });
 
   @override

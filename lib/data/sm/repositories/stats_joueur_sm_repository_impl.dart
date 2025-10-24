@@ -1,7 +1,5 @@
-import 'package:gamemaster_hub/domain/sm/entities/stats_joueur_sm.dart';
-import 'package:gamemaster_hub/domain/sm/repositories/stats_joueur_sm_repository.dart';
-import '../datasources/stats_joueur_sm_remote_data_source.dart';
-import '../models/stats_joueur_sm_model.dart';
+import 'package:gamemaster_hub/data/data_export.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class StatsJoueurSmRepositoryImpl implements StatsJoueurSmRepository {
   final StatsJoueurSmRemoteDataSource remoteDataSource;
@@ -9,18 +7,19 @@ class StatsJoueurSmRepositoryImpl implements StatsJoueurSmRepository {
   StatsJoueurSmRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<List<StatsJoueurSm>> getAllStats() async {
-    return await remoteDataSource.fetchStats();
+  Future<List<StatsJoueurSm>> getAllStats(int saveId) async {
+    return await remoteDataSource.fetchStats(saveId);
   }
 
   @override
-  Future<StatsJoueurSmModel> getStatsByJoueurId(int joueurId) async {
-    final statsList = await remoteDataSource.fetchStats();
+  Future<StatsJoueurSmModel> getStatsByJoueurId(int joueurId, int saveId) async {
+    final statsList = await remoteDataSource.fetchStats(saveId);
     return statsList.firstWhere(
       (s) => s.joueurId == joueurId,
       orElse: () => StatsJoueurSmModel(
         id: -1,
         joueurId: joueurId,
+        saveId: saveId,
         marquage: 0,
         deplacement: 0,
         frappesLointaines: 0,
