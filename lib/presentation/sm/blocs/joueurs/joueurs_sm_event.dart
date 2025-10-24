@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-
 import 'package:gamemaster_hub/domain/sm/entities/joueur_sm.dart';
 
 abstract class JoueursSmEvent extends Equatable {
@@ -9,10 +8,9 @@ abstract class JoueursSmEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-// 🔹 Load joueurs
+// 🔹 Charger les joueurs
 class LoadJoueursSmEvent extends JoueursSmEvent {
   final int saveId;
-
   const LoadJoueursSmEvent(this.saveId);
 
   @override
@@ -53,7 +51,7 @@ class DeleteJoueurSmEvent extends JoueursSmEvent {
   List<Object?> get props => [joueurId, saveId];
 }
 
-// 🔹 Filtrer les joueurs (peut rester inchangé)
+// 🔹 Filtrer
 class FilterJoueursSmEvent extends JoueursSmEvent {
   final String position;
   final String searchQuery;
@@ -67,7 +65,7 @@ class FilterJoueursSmEvent extends JoueursSmEvent {
   List<Object?> get props => [position, searchQuery];
 }
 
-// 🔹 Trier les joueurs (peut rester inchangé)
+// 🔹 Trier
 class SortJoueursSmEvent extends JoueursSmEvent {
   final String sortField;
   final bool ascending;
