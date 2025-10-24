@@ -1,4 +1,4 @@
-import 'package:gamemaster_hub/domain/sm/entities/instruction_attaque_sm.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class InstructionAttaqueSmModel extends InstructionAttaqueSm {
   InstructionAttaqueSmModel({

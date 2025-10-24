@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_bloc.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_event.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_state.dart';
+import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
 class SMPlayersFilters extends StatelessWidget {
   final JoueursSmLoaded state;

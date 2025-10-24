@@ -1,5 +1,4 @@
-import 'package:gamemaster_hub/domain/common/enums.dart';
-import 'package:gamemaster_hub/domain/sm/entities/joueur_sm.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class JoueurSmModel extends JoueurSm {
   JoueurSmModel({

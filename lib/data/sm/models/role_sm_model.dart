@@ -1,4 +1,4 @@
-import 'package:gamemaster_hub/domain/sm/entities/role_modele_sm.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class RoleModeleSmModel extends RoleModeleSm {
   RoleModeleSmModel({

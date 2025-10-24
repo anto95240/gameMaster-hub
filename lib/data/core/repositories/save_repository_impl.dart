@@ -1,7 +1,5 @@
-import 'package:gamemaster_hub/data/core/datasourses/save_datasource.dart';
-import 'package:gamemaster_hub/data/core/models/save_model.dart';
-import 'package:gamemaster_hub/domain/core/entities/save.dart';
-import 'package:gamemaster_hub/domain/core/repositories/save_repository.dart';
+import 'package:gamemaster_hub/data/data_export.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class SaveRepositoryImpl implements SaveRepository {
   final SaveDatasource datasource;

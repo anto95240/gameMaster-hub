@@ -1,7 +1,5 @@
-import 'package:gamemaster_hub/data/sm/datasources/role_sm_remote_data_source.dart';
-import 'package:gamemaster_hub/data/sm/models/role_sm_model.dart';
-import 'package:gamemaster_hub/domain/sm/entities/role_modele_sm.dart';
-import 'package:gamemaster_hub/domain/sm/repositories/role_sm_repository.dart';
+import 'package:gamemaster_hub/data/data_export.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class RoleModeleSmRepositoryImpl implements RoleModeleSmRepository {
   final RoleModeleSmRemoteDataSource remoteDataSource;

@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_state.dart';
-import 'package:gamemaster_hub/presentation/sm/widgets/player/player_info/player_info_header.dart';
-import 'package:gamemaster_hub/presentation/sm/widgets/player/player_stats_form.dart';
-import 'package:gamemaster_hub/presentation/sm/widgets/player/player_actions.dart';
-import 'package:gamemaster_hub/presentation/sm/widgets/player/player_info_form.dart';
+import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
 class PlayerDetailsDialog extends StatefulWidget {
   final JoueurSmWithStats item;

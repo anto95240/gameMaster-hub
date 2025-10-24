@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gamemaster_hub/presentation/sm/widgets/add_player_dialog/player_form_fields.dart';
-import 'package:gamemaster_hub/presentation/sm/widgets/add_player_dialog/player_submit_handler.dart';
+import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
 class AddPlayerDialog extends StatefulWidget {
   final int saveId;

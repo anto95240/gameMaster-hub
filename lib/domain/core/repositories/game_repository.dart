@@ -1,4 +1,4 @@
-import 'package:gamemaster_hub/domain/core/entities/game.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 abstract class GameRepository {
   Future<List<Game>> getAllGames();

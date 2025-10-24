@@ -1,4 +1,4 @@
-import 'package:gamemaster_hub/domain/sm/entities/joueur_sm.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 abstract class JoueurSmRepository {
   Future<List<JoueurSm>> getAllJoueurs(int saveId);

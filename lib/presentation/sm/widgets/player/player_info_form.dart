@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gamemaster_hub/presentation/sm/widgets/player/player_info/player_info_body.dart';
-import 'package:gamemaster_hub/domain/common/enums.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_state.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
+import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
 class PlayerInfoForm extends StatefulWidget {
   final JoueurSmWithStats item;

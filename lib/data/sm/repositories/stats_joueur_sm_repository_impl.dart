@@ -1,7 +1,5 @@
-import 'package:gamemaster_hub/data/sm/datasources/stats_joueur_sm_remote_data_source.dart';
-import 'package:gamemaster_hub/data/sm/models/stats_joueur_sm_model.dart';
-import 'package:gamemaster_hub/domain/sm/entities/stats_joueur_sm.dart';
-import 'package:gamemaster_hub/domain/sm/repositories/stats_joueur_sm_repository.dart';
+import 'package:gamemaster_hub/data/data_export.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class StatsJoueurSmRepositoryImpl implements StatsJoueurSmRepository {
   final StatsJoueurSmRemoteDataSource remoteDataSource;

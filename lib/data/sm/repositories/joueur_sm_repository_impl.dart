@@ -1,8 +1,5 @@
-import 'package:gamemaster_hub/data/sm/datasources/joueur_sm_remote_data_source.dart';
-import 'package:gamemaster_hub/data/sm/models/joueur_sm_model.dart';
-import 'package:gamemaster_hub/domain/common/enums.dart';
-import 'package:gamemaster_hub/domain/sm/entities/joueur_sm.dart';
-import 'package:gamemaster_hub/domain/sm/repositories/joueur_sm_repository.dart';
+import 'package:gamemaster_hub/data/data_export.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class JoueurSmRepositoryImpl implements JoueurSmRepository {
   final JoueurSmRemoteDataSource remoteDataSource;

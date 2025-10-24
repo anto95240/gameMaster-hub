@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_bloc.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_event.dart';
-import 'player_form_fields.dart';
+import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
 Future<void> handlePlayerSubmit(
     BuildContext context,

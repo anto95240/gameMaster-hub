@@ -1,4 +1,4 @@
-import 'package:gamemaster_hub/domain/common/enums.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class JoueurSm {
   final int id;

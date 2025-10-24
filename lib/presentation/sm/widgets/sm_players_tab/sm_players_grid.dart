@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_state.dart';
-import 'package:gamemaster_hub/presentation/sm/widgets/sm_players_tab/player_card_widget.dart';
-import 'package:gamemaster_hub/presentation/sm/widgets/player/player_details_dialog.dart';
+import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
 class SMPlayersGrid extends StatelessWidget {
   final JoueursSmLoaded state;

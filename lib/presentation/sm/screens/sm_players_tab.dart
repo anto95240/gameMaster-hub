@@ -1,13 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamemaster_hub/domain/core/entities/game.dart';
-
-import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_bloc.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_event.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_state.dart';
-import 'package:gamemaster_hub/presentation/sm/widgets/add_player_dialog/add_player_dialog.dart';
-import 'package:gamemaster_hub/presentation/sm/widgets/sm_players_tab/sm_players_filters.dart';
-import 'package:gamemaster_hub/presentation/sm/widgets/sm_players_tab/sm_players_grid.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
+import 'package:gamemaster_hub/presentation/presentation_export.dart';
 import 'package:gamemaster_hub/presentation/sm/widgets/sm_players_tab/sm_players_header.dart';
 
 class SMPlayersTab extends StatelessWidget {

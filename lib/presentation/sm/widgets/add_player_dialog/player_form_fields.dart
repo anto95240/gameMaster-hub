@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gamemaster_hub/domain/common/enums.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class PlayerFormData {
   String nom = '';

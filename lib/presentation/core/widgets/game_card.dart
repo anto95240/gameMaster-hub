@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
+import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
 class GameCard extends StatelessWidget {
   final String title;

@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gamemaster_hub/presentation/core/blocs/game/game_bloc.dart';
-import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
-import 'package:gamemaster_hub/presentation/core/widgets/custom_app_bar.dart';
-import 'package:gamemaster_hub/presentation/core/widgets/game_card.dart';
+import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
 IconData getIconFromName(String? iconName) {
   switch (iconName) {

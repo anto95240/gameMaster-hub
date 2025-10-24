@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gamemaster_hub/domain/sm/entities/stats_gardien_sm.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class PlayerStatsGardienForm extends StatefulWidget {
   final StatsGardienSm? stats;

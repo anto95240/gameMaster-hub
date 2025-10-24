@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gamemaster_hub/domain/sm/entities/joueur_sm.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class PlayerValueSalarySection extends StatefulWidget {
   final JoueurSm joueur;

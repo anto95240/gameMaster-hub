@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gamemaster_hub/domain/core/entities/game.dart';
-import 'package:gamemaster_hub/domain/core/entities/save.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_bloc.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_event.dart';
-import 'package:gamemaster_hub/presentation/sm/widgets/save/save_dialog.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
+import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
 class SaveCard extends StatelessWidget {
   final Save save;

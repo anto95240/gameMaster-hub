@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_state.dart';
-import 'package:gamemaster_hub/domain/common/enums.dart';
-import 'sections/player_avatar.dart';
-import 'sections/player_contract_section.dart';
-import 'sections/player_postes_section.dart';
-import 'sections/player_ratings_section.dart';
-import 'sections/player_value_salary_section.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
+import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
 class PlayerInfoBody extends StatelessWidget {
   final JoueurSmWithStats item;

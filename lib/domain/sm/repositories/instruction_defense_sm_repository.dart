@@ -1,4 +1,4 @@
-import 'package:gamemaster_hub/domain/sm/entities/instruction_defense_sm.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 abstract class InstructionDefenseSmRepository {
   Future<List<InstructionDefenseSm>> getAllInstructions(int saveId);

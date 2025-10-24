@@ -1,5 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:gamemaster_hub/data/sm/models/joueur_sm_model.dart';
+import 'package:gamemaster_hub/data/data_export.dart';
 
 abstract class JoueurSmRemoteDataSource {
   Future<List<JoueurSmModel>> fetchJoueurs(int saveId);

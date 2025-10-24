@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gamemaster_hub/domain/sm/entities/joueur_sm.dart';
-import 'package:gamemaster_hub/presentation/sm/widgets/player/player_utils.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
+import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
 class PlayerRatingsSection extends StatefulWidget {
   final JoueurSm joueur;

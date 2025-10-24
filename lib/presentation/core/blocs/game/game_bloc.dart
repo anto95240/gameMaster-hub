@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamemaster_hub/domain/core/entities/game.dart';
-import 'package:gamemaster_hub/domain/core/repositories/game_repository.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 
 abstract class GameEvent {}
 class LoadGames extends GameEvent {}
