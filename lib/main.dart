@@ -26,6 +26,7 @@ Future<void> main() async {
   String supabaseUrl = '';
   String supabaseKey = '';
 
+  // 🔹 Gestion de la configuration Supabase
   if (!kIsWeb) {
     await dotenv.load(fileName: ".env");
     supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
@@ -42,6 +43,7 @@ Future<void> main() async {
     }
   }
 
+  // 🔸 Si clé manquante → erreur claire
   if (supabaseUrl.isEmpty || supabaseKey.isEmpty) {
     runApp(
       const MaterialApp(
@@ -62,6 +64,7 @@ Future<void> main() async {
     return;
   }
 
+  // 🔹 Initialisations
   await Supabase.initialize(url: supabaseUrl, anonKey: supabaseKey);
   await Hive.initFlutter();
   await Hive.openBox('theme_box');
@@ -76,6 +79,7 @@ Future<void> main() async {
   final statsRepository =
       StatsJoueurSmRepositoryImpl(StatsJoueurSmRemoteDataSource(supabaseClient));
 
+  // 🔹 Lancement de l’application
   runApp(
     MultiRepositoryProvider(
       providers: [

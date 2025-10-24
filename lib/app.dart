@@ -1,3 +1,5 @@
+// 📁 lib/app.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -11,10 +13,12 @@ class GameMasterHubApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final router = AppRouter.createRouter(context);
+
     return BlocBuilder<ThemeBloc, ThemeState>(
       builder: (context, state) {
         return MaterialApp.router(
-          routerConfig: AppRouter.router,
+          routerConfig: router,
           title: 'GameMaster Hub',
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,

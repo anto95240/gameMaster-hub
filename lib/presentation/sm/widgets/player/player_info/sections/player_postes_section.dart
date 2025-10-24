@@ -27,6 +27,7 @@ class _PlayerPostesSectionState extends State<PlayerPostesSection> {
 
   @override
   Widget build(BuildContext context) {
+    // 🔹 Mode édition → sélection multiple
     if (widget.isEditing) {
       return SizedBox(
         width: double.infinity,
@@ -39,7 +40,9 @@ class _PlayerPostesSectionState extends State<PlayerPostesSection> {
             initialValue: _selectedPostes,
             title: const Text('Postes'),
             buttonText: Text(
-              _selectedPostes.map((e) => e.name).join(' / '),
+              _selectedPostes.isEmpty
+                  ? 'Sélectionner les postes'
+                  : _selectedPostes.map((e) => e.name).join(' / '),
               overflow: TextOverflow.ellipsis,
             ),
             onConfirm: (values) => setState(() => _selectedPostes = values),
@@ -48,17 +51,27 @@ class _PlayerPostesSectionState extends State<PlayerPostesSection> {
       );
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        widget.joueur.postes.map((e) => e.name).join('/'),
-        style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
-        textAlign: TextAlign.center,
-      ),
+    // 🔹 Mode affichage → un encadré par poste
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      alignment: WrapAlignment.center,
+      children: widget.joueur.postes.map((poste) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.blue.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            poste.name,
+            style: const TextStyle(
+              color: Colors.blue,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }

@@ -156,7 +156,6 @@ class PlayerCardWidget extends StatelessWidget {
     );
   }
 
-  /// 🔹 Badge affichant note / potentiel
   Widget _buildRatingBadge(
       BuildContext context, int rating, double fontSize, Color color) {
     return Container(
@@ -167,7 +166,6 @@ class PlayerCardWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withOpacity(0.15),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withOpacity(0.3)),
       ),
       child: Text(
         rating.toString(),
@@ -180,14 +178,12 @@ class PlayerCardWidget extends StatelessWidget {
     );
   }
 
-  /// 🔸 Couleur de la note actuelle
   Color _getRatingColor(int rating) {
     if (rating >= 85) return Colors.green;
     if (rating >= 80) return Colors.blue;
     return Colors.orange;
   }
 
-  /// 🔸 Couleur du potentiel (légèrement différente pour contraste)
   Color _getPotentialColor(int potential) {
     if (potential >= 90) return Colors.lightGreen;
     if (potential >= 80) return Colors.cyan;

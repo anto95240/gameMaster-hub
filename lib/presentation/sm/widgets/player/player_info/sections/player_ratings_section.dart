@@ -48,7 +48,7 @@ class PlayerRatingsSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               SizedBox(
-                width: 90,
+                width: 40,
                 child: TextField(
                   decoration: const InputDecoration(
                     labelText: 'Niveau',
@@ -69,7 +69,7 @@ class PlayerRatingsSection extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               SizedBox(
-                width: 90,
+                width: 40,
                 child: TextField(
                   decoration: const InputDecoration(
                     labelText: 'Potentiel',
@@ -94,19 +94,17 @@ class PlayerRatingsSection extends StatelessWidget {
     );
   }
 
-  /// 🔸 Widget carré pour note / potentiel
   Widget _buildSquareStatBox(
     BuildContext context, {
     required int value,
     required Color color,
   }) {
     return Container(
-      width: 50,
-      height: 50,
+      width: 40,
+      height: 40,
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3), width: 1),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -124,14 +122,12 @@ class PlayerRatingsSection extends StatelessWidget {
     );
   }
 
-  /// 🔸 Couleur de la note actuelle
   Color _getRatingColor(int rating) {
     if (rating >= 85) return Colors.green;
     if (rating >= 80) return Colors.blue;
     return Colors.orange;
   }
 
-  /// 🔸 Couleur du potentiel (légèrement différente pour contraste)
   Color _getPotentialColor(int potential) {
     if (potential >= 90) return Colors.lightGreen;
     if (potential >= 80) return Colors.cyan;

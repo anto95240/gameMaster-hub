@@ -66,8 +66,8 @@ class SmSaveScreen extends StatelessWidget {
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: crossAxisCount,
                       crossAxisSpacing: spacing,
-                      mainAxisSpacing: spacing,
-                      childAspectRatio: cardWidth / 140, // cards plus compactes
+                      // mainAxisSpacing: spacing,
+                      childAspectRatio: cardWidth / 170, // cards plus compactes
                     ),
                     itemBuilder: (context, index) {
                       final save = saves[index];

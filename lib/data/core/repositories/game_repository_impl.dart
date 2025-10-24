@@ -7,7 +7,19 @@ class GameRepositoryImpl implements GameRepository {
 
   GameRepositoryImpl(this.supabase);
 
-  /// Méthode existante : récupère tous les jeux
+  /// 🔹 Helper pour extraire le count des saves
+  int extractSavesCount(Map<String, dynamic> e) {
+    final saves = e['save'];
+    if (saves is List && saves.isNotEmpty) {
+      final first = saves.first;
+      final count = first['count'];
+      if (count is int) return count;
+      return int.tryParse(count.toString()) ?? 0;
+    }
+    return 0;
+  }
+
+  /// 🔹 Récupère tous les jeux
   @override
   Future<List<Game>> getAllGames() async {
     final response = await supabase
@@ -28,12 +40,12 @@ class GameRepositoryImpl implements GameRepository {
         description: e['description'],
         icon: e['icon'],
         route: e['route'],
-        savesCount: 0, // par défaut
+        savesCount: 0,
       );
     }).toList();
   }
 
-  /// Méthode existante : récupère un jeu par ID
+  /// 🔹 Récupère un jeu par ID
   @override
   Future<Game?> getGameById(int id) async {
     final response = await supabase
@@ -58,7 +70,7 @@ class GameRepositoryImpl implements GameRepository {
     );
   }
 
-  /// Nouvelle méthode : récupère tous les jeux avec le nombre de saves
+  /// 🔹 Récupère tous les jeux avec le nombre de saves
   @override
   Future<List<Game>> getAllGamesWithSaves() async {
     final response = await supabase
@@ -73,30 +85,18 @@ class GameRepositoryImpl implements GameRepository {
           ? e['game_id']
           : int.tryParse(e['game_id'].toString()) ?? 0;
 
-      int savesCount = 0;
-      if (e['save'] != null &&
-          e['save'] is List &&
-          (e['save'] as List).isNotEmpty) {
-        final first = (e['save'] as List).first;
-        if (first['count'] != null) {
-          savesCount = first['count'] is int
-              ? first['count']
-              : int.tryParse(first['count'].toString()) ?? 0;
-        }
-      }
-
       return Game(
         gameId: gameId,
         name: e['name'] ?? 'Jeu inconnu',
         description: e['description'],
         icon: e['icon'],
         route: e['route'],
-        savesCount: savesCount,
+        savesCount: extractSavesCount(e),
       );
     }).toList();
   }
 
-  /// Nouvelle méthode : récupère un jeu par ID avec le nombre de saves
+  /// 🔹 Récupère un jeu par ID avec le nombre de saves
   @override
   Future<Game?> getGameByIdWithSaves(int id) async {
     final response = await supabase
@@ -111,25 +111,13 @@ class GameRepositoryImpl implements GameRepository {
         ? response['game_id']
         : int.tryParse(response['game_id'].toString()) ?? 0;
 
-    int savesCount = 0;
-    if (response['save'] != null &&
-        response['save'] is List &&
-        (response['save'] as List).isNotEmpty) {
-      final first = (response['save'] as List).first;
-      if (first['count'] != null) {
-        savesCount = first['count'] is int
-            ? first['count']
-            : int.tryParse(first['count'].toString()) ?? 0;
-      }
-    }
-
     return Game(
       gameId: gameId,
       name: response['name'] ?? 'Jeu inconnu',
       description: response['description'],
       icon: response['icon'],
       route: response['route'],
-      savesCount: savesCount,
+      savesCount: extractSavesCount(response),
     );
   }
 }
