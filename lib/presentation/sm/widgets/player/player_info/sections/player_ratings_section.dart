@@ -48,7 +48,7 @@ class PlayerRatingsSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               SizedBox(
-                width: 40,
+                width: 90,
                 child: TextField(
                   decoration: const InputDecoration(
                     labelText: 'Niveau',
@@ -69,7 +69,7 @@ class PlayerRatingsSection extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               SizedBox(
-                width: 40,
+                width: 90,
                 child: TextField(
                   decoration: const InputDecoration(
                     labelText: 'Potentiel',
