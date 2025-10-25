@@ -4,12 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gamemaster_hub/domain/domain_export.dart';
 import 'package:gamemaster_hub/presentation/presentation_export.dart';
-import 'package:gamemaster_hub/presentation/sm/screens/sm_main_screen.dart';
 import 'package:gamemaster_hub/presentation/sm/screens/sm_save_screen.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_bloc.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_event.dart';
 
-/// Classe utilitaire pour rafraîchir GoRouter quand le AuthBloc change
 class GoRouterRefreshStream extends ChangeNotifier {
   late final StreamSubscription _subscription;
 
@@ -36,15 +34,12 @@ class AppRouter {
       redirect: (context, state) {
         final authState = context.read<AuthBloc>().state;
 
-        // Changement ici : utiliser state.uri.path au lieu de state.subloc
         final isAuthRoute = state.uri.path == '/auth';
 
-        // Si non connecté → /auth
         if (authState is AuthUnauthenticated && !isAuthRoute) {
           return '/auth';
         }
 
-        // Si déjà connecté → empêcher d’aller sur /auth
         if (authState is AuthAuthenticated && isAuthRoute) {
           return '/';
         }
@@ -62,27 +57,7 @@ class AppRouter {
           name: 'home',
           builder: (context, state) => const HomeScreen(),
         ),
-        GoRoute(
-          path: '/sm/:saveId',
-          name: 'soccer_manager',
-          builder: (context, state) {
-            final saveIdStr = state.pathParameters['saveId'];
-            final saveId = int.tryParse(saveIdStr ?? '');
-            if (saveId == null || saveId <= 0) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('ID de sauvegarde invalide.')),
-                );
-                context.go('/');
-              });
-              return const SizedBox.shrink();
-            }
-            final extraData = state.extra as Map<String, dynamic>?;
-            final game = extraData?['game'] as Game?;
-            final save = extraData?['save'] as Save?;
-            return SMMainScreen(saveId: saveId, game: game, save: save);
-          },
-        ),
+        ...SmRouter.routes,
         GoRoute(
           path: '/saves/:gameId',
           name: 'saves',
