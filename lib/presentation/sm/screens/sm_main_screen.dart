@@ -15,17 +15,24 @@ class SMMainScreen extends StatefulWidget {
   State<SMMainScreen> createState() => _SMMainScreenState();
 }
 
-class _SMMainScreenState extends State<SMMainScreen> with TickerProviderStateMixin {
+class _SMMainScreenState extends State<SMMainScreen>
+    with TickerProviderStateMixin {
   late TabController _tabController;
   Game? currentGame;
   Save? currentSave;
   bool isLoading = true;
   String? errorMessage;
 
+  final List<Tab> _tabs = const [
+    Tab(text: 'Joueurs', icon: Icon(Icons.people_alt)),
+    Tab(text: 'Tactique', icon: Icon(Icons.sports_soccer)),
+    Tab(text: 'Stats', icon: Icon(Icons.bar_chart)),
+  ];
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 1, vsync: this);
+    _tabController = TabController(length: _tabs.length, vsync: this);
     _initializeData();
   }
 
@@ -42,7 +49,7 @@ class _SMMainScreenState extends State<SMMainScreen> with TickerProviderStateMix
 
       final saveRepo = context.read<SaveRepository>();
       final save = await saveRepo.getSaveById(widget.saveId);
-      
+
       if (save == null) {
         setState(() {
           errorMessage = 'Save non trouvée';
@@ -55,7 +62,7 @@ class _SMMainScreenState extends State<SMMainScreen> with TickerProviderStateMix
       final games = gameBloc.state is GamesLoaded
           ? (gameBloc.state as GamesLoaded).games
           : [];
-      
+
       final game = games.firstWhere(
         (g) => g.gameId == save.gameId,
         orElse: () => Game(gameId: save.gameId, name: 'Jeu inconnu'),
@@ -90,7 +97,10 @@ class _SMMainScreenState extends State<SMMainScreen> with TickerProviderStateMix
 
     if (errorMessage != null || currentGame == null || currentSave == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Erreur')),
+        appBar: CustomAppBar(
+          title: 'Erreur',
+          onBackPressed: () => context.go('/'),
+        ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -107,30 +117,37 @@ class _SMMainScreenState extends State<SMMainScreen> with TickerProviderStateMix
       );
     }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-
-        return Scaffold(
-          appBar: CustomAppBar(
-            title: '${currentGame!.name} - ${currentSave!.name}',
-            onBackPressed: () {
-              context.go('/saves/${currentGame!.gameId}', extra: currentGame);
-            },
-            onSync: () {
-              setState(() {
-                isLoading = true;
-              });
-              _initializeData();
-            },
+    return Scaffold(
+      appBar: CustomAppBar(
+        title: '${currentGame!.name} - ${currentSave!.name}',
+        onBackPressed: () => context.go(
+          '/saves/${currentGame!.gameId}',
+          extra: currentGame,
+        ),
+        onSync: () {
+          setState(() => isLoading = true);
+          _initializeData();
+        },
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: _tabs,
+          labelColor: Colors.white,
+          indicatorColor: Colors.amberAccent,
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          SMPlayersTab(saveId: widget.saveId, game: currentGame!),
+          SMTacticTab(saveId: widget.saveId, game: currentGame!),
+          const Center(
+            child: Text(
+              'Écran Statistiques (à venir)',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ),
-          body: TabBarView(
-            controller: _tabController,
-            children: [
-              SMPlayersTab(saveId: widget.saveId, game: currentGame!),
-            ],
-          ),
-        );
-      },
+        ],
+      ),
     );
   }
 }
