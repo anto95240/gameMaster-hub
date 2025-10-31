@@ -139,7 +139,7 @@ class _SMMainScreenState extends State<SMMainScreen>
         controller: _tabController,
         children: [
           SMPlayersTab(saveId: widget.saveId, game: currentGame!),
-          SMTacticTab(saveId: widget.saveId, game: currentGame!),
+          SMTacticsTab(saveId: widget.saveId, game: currentGame!),
           const Center(
             child: Text(
               'Écran Statistiques (à venir)',
