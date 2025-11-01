@@ -10,6 +10,7 @@ class InteractiveSoccerField extends StatefulWidget {
   final List<PlayerWithPosition> players;
   final bool isLoading;
   final VoidCallback? onOptimizeTactic;
+  final bool showHeader;
 
   const InteractiveSoccerField({
     super.key,
@@ -17,6 +18,7 @@ class InteractiveSoccerField extends StatefulWidget {
     required this.players,
     this.isLoading = false,
     this.onOptimizeTactic,
+    this.showHeader = true,
   });
 
   @override
@@ -34,7 +36,7 @@ class _InteractiveSoccerFieldState extends State<InteractiveSoccerField> {
 
     return Column(
       children: [
-        _buildHeader(context),
+        if (widget.showHeader) _buildHeader(context),
         const SizedBox(height: 12),
         Center(
           child: Container(
@@ -78,6 +80,54 @@ class _InteractiveSoccerFieldState extends State<InteractiveSoccerField> {
     );
   }
 
+  // Calcule la position absolue d'un joueur en fonction de son index et de la formation
+  Offset _computePlayerOffset(int index, double width, double height) {
+    // Index 0: Gardien en bas du terrain
+    if (index == 0) {
+      return Offset(width * 0.5 - 0, height * 0.9);
+    }
+
+    // Parse formation e.g. "4-3-3"
+    final parts = widget.formation
+        .split('-')
+        .where((s) => s.trim().isNotEmpty)
+        .map((s) => int.tryParse(s.trim()) ?? 0)
+        .toList();
+
+    // Paramètres d'espacement
+    final startY = 0.75; // ligne défensive
+    final endY = 0.18;   // ligne la plus avancée
+    final lines = parts.length;
+    final yStep = lines > 1 ? (startY - endY) / (lines - 1) : 0.0;
+
+    // Trouver la ligne et la colonne pour l'index (en ignorant GK)
+    int remaining = index - 1; // after GK
+    for (int row = 0; row < parts.length; row++) {
+      final count = parts[row];
+      if (remaining < count) {
+        // position dans la ligne
+        final xs = _xPositions(count);
+        final relX = xs[remaining];
+        final relY = startY - row * yStep;
+        return Offset(width * relX, height * relY);
+      }
+      remaining -= count;
+    }
+
+    // Fallback centre
+    return Offset(width * 0.5, height * 0.5);
+  }
+
+  List<double> _xPositions(int count) {
+    if (count <= 1) return const [0.5];
+    final list = <double>[];
+    final spacing = 0.7 / (count - 1);
+    for (int i = 0; i < count; i++) {
+      list.add(0.15 + spacing * i);
+    }
+    return list;
+  }
+
   Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -104,10 +154,10 @@ class _InteractiveSoccerFieldState extends State<InteractiveSoccerField> {
   Widget _buildPlayer(
       BuildContext context, PlayerWithPosition playerPos, double width, double height) {
     final isHovered = _hoveredPlayerId == playerPos.player.id;
-
-    // Position selon les coordonnées relatives (si disponibles)
-    final x = width * 0.5; // centré horizontalement (tu peux adapter)
-    final y = height * 0.5; // centré verticalement (à adapter si formation gérée)
+    final idx = widget.players.indexWhere((e) => e.player.id == playerPos.player.id);
+    final offset = _computePlayerOffset(idx, width, height);
+    final x = offset.dx;
+    final y = offset.dy;
 
     return Positioned(
       left: x - 25,

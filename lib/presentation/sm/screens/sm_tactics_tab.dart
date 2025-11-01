@@ -33,36 +33,7 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tactique - Terrain interactif'),
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.grid_view),
-            tooltip: 'Changer de formation',
-            onSelected: (formation) {
-              setState(() {
-                _selectedFormation = formation;
-              });
-            },
-            itemBuilder: (context) {
-              return FormationCalculator.popularFormations.entries.map((entry) {
-                return PopupMenuItem<String>(
-                  value: entry.key,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(entry.key, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      Text(entry.value, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                    ],
-                  ),
-                );
-              }).toList();
-            },
-          ),
-        ],
-      ),
-      body: BlocBuilder<JoueursSmBloc, JoueursSmState>(
+    return BlocBuilder<JoueursSmBloc, JoueursSmState>(
         builder: (context, state) {
           if (state is JoueursSmLoading) {
             return const Center(child: CircularProgressIndicator());
@@ -103,18 +74,75 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
               players: titulaires,
             );
 
+            final avgLevel = titulaires
+                    .map((p) => p.niveauActuel)
+                    .fold<int>(0, (a, b) => a + b) /
+                (titulaires.isEmpty ? 1 : titulaires.length);
+
             return SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  InteractiveSoccerField(
-                    formation: _selectedFormation,
-                    players: playerPositions,
-                    isLoading: _isOptimizing,
-                    onOptimizeTactic: _optimizeTactic,
+                  // Title + chips row
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Optimiseur de Tactique',
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                      ),
+                      _statChip(Icons.people_alt, 'Joueurs', titulaires.length.toString()),
+                      const SizedBox(width: 12),
+                      _statChip(Icons.star, 'Note', avgLevel.round().toString()),
+                      const SizedBox(width: 12),
+                      _statChip(Icons.shuffle, 'Formation', _selectedFormation),
+                    ],
                   ),
+
+                  const SizedBox(height: 16),
+
+                  // Lists + optimize button
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: _formationsList()),
+                      const SizedBox(width: 16),
+                      Expanded(child: _stylesList()),
+                      const SizedBox(width: 16),
+                      _optimizeButton(),
+                    ],
+                  ),
+
                   const SizedBox(height: 24),
-                  _buildTeamStats(titulaires),
+
+                  // Field area (no side text as per final design)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Card(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                          elevation: 6,
+                          clipBehavior: Clip.antiAlias,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: InteractiveSoccerField(
+                              formation: _selectedFormation,
+                              players: playerPositions,
+                              isLoading: _isOptimizing,
+                              onOptimizeTactic: _optimizeTactic,
+                              showHeader: false,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             );
@@ -122,36 +150,116 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
 
           return const Center(child: Text('Chargement...'));
         },
+    );
+  }
+
+  Widget _statChip(IconData icon, String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18),
+          const SizedBox(width: 6),
+          Text(label),
+          const SizedBox(width: 6),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+        ],
       ),
     );
   }
 
-  Widget _buildTeamStats(List<JoueurSm> players) {
-    final avgLevel = players.map((p) => p.niveauActuel).fold(0, (a, b) => a + b) / players.length;
-    final avgAge = players.map((p) => p.age).fold(0, (a, b) => a + b) / players.length;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildStat('Joueurs', players.length.toString(), Icons.people),
-            _buildStat('Niveau moyen', avgLevel.toStringAsFixed(1), Icons.star),
-            _buildStat('Âge moyen', avgAge.toStringAsFixed(1), Icons.cake),
-          ],
-        ),
+  Widget _formationsList() {
+    final items = FormationCalculator.popularFormations;
+    return _boxed(
+      title: 'Liste des Formations',
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: items.entries.map((e) {
+          final selected = e.key == _selectedFormation;
+          return ListTile(
+            dense: true,
+            title: Text(e.key, style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(e.value),
+            trailing: selected ? const Icon(Icons.check_circle, color: Colors.amber) : null,
+            onTap: () => setState(() => _selectedFormation = e.key),
+          );
+        }).toList(),
       ),
     );
   }
 
-  Widget _buildStat(String label, String value, IconData icon) {
+  Widget _stylesList() {
+    return _boxed(
+      title: 'Liste des Styles de jeu',
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: const [
+          ListTile(title: Text('Équilibré'), subtitle: Text('Bientôt disponible')), 
+          ListTile(title: Text('Offensif'), subtitle: Text('Bientôt disponible')),
+          ListTile(title: Text('Défensif'), subtitle: Text('Bientôt disponible')),
+        ],
+      ),
+    );
+  }
+
+  Widget _boxed({required String title, required Widget child}) {
+    return Container(
+      height: 220,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white24, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          const Divider(height: 1),
+          Expanded(child: child),
+        ],
+      ),
+    );
+  }
+
+  Widget _optimizeButton() {
     return Column(
       children: [
-        Icon(icon, color: Colors.amber),
-        const SizedBox(height: 8),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
-        Text(label, style: const TextStyle(fontSize: 12)),
+        Container(
+          width: 140,
+          height: 44,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(22),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF00E5FF), Color(0xFFFFD54F)],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(22),
+              onTap: _isOptimizing ? null : _optimizeTactic,
+              child: Center(
+                child: _isOptimizing
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Text('Optimiser', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
