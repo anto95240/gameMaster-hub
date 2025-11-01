@@ -22,3 +22,8 @@ export 'sm_players_tab/player_card_widget.dart';
 export 'sm_players_tab/sm_players_filters.dart';
 export 'sm_players_tab/sm_players_grid.dart';
 export 'sm_players_tab/sm_players_header.dart';
+export 'tactics/football_field_painter.dart';
+export 'tactics/football_field.dart';
+export 'tactics/player_info_modal.dart';
+export 'tactics/tactics_cards_row.dart';
+export 'tactics/tactics_header.dart';
