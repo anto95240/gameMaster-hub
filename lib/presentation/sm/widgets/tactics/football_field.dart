@@ -15,19 +15,19 @@ class FootballField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxWidth = isLargeScreen ? 700.0 : 600.0;
-    final maxHeight = isLargeScreen ? 480.0 : 420.0;
+    final maxWidth = isLargeScreen ? 500.0 : 400.0;
+    final maxHeight = isLargeScreen ? 700.0 : 600.0;
 
     return Container(
       constraints: BoxConstraints(maxWidth: maxWidth, maxHeight: maxHeight),
       child: AspectRatio(
-        aspectRatio: 1.45,
+        aspectRatio: 0.65, // ✅ Format vertical
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
             gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
               colors: [
                 Color(0xFF9ccc65),
                 Color(0xFF8bc34a),
@@ -36,7 +36,7 @@ class FootballField extends StatelessWidget {
             ),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
             child: CustomPaint(
               painter: FootballFieldPainter(),
               child: LayoutBuilder(
@@ -53,49 +53,53 @@ class FootballField extends StatelessWidget {
     );
   }
 
+  /// ✅ Adaptation des positions pour un terrain vertical (haut ↔ bas)
   List<Widget> _getFormationPositions(BoxConstraints constraints, String formation) {
-    // Positions selon la formation
-    Map<String, List<List<double>>> formations = {
+    // Chaque position est exprimée en pourcentage (x = horizontal, y = vertical)
+    // y = 1.0 correspond au bas du terrain (gardien), y = 0.0 au haut (attaquants)
+    final formations = {
       '4-3-3': [
-        [0.12, 0.5], // GK
-        [0.28, 0.18], [0.28, 0.40], [0.28, 0.60], [0.28, 0.82], // DEF
-        [0.50, 0.30], [0.50, 0.50], [0.50, 0.70], // MID
-        [0.75, 0.25], [0.75, 0.50], [0.75, 0.75], // ATT
+        [0.5, 0.90], // GK tout en bas
+        [0.18, 0.70], [0.38, 0.70], [0.62, 0.70], [0.82, 0.70], // DEF
+        [0.25, 0.50], [0.5, 0.45], [0.75, 0.50], // MID
+        [0.25, 0.20], [0.5, 0.15], [0.75, 0.20], // ATT
       ],
       '4-4-2': [
-        [0.12, 0.5], // GK
-        [0.28, 0.18], [0.28, 0.40], [0.28, 0.60], [0.28, 0.82], // DEF
-        [0.50, 0.20], [0.50, 0.40], [0.50, 0.60], [0.50, 0.80], // MID
-        [0.75, 0.35], [0.75, 0.65], // ATT
+        [0.5, 0.90],
+        [0.18, 0.70], [0.38, 0.70], [0.62, 0.70], [0.82, 0.70], // DEF
+        [0.18, 0.50], [0.38, 0.50], [0.62, 0.50], [0.82, 0.50], // MID
+        [0.38, 0.20], [0.62, 0.20], // ATT
       ],
       '3-5-2': [
-        [0.12, 0.5], // GK
-        [0.28, 0.25], [0.28, 0.50], [0.28, 0.75], // DEF
-        [0.50, 0.15], [0.50, 0.35], [0.50, 0.50], [0.50, 0.65], [0.50, 0.85], // MID
-        [0.75, 0.35], [0.75, 0.65], // ATT
+        [0.5, 0.90],
+        [0.3, 0.70], [0.5, 0.70], [0.7, 0.70], // DEF
+        [0.18, 0.50], [0.35, 0.45], [0.5, 0.40], [0.65, 0.45], [0.82, 0.50], // MID
+        [0.4, 0.20], [0.6, 0.20], // ATT
       ],
       '4-2-3-1': [
-        [0.12, 0.5], // GK
-        [0.28, 0.18], [0.28, 0.40], [0.28, 0.60], [0.28, 0.82], // DEF
-        [0.45, 0.35], [0.45, 0.65], // MID DEF
-        [0.60, 0.25], [0.60, 0.50], [0.60, 0.75], // MID ATT
-        [0.75, 0.50], // ATT
+        [0.5, 0.90],
+        [0.18, 0.70], [0.38, 0.70], [0.62, 0.70], [0.82, 0.70], // DEF
+        [0.35, 0.55], [0.65, 0.55], // MID DEF
+        [0.25, 0.40], [0.5, 0.35], [0.75, 0.40], // MID ATT
+        [0.5, 0.20], // ATT
       ],
       '5-3-2': [
-        [0.12, 0.5], // GK
-        [0.28, 0.12], [0.28, 0.30], [0.28, 0.50], [0.28, 0.70], [0.28, 0.88], // DEF
-        [0.50, 0.30], [0.50, 0.50], [0.50, 0.70], // MID
-        [0.75, 0.35], [0.75, 0.65], // ATT
+        [0.5, 0.90],
+        [0.12, 0.70], [0.3, 0.70], [0.5, 0.70], [0.7, 0.70], [0.88, 0.70], // DEF
+        [0.3, 0.50], [0.5, 0.45], [0.7, 0.50], // MID
+        [0.4, 0.20], [0.6, 0.20], // ATT
       ],
     };
 
-    List<List<double>> positions = formations[formation] ?? formations['4-3-3']!;
+    final positions = formations[formation] ?? formations['4-3-3']!;
 
     return positions.map((pos) {
+      final x = pos[0];
+      final y = pos[1];
       return PlayerPosition(
         constraints: constraints,
-        x: pos[0],
-        y: pos[1],
+        x: x,
+        y: y,
       );
     }).toList();
   }
@@ -121,8 +125,8 @@ class PlayerPosition extends StatelessWidget {
       child: GestureDetector(
         onTap: () => _showPlayerModal(context),
         child: Container(
-          width: 24,
-          height: 24,
+          width: 26,
+          height: 26,
           decoration: BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,

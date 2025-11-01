@@ -8,23 +8,23 @@ class FootballFieldPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 
-    // Rectangle extérieur
+    // Rectangle extérieur du terrain (bords)
     canvas.drawRect(
       Rect.fromLTWH(0, 0, size.width, size.height),
       paint,
     );
 
-    // Ligne médiane
+    // Ligne médiane horizontale
     canvas.drawLine(
-      Offset(size.width / 2, 0),
-      Offset(size.width / 2, size.height),
+      Offset(0, size.height / 2),
+      Offset(size.width, size.height / 2),
       paint,
     );
 
     // Cercle central
     canvas.drawCircle(
       Offset(size.width / 2, size.height / 2),
-      size.height * 0.12,
+      size.width * 0.12, // adapté à la largeur car le terrain est vertical
       paint,
     );
 
@@ -38,43 +38,64 @@ class FootballFieldPainter extends CustomPainter {
       pointPaint,
     );
 
-    // Surface de réparation gauche
+    // 🥅 Surface de réparation BAS
     canvas.drawRect(
-      Rect.fromLTWH(0, size.height * 0.22, size.width * 0.18, size.height * 0.56),
+      Rect.fromLTWH(
+        size.width * 0.22, // centré
+        size.height * 0.82, // en bas
+        size.width * 0.56,
+        size.height * 0.18,
+      ),
       paint,
     );
 
-    // Petite surface gauche
+    // Petite surface BAS
     canvas.drawRect(
-      Rect.fromLTWH(0, size.height * 0.36, size.width * 0.065, size.height * 0.28),
+      Rect.fromLTWH(
+        size.width * 0.36,
+        size.height * 0.935,
+        size.width * 0.28,
+        size.height * 0.065,
+      ),
       paint,
     );
 
-    // Surface de réparation droite
+    // 🥅 Surface de réparation HAUT
     canvas.drawRect(
-      Rect.fromLTWH(size.width * 0.82, size.height * 0.22, size.width * 0.18, size.height * 0.56),
+      Rect.fromLTWH(
+        size.width * 0.22,
+        0,
+        size.width * 0.56,
+        size.height * 0.18,
+      ),
       paint,
     );
 
-    // Petite surface droite
+    // Petite surface HAUT
     canvas.drawRect(
-      Rect.fromLTWH(size.width * 0.935, size.height * 0.36, size.width * 0.065, size.height * 0.28),
+      Rect.fromLTWH(
+        size.width * 0.36,
+        0,
+        size.width * 0.28,
+        size.height * 0.065,
+      ),
       paint,
     );
 
-    // Bandes de pelouse
+    // Bandes de pelouse verticales
     final stripePaint = Paint()
       ..color = Colors.white.withOpacity(0.03)
       ..style = PaintingStyle.fill;
 
-    for (int i = 0; i < 14; i++) {
+    const stripeCount = 12; // nombre de bandes
+    for (int i = 0; i < stripeCount; i++) {
       if (i % 2 == 0) {
         canvas.drawRect(
           Rect.fromLTWH(
-            i * (size.width / 14),
             0,
-            size.width / 14,
-            size.height,
+            i * (size.height / stripeCount),
+            size.width,
+            size.height / stripeCount,
           ),
           stripePaint,
         );
