@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gamemaster_hub/domain/domain_export.dart';
+import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
 import 'package:gamemaster_hub/presentation/sm/widgets/sm_widgets_export.dart';
 
 class SMTacticsTab extends StatefulWidget {
@@ -27,138 +28,191 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isLargeScreen = constraints.maxWidth > 1200;
-        final isMediumScreen = constraints.maxWidth > 800;
+    final screenType = ResponsiveLayout.getScreenType(context);
+    final isMobile = screenType == ScreenType.mobile;
+    final isTablet = screenType == ScreenType.tablet;
 
-        // 🔹 Réduction légère des hauteurs globales
-        final fieldHeight = isLargeScreen ? 480.0 : 400.0;
-        final styleCardHeight = isLargeScreen ? 420.0 : 360.0;
+    final width = MediaQuery.of(context).size.width;
+    final horizontalPadding = ResponsiveLayout.getHorizontalPadding(width);
 
-        return Padding(
-          padding: EdgeInsets.all(isLargeScreen ? 20 : 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 🟦 HEADER
-              TacticsHeader(width: constraints.maxWidth),
-              SizedBox(height: isLargeScreen ? 20 : 16),
+    final spacing = switch (screenType) {
+      ScreenType.mobile => 10.0,
+      ScreenType.tablet => 14.0,
+      ScreenType.laptop => 18.0,
+      ScreenType.laptopL => 22.0,
+    };
 
-              // 🟩 CONTENU PRINCIPAL (TERRAIN À GAUCHE + PANNEAU DROIT)
-              Expanded(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 🟩 TERRAIN (1/3 de la largeur, vertical)
-                    Expanded(
-                      flex: 4,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: AspectRatio(
-                          aspectRatio: 0.65, // ✅ Terrain vertical (portrait)
-                          child: SizedBox(
-                            height: fieldHeight,
-                            child: FootballField(
-                              formation: selectedFormation,
-                              isLargeScreen: isLargeScreen,
-                            ),
-                          ),
-                        ),
+    if (isMobile || isTablet) {
+      return SingleChildScrollView(
+        padding: EdgeInsets.all(horizontalPadding),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(top: spacing / 2, bottom: spacing),
+              child: TacticsHeader(width: width),
+            ),
+
+            _buildOptimizeButton(screenType),
+            SizedBox(height: spacing * 1.2),
+
+            SizedBox(
+              height: isTablet ? 440 : 360,
+              child: FootballField(
+                formation: selectedFormation,
+                isLargeScreen: false,
+              ),
+            ),
+            SizedBox(height: spacing * 1.2),
+
+            _buildStyleCard(isTablet ? 260 : 220),
+          ],
+        ),
+      );
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: horizontalPadding,
+        vertical: spacing,
+      ),
+      child: Column(
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TacticsHeader(width: width),
+          ),
+          SizedBox(height: spacing),
+
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: Center(
+                    child: AspectRatio(
+                      aspectRatio: 0.65,
+                      child: FootballField(
+                        formation: selectedFormation,
+                        isLargeScreen: true,
                       ),
                     ),
+                  ),
+                ),
 
-                    // ESPACE ENTRE LES DEUX BLOCS
-                    const SizedBox(width: 20),
+                SizedBox(width: spacing * 1.4),
 
-                    // 🟦 PANNEAU DROIT (2/3)
-                    Expanded(
-                      flex: 8,
-                      child: Column(
-                        children: [
-                          // 🔹 Bouton Optimiser
-                          Align(
-                            alignment: Alignment.center,
-                            child: Container(
-                              height: 50,
-                              width: isLargeScreen ? 180 : 160,
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFF4dd0e1), Color(0xFFffeb3b)],
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
-                                ),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(8),
-                                  onTap: _onOptimize,
-                                  child: const Center(
-                                    child: Text(
-                                      'Optimiser',
-                                      style: TextStyle(
-                                        color: Colors.black87,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                Expanded(
+                  flex: 6,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      _buildOptimizeButton(screenType),
+                      SizedBox(height: spacing),
+                      // 🧩 La carte prend plus de hauteur
+                      Expanded(child: _buildStyleCard(null)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                          const SizedBox(height: 20),
+  Widget _buildOptimizeButton(ScreenType screenType) {
+    final height = switch (screenType) {
+      ScreenType.mobile => 46.0,
+      ScreenType.tablet => 50.0,
+      ScreenType.laptop => 52.0,
+      ScreenType.laptopL => 56.0,
+    };
 
-                          // 🔹 Carte Liste Styles de jeu
-                          Container(
-                            width: double.infinity,
-                            height: styleCardHeight,
-                            margin: const EdgeInsets.symmetric(horizontal: 12),
-                            padding: const EdgeInsets.all(18),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF2d3142),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
-                                  'Liste des styles de jeu',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                SizedBox(height: 12),
-                                Expanded(
-                                  child: Center(
-                                    child: Text(
-                                      'Aucun style sélectionné pour le moment.',
-                                      style: TextStyle(
-                                        color: Colors.white54,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+    final width = switch (screenType) {
+      ScreenType.mobile => 160.0,
+      ScreenType.tablet => 180.0,
+      ScreenType.laptop => 200.0,
+      ScreenType.laptopL => 220.0,
+    };
+
+    final fontSize = switch (screenType) {
+      ScreenType.mobile => 14.0,
+      ScreenType.tablet => 15.0,
+      ScreenType.laptop => 16.0,
+      ScreenType.laptopL => 17.0,
+    };
+
+    return Container(
+      height: height,
+      width: width,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF4dd0e1), Color(0xFFffeb3b)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: _onOptimize,
+          child: Center(
+            child: Text(
+              'Optimiser',
+              style: TextStyle(
+                color: Colors.black87,
+                fontSize: fontSize,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStyleCard(double? height) {
+    return Container(
+      width: double.infinity,
+      height: height,
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2d3142),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          Text(
+            'Liste des styles de jeu',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 14),
+          Expanded(
+            child: Center(
+              child: Text(
+                'Aucun style sélectionné pour le moment.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white54,
+                  fontSize: 15,
                 ),
               ),
-            ],
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }

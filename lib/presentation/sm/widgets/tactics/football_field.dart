@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
 
 import 'football_field_painter.dart';
 import 'player_info_modal.dart';
@@ -15,13 +16,23 @@ class FootballField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxWidth = isLargeScreen ? 500.0 : 400.0;
-    final maxHeight = isLargeScreen ? 700.0 : 600.0;
+    final screenType = ResponsiveLayout.getScreenType(context);
+
+    final constraints = switch (screenType) {
+      ScreenType.mobile =>
+          const BoxConstraints(maxWidth: 340, maxHeight: 520),
+      ScreenType.tablet =>
+          const BoxConstraints(maxWidth: 420, maxHeight: 640),
+      ScreenType.laptop =>
+          const BoxConstraints(maxWidth: 500, maxHeight: 720),
+      ScreenType.laptopL =>
+          const BoxConstraints(maxWidth: 560, maxHeight: 760),
+    };
 
     return Container(
-      constraints: BoxConstraints(maxWidth: maxWidth, maxHeight: maxHeight),
+      constraints: constraints,
       child: AspectRatio(
-        aspectRatio: 0.65, // ✅ Format vertical
+        aspectRatio: 0.65,
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
@@ -38,11 +49,15 @@ class FootballField extends StatelessWidget {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: CustomPaint(
-              painter: FootballFieldPainter(),
+              painter: FootballFieldPainter(screenType),
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   return Stack(
-                    children: _getFormationPositions(constraints, formation),
+                    children: _getFormationPositions(
+                      constraints,
+                      formation,
+                      screenType,
+                    ),
                   );
                 },
               ),
@@ -53,46 +68,43 @@ class FootballField extends StatelessWidget {
     );
   }
 
-  /// ✅ Adaptation des positions pour un terrain vertical (haut ↔ bas)
-  List<Widget> _getFormationPositions(BoxConstraints constraints, String formation) {
-    // Chaque position est exprimée en pourcentage (x = horizontal, y = vertical)
-    // y = 1.0 correspond au bas du terrain (gardien), y = 0.0 au haut (attaquants)
+  List<Widget> _getFormationPositions(
+      BoxConstraints constraints, String formation, ScreenType screenType) {
     final formations = {
       '4-3-3': [
-        [0.5, 0.90], // GK tout en bas
+        [0.5, 0.90], // GK
         [0.18, 0.70], [0.38, 0.70], [0.62, 0.70], [0.82, 0.70], // DEF
         [0.25, 0.50], [0.5, 0.45], [0.75, 0.50], // MID
         [0.25, 0.20], [0.5, 0.15], [0.75, 0.20], // ATT
       ],
       '4-4-2': [
         [0.5, 0.90],
-        [0.18, 0.70], [0.38, 0.70], [0.62, 0.70], [0.82, 0.70], // DEF
-        [0.18, 0.50], [0.38, 0.50], [0.62, 0.50], [0.82, 0.50], // MID
-        [0.38, 0.20], [0.62, 0.20], // ATT
+        [0.18, 0.70], [0.38, 0.70], [0.62, 0.70], [0.82, 0.70],
+        [0.18, 0.50], [0.38, 0.50], [0.62, 0.50], [0.82, 0.50],
+        [0.38, 0.20], [0.62, 0.20],
       ],
       '3-5-2': [
         [0.5, 0.90],
-        [0.3, 0.70], [0.5, 0.70], [0.7, 0.70], // DEF
-        [0.18, 0.50], [0.35, 0.45], [0.5, 0.40], [0.65, 0.45], [0.82, 0.50], // MID
-        [0.4, 0.20], [0.6, 0.20], // ATT
+        [0.3, 0.70], [0.5, 0.70], [0.7, 0.70],
+        [0.18, 0.50], [0.35, 0.45], [0.5, 0.40], [0.65, 0.45], [0.82, 0.50],
+        [0.4, 0.20], [0.6, 0.20],
       ],
       '4-2-3-1': [
         [0.5, 0.90],
-        [0.18, 0.70], [0.38, 0.70], [0.62, 0.70], [0.82, 0.70], // DEF
-        [0.35, 0.55], [0.65, 0.55], // MID DEF
-        [0.25, 0.40], [0.5, 0.35], [0.75, 0.40], // MID ATT
-        [0.5, 0.20], // ATT
+        [0.18, 0.70], [0.38, 0.70], [0.62, 0.70], [0.82, 0.70],
+        [0.35, 0.55], [0.65, 0.55],
+        [0.25, 0.40], [0.5, 0.35], [0.75, 0.40],
+        [0.5, 0.20],
       ],
       '5-3-2': [
         [0.5, 0.90],
-        [0.12, 0.70], [0.3, 0.70], [0.5, 0.70], [0.7, 0.70], [0.88, 0.70], // DEF
-        [0.3, 0.50], [0.5, 0.45], [0.7, 0.50], // MID
-        [0.4, 0.20], [0.6, 0.20], // ATT
+        [0.12, 0.70], [0.3, 0.70], [0.5, 0.70], [0.7, 0.70], [0.88, 0.70],
+        [0.3, 0.50], [0.5, 0.45], [0.7, 0.50],
+        [0.4, 0.20], [0.6, 0.20],
       ],
     };
 
     final positions = formations[formation] ?? formations['4-3-3']!;
-
     return positions.map((pos) {
       final x = pos[0];
       final y = pos[1];
@@ -100,6 +112,7 @@ class FootballField extends StatelessWidget {
         constraints: constraints,
         x: x,
         y: y,
+        screenType: screenType,
       );
     }).toList();
   }
@@ -109,24 +122,33 @@ class PlayerPosition extends StatelessWidget {
   final BoxConstraints constraints;
   final double x;
   final double y;
+  final ScreenType screenType;
 
   const PlayerPosition({
     Key? key,
     required this.constraints,
     required this.x,
     required this.y,
+    required this.screenType,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final double size = switch (screenType) {
+      ScreenType.mobile => 20,
+      ScreenType.tablet => 22,
+      ScreenType.laptop => 24,
+      ScreenType.laptopL => 26,
+    };
+
     return Positioned(
-      left: constraints.maxWidth * x - 12,
-      top: constraints.maxHeight * y - 12,
+      left: constraints.maxWidth * x - (size / 2),
+      top: constraints.maxHeight * y - (size / 2),
       child: GestureDetector(
         onTap: () => _showPlayerModal(context),
         child: Container(
-          width: 26,
-          height: 26,
+          width: size,
+          height: size,
           decoration: BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
