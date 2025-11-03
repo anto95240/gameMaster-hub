@@ -7,6 +7,7 @@ class TactiqueJoueurSmModel extends TactiqueJoueurSm {
     required super.joueurId,
     required super.saveId,
     super.roleId,
+    super.userId,
   });
 
   factory TactiqueJoueurSmModel.fromMap(Map<String, dynamic> map) {
@@ -16,6 +17,7 @@ class TactiqueJoueurSmModel extends TactiqueJoueurSm {
       joueurId: map['joueur_id'],
       saveId: map['save_id'],
       roleId: map['role_id'],
+      userId: map['user_id'],
     );
   }
 
@@ -26,6 +28,7 @@ class TactiqueJoueurSmModel extends TactiqueJoueurSm {
       'joueur_id': joueurId,
       'save_id': saveId,
       'role_id': roleId,
+      'user_id': userId,
     };
   }
 }

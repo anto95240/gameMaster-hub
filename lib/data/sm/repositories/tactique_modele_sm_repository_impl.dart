@@ -7,20 +7,18 @@ class TactiqueModeleSmRepositoryImpl implements TactiqueModeleSmRepository {
   TactiqueModeleSmRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<List<TactiqueModeleSm>> getAllTactiques(int saveId) async {
-    return await remoteDataSource.fetchTactiques(saveId);
+  Future<List<TactiqueModeleSm>> getAllTactiques() async {
+    return await remoteDataSource.fetchTactiques();
   }
 
   @override
-  Future<TactiqueModeleSmModel> getTactiqueById(int id, int saveId) async {
-    final tactiques = await remoteDataSource.fetchTactiques(saveId);
+  Future<TactiqueModeleSmModel> getTactiqueById(int id) async {
+    final tactiques = await remoteDataSource.fetchTactiques();
     return tactiques.firstWhere(
       (t) => t.id == id,
       orElse: () => TactiqueModeleSmModel(
         id: -1,
-        saveId: saveId,
         formation: '',
-        mentalite: ''
       ),
     );
   }

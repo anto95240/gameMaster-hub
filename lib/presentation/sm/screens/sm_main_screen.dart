@@ -22,6 +22,7 @@ class _SMMainScreenState extends State<SMMainScreen>
   Save? currentSave;
   bool isLoading = true;
   String? errorMessage;
+  int _currentPlayerCount = 0;
 
   final List<Tab> _tabs = const [
     Tab(text: 'Joueurs', icon: Icon(Icons.people_alt)),
@@ -89,6 +90,11 @@ class _SMMainScreenState extends State<SMMainScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Watch players bloc once per build and compute live count without causing extra rebuilds
+    final joueursState = context.watch<JoueursSmBloc>().state;
+    if (joueursState is JoueursSmLoaded) {
+      _currentPlayerCount = joueursState.joueurs.length;
+    }
     if (isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
@@ -130,7 +136,33 @@ class _SMMainScreenState extends State<SMMainScreen>
         },
         bottom: TabBar(
           controller: _tabController,
-          tabs: _tabs,
+          onTap: (index) {
+            final tacticsDisabled = (_currentPlayerCount) < 11;
+            if (index == 1 && tacticsDisabled) {
+              // Block switching and inform user
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Vous devez avoir au moins 11 joueurs pour accéder à la tactique.'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+              return;
+            }
+          },
+          tabs: [
+            const Tab(text: 'Joueurs', icon: Icon(Icons.people_alt)),
+            Tab(
+              icon: Icon(Icons.sports_soccer,
+                  color: (_currentPlayerCount) < 11 ? Colors.white38 : null),
+              child: Text(
+                'Tactique',
+                style: TextStyle(
+                  color: (_currentPlayerCount) < 11 ? Colors.white38 : Colors.white,
+                ),
+              ),
+            ),
+            const Tab(text: 'Stats', icon: Icon(Icons.bar_chart)),
+          ],
           labelColor: Colors.white,
           indicatorColor: Colors.amberAccent,
         ),

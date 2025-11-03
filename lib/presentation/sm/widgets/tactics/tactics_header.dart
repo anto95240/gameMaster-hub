@@ -3,8 +3,17 @@ import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
 class TacticsHeader extends StatelessWidget {
   final double width;
+  final int totalPlayers;
+  final double averageNiveauActuel;
+  final String selectedFormation;
 
-  const TacticsHeader({super.key, required this.width});
+  const TacticsHeader({
+    super.key,
+    required this.width,
+    required this.totalPlayers,
+    required this.averageNiveauActuel,
+    required this.selectedFormation,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -12,9 +21,9 @@ class TacticsHeader extends StatelessWidget {
     final isMobile = screenType == ScreenType.mobile;
     final isTablet = screenType == ScreenType.tablet;
 
-    final totalPlayers = 23;
-    final averageNiveauActuel = 87;
-    final selectedFormation = '4-3-3';
+    final totalPlayers = this.totalPlayers;
+    final averageNiveauActuel = this.averageNiveauActuel;
+    final selectedFormation = this.selectedFormation;
 
     final titleSize = switch (screenType) {
       ScreenType.mobile => 20.0,
