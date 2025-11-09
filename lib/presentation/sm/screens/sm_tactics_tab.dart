@@ -6,16 +6,18 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:gamemaster_hub/domain/sm/services/tactics_optimizer.dart';
 import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
 import 'package:gamemaster_hub/presentation/sm/widgets/sm_widgets_export.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/sm_blocs_export.dart';
+import '../blocs/sm_blocs_export.dart';
 
 class SMTacticsTab extends StatefulWidget {
   final int saveId;
   final Game game;
+  final int currentTabIndex;
 
   const SMTacticsTab({
     Key? key,
     required this.saveId,
     required this.game,
+    required this.currentTabIndex,
   }) : super(key: key);
 
   @override
@@ -137,28 +139,39 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
     final width = MediaQuery.of(context).size.width;
     final horizontalPadding = ResponsiveLayout.getHorizontalPadding(width);
 
-    final spacing = switch (screenType) {
-      ScreenType.mobile => 10.0,
-      ScreenType.tablet => 14.0,
-      ScreenType.laptop => 18.0,
-      ScreenType.laptopL => 22.0,
-    };
+    final spacing = (screenType == ScreenType.mobile)
+        ? 10.0
+        : (screenType == ScreenType.tablet)
+            ? 14.0
+            : (screenType == ScreenType.laptop)
+                ? 18.0
+                : 22.0;
 
+    // 🧩 On écoute le Bloc pour les joueurs
+    final joueursState = context.watch<JoueursSmBloc>().state;
+    final joueursLoaded = joueursState is JoueursSmLoaded
+        ? joueursState
+        : JoueursSmLoaded(joueurs: []);
+
+    // ✅ Mobile & Tablette
     if (isMobile || isTablet) {
       return SingleChildScrollView(
         padding: EdgeInsets.all(horizontalPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
               padding: EdgeInsets.only(top: spacing / 2, bottom: spacing),
-              child: _buildHeader(width),
+              child: SMPlayersHeader(
+                state: joueursLoaded,
+                width: width,
+                currentTabIndex: widget.currentTabIndex,
+              ),
             ),
-
             _buildOptimizeButton(screenType),
             SizedBox(height: spacing * 1.2),
 
+            // ✅ Terrain
             SizedBox(
               height: isTablet ? 440 : 360,
               child: FootballField(
@@ -166,14 +179,15 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
                 isLargeScreen: false,
               ),
             ),
-            SizedBox(height: spacing * 1.2),
 
+            SizedBox(height: spacing * 1.2),
             _buildStyleCard(isTablet ? 260 : 220),
           ],
         ),
       );
     }
 
+    // ✅ Desktop / Laptop
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: horizontalPadding,
@@ -183,7 +197,11 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
         children: [
           Align(
             alignment: Alignment.centerLeft,
-            child: _buildHeader(width),
+            child: SMPlayersHeader(
+              state: joueursLoaded,
+              width: width,
+              currentTabIndex: widget.currentTabIndex,
+            ),
           ),
           SizedBox(height: spacing),
 
@@ -191,6 +209,7 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                // ✅ Terrain
                 Expanded(
                   flex: 3,
                   child: Center(
@@ -203,9 +222,9 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
                     ),
                   ),
                 ),
-
                 SizedBox(width: spacing * 1.4),
 
+                // ✅ Panneau latéral (bouton + styles)
                 Expanded(
                   flex: 6,
                   child: Column(
@@ -213,7 +232,6 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
                     children: [
                       _buildOptimizeButton(screenType),
                       SizedBox(height: spacing),
-                      // 🧩 La carte prend plus de hauteur
                       Expanded(child: _buildStyleCard(null)),
                     ],
                   ),
@@ -226,27 +244,31 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
     );
   }
 
+  /// Bouton "Optimiser ma tactique"
   Widget _buildOptimizeButton(ScreenType screenType) {
-    final height = switch (screenType) {
-      ScreenType.mobile => 46.0,
-      ScreenType.tablet => 50.0,
-      ScreenType.laptop => 52.0,
-      ScreenType.laptopL => 56.0,
-    };
+    final height = (screenType == ScreenType.mobile)
+        ? 46.0
+        : (screenType == ScreenType.tablet)
+            ? 50.0
+            : (screenType == ScreenType.laptop)
+                ? 52.0
+                : 56.0;
 
-    final width = switch (screenType) {
-      ScreenType.mobile => 160.0,
-      ScreenType.tablet => 180.0,
-      ScreenType.laptop => 200.0,
-      ScreenType.laptopL => 220.0,
-    };
+    final width = (screenType == ScreenType.mobile)
+        ? 160.0
+        : (screenType == ScreenType.tablet)
+            ? 180.0
+            : (screenType == ScreenType.laptop)
+                ? 200.0
+                : 220.0;
 
-    final fontSize = switch (screenType) {
-      ScreenType.mobile => 14.0,
-      ScreenType.tablet => 15.0,
-      ScreenType.laptop => 16.0,
-      ScreenType.laptopL => 17.0,
-    };
+    final fontSize = (screenType == ScreenType.mobile)
+        ? 14.0
+        : (screenType == ScreenType.tablet)
+            ? 15.0
+            : (screenType == ScreenType.laptop)
+                ? 16.0
+                : 17.0;
 
     return Container(
       height: height,
@@ -280,27 +302,7 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
     );
   }
 
-  Widget _buildHeader(double width) {
-    final joueursState = context.watch<JoueursSmBloc>().state;
-    int totalPlayers = 0;
-    double avg = 0;
-    if (joueursState is JoueursSmLoaded) {
-      totalPlayers = joueursState.joueurs.length;
-      if (totalPlayers > 0) {
-        final sum = joueursState.joueurs
-            .map((j) => j.joueur.niveauActuel)
-            .fold<int>(0, (a, b) => a + b);
-        avg = sum / totalPlayers;
-      }
-    }
-    return TacticsHeader(
-      width: width,
-      totalPlayers: totalPlayers,
-      averageNiveauActuel: avg,
-      selectedFormation: selectedFormation,
-    );
-  }
-
+  /// Carte de styles tactiques
   Widget _buildStyleCard(double? height) {
     return Container(
       width: double.infinity,
@@ -323,27 +325,16 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
           ),
           const SizedBox(height: 14),
           Expanded(
-            child: stylesGeneral == null
-                ? const Center(
-                    child: Text(
-                      'Aucun style sélectionné pour le moment.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white54,
-                        fontSize: 15,
-                      ),
-                    ),
-                  )
-                : Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(child: _buildStylesColumn('Généraux', stylesGeneral!)),
-                      const SizedBox(width: 16),
-                      Expanded(child: _buildStylesColumn('Offensifs', stylesAttack ?? {})),
-                      const SizedBox(width: 16),
-                      Expanded(child: _buildStylesColumn('Défensifs', stylesDefense ?? {})),
-                    ],
-                  ),
+            child: Center(
+              child: Text(
+                'Aucun style sélectionné pour le moment.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white54,
+                  fontSize: 15,
+                ),
+              ),
+            ),
           ),
         ],
       ),
