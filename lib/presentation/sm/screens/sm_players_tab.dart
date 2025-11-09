@@ -7,8 +7,9 @@ import 'package:gamemaster_hub/presentation/sm/widgets/sm_players_tab/sm_players
 class SMPlayersTab extends StatelessWidget {
   final int saveId;
   final Game game;
+  final int currentTabIndex;
 
-  const SMPlayersTab({super.key, required this.saveId, required this.game});
+  const SMPlayersTab({super.key, required this.saveId, required this.game, required this.currentTabIndex});
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +44,7 @@ class SMPlayersTab extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SMPlayersHeader(state: state, width: constraints.maxWidth),
+                        SMPlayersHeader(state: state, width: constraints.maxWidth, currentTabIndex: currentTabIndex),
                         const SizedBox(height: 16),
                         SMPlayersFilters(state: state, width: constraints.maxWidth),
                         const SizedBox(height: 16),
