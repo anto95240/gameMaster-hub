@@ -42,7 +42,7 @@ class SMAnalyseLogic {
       final joueur = j.joueur;
       if (joueur.postes.isEmpty) continue;
       final poste = joueur.postes.first.name.toUpperCase();
-      final age = joueur.age ?? 0;
+      final age = joueur.age;
       ageMoyen += age;
 
       // Comptage postes
@@ -64,7 +64,6 @@ class SMAnalyseLogic {
       }
 
       final stats = await joueurRepo.getStatsByJoueurId(joueur.id, saveId);
-      if (stats == null) continue;
 
       // Moyennes
       final defense = (stats.marquage + stats.tacles + stats.positionnement) / 3.0;

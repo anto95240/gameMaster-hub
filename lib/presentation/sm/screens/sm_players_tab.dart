@@ -58,7 +58,7 @@ class _SMPlayersTabState extends State<SMPlayersTab> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SMPlayersHeader(state: state, width: constraints.maxWidth, currentTabIndex: currentTabIndex),
+                        SMPlayersHeader(state: state, width: constraints.maxWidth, currentTabIndex: widget.currentTabIndex),
                         const SizedBox(height: 16),
                         SMPlayersFilters(state: state, width: constraints.maxWidth),
                         const SizedBox(height: 16),
