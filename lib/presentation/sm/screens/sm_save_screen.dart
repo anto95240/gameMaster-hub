@@ -15,7 +15,6 @@ class SmSaveScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final savesBloc = context.read<SavesBloc>();
-
     savesBloc.add(LoadSavesEvent(gameId: gameId));
 
     return Scaffold(
@@ -40,23 +39,47 @@ class SmSaveScreen extends StatelessWidget {
               builder: (context, constraints) {
                 final screenWidth = constraints.maxWidth;
 
-                int crossAxisCount = 2;
-                if (screenWidth < 400) crossAxisCount = 1;
-                else if (screenWidth < 800) crossAxisCount = 2;
-                else crossAxisCount = 3;
+                // 🧩 Responsive grid layout
+                int crossAxisCount;
+                double spacing;
+                double verticalSpacing;
+                double cardHeight;
 
-                final spacing = 12.0;
+                if (screenWidth < 480) {
+                  // 📱 Mobile
+                  crossAxisCount = 1;
+                  spacing = 18.0;
+                  verticalSpacing = 20.0;
+                  cardHeight = 190;
+                } else if (screenWidth < 900) {
+                  // 💻 Tablette
+                  crossAxisCount = 2;
+                  spacing = 16.0;
+                  verticalSpacing = 18.0;
+                  cardHeight = 180;
+                } else {
+                  // 🖥️ Desktop
+                  crossAxisCount = 3;
+                  spacing = 12.0;
+                  verticalSpacing = 14.0;
+                  cardHeight = 170;
+                }
+
                 final cardWidth =
                     (screenWidth - (crossAxisCount - 1) * spacing) / crossAxisCount;
 
                 return Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: spacing,
+                    vertical: verticalSpacing,
+                  ),
                   child: GridView.builder(
                     itemCount: saves.length,
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: crossAxisCount,
                       crossAxisSpacing: spacing,
-                      childAspectRatio: cardWidth / 170, 
+                      mainAxisSpacing: verticalSpacing,
+                      childAspectRatio: cardWidth / cardHeight,
                     ),
                     itemBuilder: (context, index) {
                       final save = saves[index];
@@ -99,11 +122,11 @@ class SmSaveScreen extends StatelessWidget {
       }
 
       context.read<SavesBloc>().add(AddSaveEvent(
-        gameId: gameId,
-        userId: userId,
-        name: result['name'],
-        description: result['description'],
-      ));
+            gameId: gameId,
+            userId: userId,
+            name: result['name'],
+            description: result['description'],
+          ));
     }
   }
 }

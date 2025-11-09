@@ -9,6 +9,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool showLogo;
   final VoidCallback? onBackPressed;
   final VoidCallback? onSync;
+  final PreferredSizeWidget? bottom; // ✅ ajouté pour TabBar
 
   const CustomAppBar({
     super.key,
@@ -17,10 +18,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.showLogo = false,
     this.onBackPressed,
     this.onSync,
+    this.bottom,
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize =>
+      Size.fromHeight(kToolbarHeight + (bottom?.preferredSize.height ?? 0));
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +31,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     final bgColor = isDark ? const Color(0xFF2C2C3A) : const Color(0xFFE5E7EB);
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobileOrTablet = screenWidth < 800;
-    
+
     return AppBar(
       backgroundColor: bgColor,
       centerTitle: false,
@@ -46,8 +49,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               'assets/images/logo.png',
               height: 32,
               width: 32,
-              errorBuilder: (context, error, stackTrace) => 
-                const Icon(Icons.gamepad, size: 32),
+              errorBuilder: (context, error, stackTrace) =>
+                  const Icon(Icons.gamepad, size: 32),
             ),
             const SizedBox(width: 12),
           ],
@@ -55,19 +58,21 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             child: Text(
               title,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
       ),
-      actions: isMobileOrTablet 
+      actions: isMobileOrTablet
           ? _buildMobileActions(context, isDark)
           : _buildDesktopActions(context, isDark),
+      bottom: bottom, // ✅ support du TabBar
     );
   }
 
+  // 🔹 Actions mobile (menu burger)
   List<Widget> _buildMobileActions(BuildContext context, bool isDark) {
     return [
       PopupMenuButton<String>(
@@ -123,6 +128,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     ];
   }
 
+  // 🔹 Actions desktop
   List<Widget> _buildDesktopActions(BuildContext context, bool isDark) {
     return [
       IconButton(
