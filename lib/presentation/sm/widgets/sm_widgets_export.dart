@@ -27,6 +27,3 @@ export 'tactics/football_field.dart';
 export 'tactics/player_info_modal.dart';
 export 'tactics/tactics_cards_row.dart';
 export 'tactics/tactics_header.dart';
-export 'sm_analyse_tab/sm_analyse_logic.dart';
-export 'sm_analyse_tab/sm_analyse_layout.dart';
-export 'sm_analyse_tab/sm_analyse_card.dart';
