@@ -70,6 +70,22 @@ Future<void> main() async {
   final statsGardienRepository = StatsGardienSmRepositoryImpl(
       StatsGardienSmRemoteDataSource(supabaseClient));
 
+  // SM Tactics related repositories
+  final roleRepository =
+      RoleModeleSmRepositoryImpl(RoleModeleSmRemoteDataSource(supabaseClient));
+  final tactiqueModeleRepository = TactiqueModeleSmRepositoryImpl(
+      TactiqueModeleSmRemoteDataSource(supabaseClient));
+  final tactiqueJoueurRepository = TactiqueJoueurSmRepositoryImpl(
+      TactiqueJoueurSmRemoteDataSource(supabaseClient));
+  final tactiqueUserRepository = TactiqueUserSmRepositoryImpl(
+      TactiqueUserSmRemoteDataSource(supabaseClient));
+  final instrGeneralRepository = InstructionGeneralSmRepositoryImpl(
+      InstructionGeneralSmRemoteDataSource(supabaseClient));
+  final instrAttaqueRepository = InstructionAttaqueSmRepositoryImpl(
+      InstructionAttaqueSmRemoteDataSource(supabaseClient));
+  final instrDefenseRepository = InstructionDefenseSmRepositoryImpl(
+      InstructionDefenseSmRemoteDataSource(supabaseClient));
+
   // Lancement de l’app
   runApp(
     MultiRepositoryProvider(
@@ -79,6 +95,19 @@ Future<void> main() async {
         RepositoryProvider<JoueurSmRepositoryImpl>.value(value: joueurRepository),
         RepositoryProvider<StatsJoueurSmRepositoryImpl>.value(value: statsRepository),
         RepositoryProvider<StatsGardienSmRepositoryImpl>.value(value: statsGardienRepository),
+        RepositoryProvider<RoleModeleSmRepositoryImpl>.value(value: roleRepository),
+        RepositoryProvider<TactiqueModeleSmRepositoryImpl>.value(
+            value: tactiqueModeleRepository),
+        RepositoryProvider<TactiqueJoueurSmRepositoryImpl>.value(
+            value: tactiqueJoueurRepository),
+        RepositoryProvider<TactiqueUserSmRepositoryImpl>.value(
+            value: tactiqueUserRepository),
+        RepositoryProvider<InstructionGeneralSmRepositoryImpl>.value(
+            value: instrGeneralRepository),
+        RepositoryProvider<InstructionAttaqueSmRepositoryImpl>.value(
+            value: instrAttaqueRepository),
+        RepositoryProvider<InstructionDefenseSmRepositoryImpl>.value(
+            value: instrDefenseRepository),
       ],
       child: MultiBlocProvider(
         providers: [

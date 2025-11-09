@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
 
 class PlayerInfoModal extends StatelessWidget {
-  const PlayerInfoModal({Key? key}) : super(key: key);
+  final String? roleName;
+  final String? roleDescription;
+
+  const PlayerInfoModal({Key? key, this.roleName, this.roleDescription}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -15,9 +18,9 @@ class PlayerInfoModal extends StatelessWidget {
       'Contrat': '2029',
       'Note': '86',
       'Potentiel': '95',
-      'Rôle individuel': 'Gardien libéro',
-      'Description du rôle':
-          'Gardien libéro moderne capable de sortir loin de sa ligne pour intercepter les ballons et relancer proprement.',
+      'Rôle individuel': roleName ?? 'Rôle optimisé',
+      'Description du rôle': roleDescription ??
+          'Rôle attribué automatiquement en fonction de la formation et des statistiques.',
     };
 
     final maxWidth = switch (screenType) {

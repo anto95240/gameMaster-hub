@@ -9,6 +9,7 @@ export 'datasources/stats_gardien_sm_remote_data_source.dart';
 export 'datasources/stats_joueur_sm_remote_data_source.dart';
 export 'datasources/tactique_joueur_sm_remote_data_source.dart';
 export 'datasources/tactique_modele_sm_remote_data_source.dart';
+export 'datasources/tactique_user_sm_remote_data_source.dart';
 
 // Models
 export 'models/instruction_attaque_sm_model.dart';
@@ -20,6 +21,7 @@ export 'models/stats_gardien_sm_model.dart';
 export 'models/stats_joueur_sm_model.dart';
 export 'models/tactique_joueur_sm_model.dart';
 export 'models/tactique_modele_sm_model.dart';
+export 'models/tactique_user_sm_model.dart';
 
 // Repositories
 export 'repositories/instruction_attaque_sm_repository_impl.dart';
@@ -31,3 +33,4 @@ export 'repositories/stats_gardien_sm_repository_impl.dart';
 export 'repositories/stats_joueur_sm_repository_impl.dart';
 export 'repositories/tactique_joueur_sm_repository_impl.dart';
 export 'repositories/tactique_modele_sm_repository_impl.dart';
+export 'repositories/tactique_user_sm_repository_impl.dart';

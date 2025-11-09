@@ -8,3 +8,4 @@ export 'stats_gardien_sm.dart';
 export 'stats_joueur_sm.dart';
 export 'tactique_joueur_sm.dart';
 export 'tactique_modele_sm.dart';
+export 'tactique_user_sm.dart';
