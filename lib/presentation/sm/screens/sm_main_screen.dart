@@ -9,7 +9,12 @@ class SMMainScreen extends StatefulWidget {
   final Game? game;
   final Save? save;
 
-  const SMMainScreen({super.key, required this.saveId, this.game, this.save});
+  const SMMainScreen({
+    super.key,
+    required this.saveId,
+    this.game,
+    this.save,
+  });
 
   @override
   State<SMMainScreen> createState() => _SMMainScreenState();
@@ -22,17 +27,18 @@ class _SMMainScreenState extends State<SMMainScreen>
   Save? currentSave;
   bool isLoading = true;
   String? errorMessage;
-
-  final List<Tab> _tabs = const [
-    Tab(text: 'Joueurs', icon: Icon(Icons.people_alt)),
-    Tab(text: 'Tactique', icon: Icon(Icons.sports_soccer)),
-    Tab(text: 'Stats', icon: Icon(Icons.bar_chart)),
-  ];
+  int _currentPlayerCount = 0;
+  int _currentTabIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() => _currentTabIndex = _tabController.index);
+      }
+    });
     _initializeData();
   }
 
@@ -52,7 +58,7 @@ class _SMMainScreenState extends State<SMMainScreen>
 
       if (save == null) {
         setState(() {
-          errorMessage = 'Save non trouvée';
+          errorMessage = 'Sauvegarde non trouvée.';
           isLoading = false;
         });
         return;
@@ -75,7 +81,7 @@ class _SMMainScreenState extends State<SMMainScreen>
       });
     } catch (e) {
       setState(() {
-        errorMessage = 'Erreur lors du chargement: $e';
+        errorMessage = 'Erreur lors du chargement : $e';
         isLoading = false;
       });
     }
@@ -87,8 +93,34 @@ class _SMMainScreenState extends State<SMMainScreen>
     super.dispose();
   }
 
+  void _handleTabSelection(int index) {
+    final notEnoughForTactics = _currentPlayerCount < 11;
+    final notEnoughForStats = _currentPlayerCount < 15;
+
+    if ((index == 1 && notEnoughForTactics) ||
+        (index == 2 && notEnoughForStats)) {
+      // Bloque le changement d’onglet
+      Future.microtask(() => _tabController.animateTo(0));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            index == 1
+                ? "Vous devez avoir au moins 11 joueurs pour accéder à la tactique."
+                : "Vous devez avoir au moins 15 joueurs pour accéder aux statistiques.",
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final joueursState = context.watch<JoueursSmBloc>().state;
+    if (joueursState is JoueursSmLoaded) {
+      _currentPlayerCount = joueursState.joueurs.length;
+    }
+
     if (isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
@@ -117,20 +149,37 @@ class _SMMainScreenState extends State<SMMainScreen>
       );
     }
 
+    final disableTactics = _currentPlayerCount < 11;
+    final disableStats = _currentPlayerCount < 15;
+
     return Scaffold(
       appBar: CustomAppBar(
         title: '${currentGame!.name} - ${currentSave!.name}',
-        onBackPressed: () => context.go(
-          '/saves/${currentGame!.gameId}',
-          extra: currentGame,
-        ),
-        onSync: () {
+        onBackPressed: () =>
+            context.go('/saves/${currentGame!.gameId}', extra: currentGame),
+        onSync: () async {
           setState(() => isLoading = true);
-          _initializeData();
+          await _initializeData();
         },
         bottom: TabBar(
           controller: _tabController,
-          tabs: _tabs,
+          onTap: _handleTabSelection,
+          tabs: [
+            const Tab(
+              icon: Icon(Icons.people_alt),
+              text: 'Joueurs',
+            ),
+            Tab(
+              icon: Icon(Icons.sports_soccer,
+                  color: disableTactics ? Colors.white38 : null),
+              text: 'Tactique',
+            ),
+            Tab(
+              icon: Icon(Icons.bar_chart,
+                  color: disableStats ? Colors.white38 : null),
+              text: 'Analyse',
+            ),
+          ],
           labelColor: Colors.white,
           indicatorColor: Colors.amberAccent,
         ),
@@ -138,13 +187,47 @@ class _SMMainScreenState extends State<SMMainScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          SMPlayersTab(saveId: widget.saveId, game: currentGame!),
-          SMTacticsTab(saveId: widget.saveId, game: currentGame!),
-          const Center(
-            child: Text(
-              'Écran Statistiques (à venir)',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+          SMPlayersTab(
+            saveId: widget.saveId,
+            game: currentGame!,
+            currentTabIndex: _currentTabIndex,
+          ),
+          disableTactics
+              ? _lockedTabMessage("Tactique", 11)
+              : SMTacticsTab(
+                  saveId: widget.saveId,
+                  game: currentGame!,
+                  currentTabIndex: _currentTabIndex,
+                ),
+          disableStats
+              ? _lockedTabMessage("Statistiques", 15)
+              : SMAnalyseTab(
+                  saveId: widget.saveId,
+                  game: currentGame!,
+                  currentTabIndex: _currentTabIndex,
+                ),
+        ],
+      ),
+    );
+  }
+
+  /// Message affiché si la section est verrouillée (pas assez de joueurs)
+  Widget _lockedTabMessage(String tabName, int requiredCount) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.lock_outline, color: Colors.white38, size: 50),
+          const SizedBox(height: 12),
+          Text(
+            "$tabName verrouillé",
+            style: const TextStyle(fontSize: 20, color: Colors.white70),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Ajoutez au moins $requiredCount joueurs pour accéder à cette section.",
+            style: const TextStyle(fontSize: 14, color: Colors.white54),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
