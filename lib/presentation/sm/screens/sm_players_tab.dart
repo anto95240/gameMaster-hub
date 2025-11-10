@@ -1,95 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamemaster_hub/domain/domain_export.dart';
-import 'package:gamemaster_hub/presentation/presentation_export.dart';
-import 'package:gamemaster_hub/presentation/sm/widgets/sm_players_tab/sm_players_header.dart';
+import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
+import 'package:gamemaster_hub/presentation/sm/blocs/sm_blocs_export.dart';
+import 'package:gamemaster_hub/presentation/sm/widgets/sm_widgets_export.dart';
 
-class SMPlayersTab extends StatefulWidget {
+class SMPlayersTab extends StatelessWidget {
   final int saveId;
-  final Game game;
   final int currentTabIndex;
 
-  const SMPlayersTab({super.key, required this.saveId, required this.game, required this.currentTabIndex});
-
-  @override
-  State<SMPlayersTab> createState() => _SMPlayersTabState();
-}
-
-class _SMPlayersTabState extends State<SMPlayersTab> {
-  bool _loadedOnce = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_loadedOnce) {
-      context.read<JoueursSmBloc>().add(LoadJoueursSmEvent(widget.saveId));
-      _loadedOnce = true;
-    }
-  }
+  const SMPlayersTab({
+    Key? key,
+    required this.saveId,
+    required this.currentTabIndex,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<JoueursSmBloc, JoueursSmState>(
-      builder: (context, state) {
-        if (state is JoueursSmLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is JoueursSmError) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Erreur: ${state.message}'),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () =>
-                      context.read<JoueursSmBloc>().add(LoadJoueursSmEvent(widget.saveId)),
-                  child: const Text('Réessayer'),
-                ),
-              ],
-            ),
-          );
-        } else if (state is JoueursSmLoaded) {
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              return Stack(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SMPlayersHeader(state: state, width: constraints.maxWidth, currentTabIndex: currentTabIndex),
-                        const SizedBox(height: 16),
-                        SMPlayersFilters(state: state, width: constraints.maxWidth),
-                        const SizedBox(height: 16),
-                        Expanded(
-                          child: SMPlayersGrid(state: state, width: constraints.maxWidth, saveId: widget.saveId),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 16,
-                    right: 16,
-                    child: FloatingActionButton(
-                      onPressed: () => _showAddPlayerDialog(context),
-                      child: const Icon(Icons.add),
-                    ),
-                  ),
-                ],
-              );
-            },
-          );
-        }
-        return const Center(child: Text('État inconnu'));
-      },
-    );
-  }
+    final width = MediaQuery.of(context).size.width;
+    final horizontalPadding = ResponsiveLayout.getHorizontalPadding(width);
 
-  void _showAddPlayerDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AddPlayerDialog(saveId: widget.saveId),
+    // 🧩 On écoute le Bloc pour les joueurs
+    final joueursState = context.watch<JoueursSmBloc>().state;
+
+    // ✅✅✅ CORRECTION CRUCIALE POUR LE _CastError ✅✅✅
+    // Si l'état n'est pas "Loaded", on affiche un loader.
+    // Cela empêche le header et la grille de planter lorsque le BLoC
+    // passe en état "Loading" ou "Initial" (par ex. après optimisation).
+    if (joueursState is! JoueursSmLoaded) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    // Si on arrive ici, joueursState EST un JoueursSmLoaded.
+    
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(horizontalPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 10.0, bottom: 20.0),
+            child: SMPlayersHeader(
+              state: joueursState, // C'est sûr maintenant
+              width: width,
+              currentTabIndex: currentTabIndex,
+              // selectedFormation n'est pas nécessaire ici (onglet 0)
+            ),
+          ),
+          
+          // Le reste de votre UI pour cet onglet
+          SMPlayersFilters(
+            state: joueursState,
+            width: width,
+          ), // Widget de filtres
+          const SizedBox(height: 20),
+          SMPlayersGrid(
+            state: joueursState,
+            width: width,
+            saveId: saveId,
+          ), // Grille des joueurs
+        ],
+      ),
     );
   }
 }

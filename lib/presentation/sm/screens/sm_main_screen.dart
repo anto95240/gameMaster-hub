@@ -39,6 +39,7 @@ class _SMMainScreenState extends State<SMMainScreen>
         setState(() => _currentTabIndex = _tabController.index);
       }
     });
+    context.read<JoueursSmBloc>().add(LoadJoueursSmEvent(widget.saveId));
     _initializeData();
   }
 
@@ -63,6 +64,8 @@ class _SMMainScreenState extends State<SMMainScreen>
         });
         return;
       }
+
+      if (!mounted) return;
 
       final gameBloc = context.read<GameBloc>();
       final games = gameBloc.state is GamesLoaded
@@ -189,7 +192,7 @@ class _SMMainScreenState extends State<SMMainScreen>
         children: [
           SMPlayersTab(
             saveId: widget.saveId,
-            game: currentGame!,
+            // game: currentGame!,
             currentTabIndex: _currentTabIndex,
           ),
           disableTactics
@@ -203,7 +206,7 @@ class _SMMainScreenState extends State<SMMainScreen>
               ? _lockedTabMessage("Statistiques", 15)
               : SMAnalyseTab(
                   saveId: widget.saveId,
-                  game: currentGame!,
+                  // game: currentGame!,
                   currentTabIndex: _currentTabIndex,
                 ),
         ],

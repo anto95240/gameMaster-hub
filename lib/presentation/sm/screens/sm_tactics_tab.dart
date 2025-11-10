@@ -7,18 +7,20 @@ import 'package:gamemaster_hub/domain/sm/services/tactics_optimizer.dart';
 import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
 import 'package:gamemaster_hub/presentation/sm/widgets/sm_widgets_export.dart';
 import '../blocs/sm_blocs_export.dart';
+// Note : 'TacticsHeader' n'est plus importé, nous utilisons SMPlayersHeader
 
 class SMTacticsTab extends StatefulWidget {
   final int saveId;
   final Game game;
   final int currentTabIndex;
 
+  // ✅ CORRECTION LINT : Utilisation de super.key
   const SMTacticsTab({
-    Key? key,
+    super.key,
     required this.saveId,
     required this.game,
     required this.currentTabIndex,
-  }) : super(key: key);
+  });
 
   @override
   State<SMTacticsTab> createState() => _SMTacticsTabState();
@@ -32,6 +34,8 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
 
   Future<void> _onOptimize() async {
     try {
+      // ✅ VÉRIFICATION "MOUNTED" (1)
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Optimisation en cours...')),
       );
@@ -44,6 +48,9 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
         tactiqueModeleRepo: context.read<TactiqueModeleSmRepositoryImpl>(),
       );
       final result = await optimizer.optimize(saveId: widget.saveId);
+
+      // ✅ VÉRIFICATION "MOUNTED" (2) - Après l'await
+      if (!mounted) return;
 
       // Persist tactique_user_sm
       final authUserId = Supabase.instance.client.auth.currentUser?.id ?? '';
@@ -75,17 +82,19 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
       final attRepo = context.read<InstructionAttaqueSmRepositoryImpl>();
       final defRepo = context.read<InstructionDefenseSmRepositoryImpl>();
 
+      // ✅✅✅ CORRECTION PRINCIPALE ✅✅✅
+      // Remplacement de tous les 'orElse: () => ''' par des valeurs par défaut valides.
       await genRepo.insertInstruction(InstructionGeneralSmModel(
         id: 0,
         tactiqueId: result.modeleId ?? 0,
         saveId: widget.saveId,
         userId: authUserId,
-        largeur: result.styles.general.keys.firstWhere((k) => k.startsWith('largeur'), orElse: () => ''),
-        mentalite: result.styles.general.keys.firstWhere((k) => k.startsWith('mentalité'), orElse: () => ''),
-        tempo: result.styles.general.keys.firstWhere((k) => k.startsWith('tempo'), orElse: () => ''),
-        fluidite: '',
-        rythmeTravail: '',
-        creativite: '',
+        largeur: result.styles.general.keys.firstWhere((k) => k.startsWith('largeur'), orElse: () => 'largeur normal'),
+        mentalite: result.styles.general.keys.firstWhere((k) => k.startsWith('mentalité'), orElse: () => 'mentalité équilibrée'),
+        tempo: result.styles.general.keys.firstWhere((k) => k.startsWith('tempo'), orElse: () => 'tempo normal'),
+        fluidite: result.styles.general.keys.firstWhere((k) => k.startsWith('fluidité'), orElse: () => 'fluidité équilibrée'),
+        rythmeTravail: result.styles.general.keys.firstWhere((k) => k.startsWith('rythme de travail'), orElse: () => 'rythme de travail normal'),
+        creativite: result.styles.general.keys.firstWhere((k) => k.startsWith('créativité'), orElse: () => 'créativité normale'),
       ));
 
       await attRepo.insertInstruction(InstructionAttaqueSmModel(
@@ -93,12 +102,12 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
         tactiqueId: result.modeleId ?? 0,
         saveId: widget.saveId,
         userId: authUserId,
-        stylePasse: result.styles.attack.keys.firstWhere((k) => k.startsWith('style de passe'), orElse: () => ''),
-        styleAttaque: '',
-        attaquants: '',
-        jeuLarge: '',
-        jeuConstruction: result.styles.attack.keys.firstWhere((k) => k.startsWith('jeu de construction'), orElse: () => ''),
-        contreAttaque: result.styles.attack.keys.firstWhere((k) => k.startsWith('contre-attaque'), orElse: () => ''),
+        stylePasse: result.styles.attack.keys.firstWhere((k) => k.startsWith('style de passe'), orElse: () => 'style de passe mixte'),
+        styleAttaque: result.styles.attack.keys.firstWhere((k) => k.startsWith('style d\'attaque'), orElse: () => 'style d\'attaque normal'),
+        attaquants: result.styles.attack.keys.firstWhere((k) => k.startsWith('attaquants'), orElse: () => 'attaquants normaux'),
+        jeuLarge: result.styles.attack.keys.firstWhere((k) => k.startsWith('jeu large'), orElse: () => 'jeu large normal'),
+        jeuConstruction: result.styles.attack.keys.firstWhere((k) => k.startsWith('jeu de construction'), orElse: () => 'jeu de construction normal'),
+        contreAttaque: result.styles.attack.keys.firstWhere((k) => k.startsWith('contre-attaque'), orElse: () => 'contre-attaque équilibrée'),
       ));
 
       await defRepo.insertInstruction(InstructionDefenseSmModel(
@@ -106,11 +115,11 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
         tactiqueId: result.modeleId ?? 0,
         saveId: widget.saveId,
         userId: authUserId,
-        pressing: result.styles.defense.keys.firstWhere((k) => k.startsWith('pressing'), orElse: () => ''),
-        styleTacle: result.styles.defense.keys.firstWhere((k) => k.startsWith('style tacle'), orElse: () => ''),
-        ligneDefensive: result.styles.defense.keys.firstWhere((k) => k.startsWith('ligne défensive'), orElse: () => ''),
-        gardienLibero: '',
-        perteTemps: '',
+        pressing: result.styles.defense.keys.firstWhere((k) => k.startsWith('pressing'), orElse: () => 'pressing normal'),
+        styleTacle: result.styles.defense.keys.firstWhere((k) => k.startsWith('style tacle'), orElse: () => 'style tacle normal'),
+        ligneDefensive: result.styles.defense.keys.firstWhere((k) => k.startsWith('ligne défensive'), orElse: () => 'ligne défensive normale'),
+        gardienLibero: result.styles.defense.keys.firstWhere((k) => k.startsWith('gardien libéro'), orElse: () => 'gardien libéro normal'),
+        perteTemps: result.styles.defense.keys.firstWhere((k) => k.startsWith('perte de temps'), orElse: () => 'perte de temps non'),
       ));
 
       setState(() {
@@ -120,10 +129,14 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
         stylesDefense = result.styles.defense;
       });
 
+      // ✅ VÉRIFICATION "MOUNTED" (3)
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Tactique optimisée et enregistrée.')),
       );
     } catch (e) {
+      // ✅ VÉRIFICATION "MOUNTED" (4)
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur optimisation: $e')),
       );
@@ -149,9 +162,10 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
 
     // 🧩 On écoute le Bloc pour les joueurs
     final joueursState = context.watch<JoueursSmBloc>().state;
+    // ✅ MODIFIÉ : Protection ajoutée
     final joueursLoaded = joueursState is JoueursSmLoaded
         ? joueursState
-        : JoueursSmLoaded(joueurs: []);
+        : JoueursSmLoaded(joueurs: const []); // Utilise const []
 
     // ✅ Mobile & Tablette
     if (isMobile || isTablet) {
@@ -166,6 +180,7 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
                 state: joueursLoaded,
                 width: width,
                 currentTabIndex: widget.currentTabIndex,
+                selectedFormation: selectedFormation, // <-- Passe la formation
               ),
             ),
             _buildOptimizeButton(screenType),
@@ -201,6 +216,7 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
               state: joueursLoaded,
               width: width,
               currentTabIndex: widget.currentTabIndex,
+              selectedFormation: selectedFormation, // <-- Passe la formation
             ),
           ),
           SizedBox(height: spacing),
@@ -302,8 +318,54 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
     );
   }
 
-  /// Carte de styles tactiques
+  // ℹ️ HELPER AJOUTÉ
+  /// Construit une section de style (Général, Attaque, Défense)
+  Widget _buildStyleSection(String title, Map<String, double>? styles) {
+    if (styles == null || styles.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: Color(0xFF4dd0e1),
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ...styles.entries.map((entry) {
+            // entry.key est "largeur normal", "style de passe court", etc.
+            final displayName = entry.key.capitalize();
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 6.0),
+              child: Text(
+                displayName,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  height: 1.4,
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  /// ✅ MODIFIÉ : Carte de styles tactiques dynamique
   Widget _buildStyleCard(double? height) {
+    final bool hasStyles = (stylesGeneral?.isNotEmpty ?? false) ||
+        (stylesAttack?.isNotEmpty ?? false) ||
+        (stylesDefense?.isNotEmpty ?? false);
+
     return Container(
       width: double.infinity,
       height: height,
@@ -316,7 +378,7 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Liste des styles de jeu',
+            'Styles de jeu optimisés',
             style: TextStyle(
               color: Colors.white,
               fontSize: 18,
@@ -324,69 +386,63 @@ class _SMTacticsTabState extends State<SMTacticsTab> {
             ),
           ),
           const SizedBox(height: 14),
-          Expanded(
-            child: Center(
-              child: Text(
-                'Aucun style sélectionné pour le moment.',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white54,
-                  fontSize: 15,
+          if (!hasStyles)
+            Expanded(
+              child: Center(
+                child: Text(
+                  'Aucun style optimisé pour le moment. Cliquez sur "Optimiser".',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white54,
+                    fontSize: 15,
+                  ),
                 ),
               ),
             ),
-          ),
+          if (hasStyles)
+            Expanded(
+              child: ListView( // Utilise ListView pour le scrolling si le contenu déborde
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildStyleSection(
+                          'Général',
+                          stylesGeneral,
+                        ),
+                      ),
+                      Expanded(
+                        child: _buildStyleSection(
+                          'Attaque',
+                          stylesAttack,
+                        ),
+                      ),
+                      Expanded(
+                        child: _buildStyleSection(
+                          'Défense',
+                          stylesDefense,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildStylesColumn(String title, Map<String, double> data) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 8),
-        ...data.entries.map((e) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      e.key,
-                      style: const TextStyle(color: Colors.white, fontSize: 13),
-                    ),
-                  ),
-                  _scoreChip(e.value),
-                ],
-              ),
-            )),
-      ],
-    );
-  }
-
-  Widget _scoreChip(double score) {
-    final color = score >= 0.75
-        ? const Color(0xFF4caf50)
-        : (score >= 0.6 ? const Color(0xFFffeb3b) : const Color(0xFFff9800));
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color),
-      ),
-      child: Text(
-        (score * 100).toStringAsFixed(0),
-        style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12),
-      ),
-    );
+// ℹ️ HELPER AJOUTÉ
+// Ajout d'une extension pour capitaliser la première lettre des styles
+extension StringExtension on String {
+  String capitalize() {
+    // ✅ CORRECTION LINT : Suppression de 'this.'
+    if (isEmpty) {
+      return this;
+    }
+    return "${this[0].toUpperCase()}${substring(1)}";
   }
 }

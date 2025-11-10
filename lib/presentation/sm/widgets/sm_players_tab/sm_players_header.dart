@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
+
+// Imports ajoutés pour assurer la complétude
+import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
+import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_bloc_export.dart';
+
 import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
 class SMPlayersHeader extends StatelessWidget {
   final JoueursSmLoaded state;
   final double width;
-  final int currentTabIndex; // ← index actuel de l’onglet
+  final int currentTabIndex;
+  final String? selectedFormation;
 
   const SMPlayersHeader({
     super.key,
     required this.state,
     required this.width,
     required this.currentTabIndex,
+    this.selectedFormation,
   });
 
   @override
@@ -34,7 +41,7 @@ class SMPlayersHeader extends StatelessWidget {
     List<Widget> statCards = [];
 
     switch (currentTabIndex) {
-      case 0:
+      case 0: // Onglet Joueurs
         title = "Gestion des joueurs";
         statCards = [
           _buildStatCard(context, 'Joueurs', totalPlayers.toString(),
@@ -44,17 +51,28 @@ class SMPlayersHeader extends StatelessWidget {
         ];
         break;
 
-      case 1:
+      case 1: // Onglet Tactique
         title = "Tactique de l’équipe";
         statCards = [
           _buildStatCard(context, 'Joueurs', totalPlayers.toString(),
               Icons.people, screenType),
+          
+          // ✅ CORRIGÉ : Utilise selectedFormation (avec un fallback 'Aucune')
+          // et une icône plus appropriée.
+          _buildStatCard(
+            context,
+            'Tactique',
+            selectedFormation ?? 'Aucune', // <-- Utilise la variable passée
+            Icons.grid_view, // <-- Changé l'icône
+            screenType,
+          ),
+
           _buildStatCard(context, 'Note',
               averageNiveauActuel.toStringAsFixed(0), Icons.star, screenType),
         ];
         break;
 
-      case 2:
+      case 2: // Onglet Analyse
         title = "Analyse d’équipe";
         statCards = [
           _buildStatCard(context, 'Joueurs', totalPlayers.toString(),

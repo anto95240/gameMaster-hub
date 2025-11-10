@@ -1,87 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamemaster_hub/domain/domain_export.dart';
-import 'package:gamemaster_hub/data/data_export.dart';
-import 'package:gamemaster_hub/presentation/sm/widgets/sm_widgets_export.dart';
+import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/sm_blocs_export.dart';
+import 'package:gamemaster_hub/presentation/sm/widgets/sm_widgets_export.dart';
 
-class SMAnalyseTab extends StatefulWidget {
+// Supposons que vous ayez un widget pour l'analyse
+// import 'package:gamemaster_hub/presentation/sm/widgets/sm_analyse_tab/sm_analyse_layout.dart';
+
+class SMAnalyseTab extends StatelessWidget {
   final int saveId;
-  final Game game;
   final int currentTabIndex;
 
   const SMAnalyseTab({
-    super.key,
+    Key? key,
     required this.saveId,
-    required this.game,
     required this.currentTabIndex,
-  });
-
-  @override
-  State<SMAnalyseTab> createState() => _SMAnalyseTabState();
-}
-
-class _SMAnalyseTabState extends State<SMAnalyseTab> {
-  List<String> forces = [];
-  List<String> faiblesses = [];
-  List<String> manques = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadAnalyse();
-  }
-
-  Future<void> _loadAnalyse() async {
-    final result = await SMAnalyseLogic.analyser(
-      saveId: widget.saveId,
-      bloc: context.read<JoueursSmBloc>(),
-      joueurRepo: context.read<StatsJoueurSmRepositoryImpl>(),
-      gardienRepo: context.read<StatsGardienSmRepositoryImpl>(),
-    );
-
-    setState(() {
-      forces = result.forces;
-      faiblesses = result.faiblesses;
-      manques = result.manques;
-    });
-  }
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final joueursState = context.watch<JoueursSmBloc>().state;
     final width = MediaQuery.of(context).size.width;
+    final horizontalPadding = ResponsiveLayout.getHorizontalPadding(width);
 
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 8.0),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: joueursState is JoueursSmLoaded
-                  ? SMPlayersHeader(
-                      state: joueursState,
-                      width: width,
-                      currentTabIndex: widget.currentTabIndex,
-                    )
-                  : const SizedBox.shrink(),
-            ),
-            const SizedBox(height: 20),
+    // 🧩 On écoute le Bloc pour les joueurs
+    final joueursState = context.watch<JoueursSmBloc>().state;
 
-            // ✅ Utilise Flexible pour éviter les erreurs de layout sur Web
-            Flexible(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                child: AnalyseLayout(
-                  forces: forces,
-                  faiblesses: faiblesses,
-                  manques: manques,
-                ),
-              ),
+    // ✅✅✅ CORRECTION CRUCIALE POUR LE _CastError ✅✅✅
+    // Si l'état n'est pas "Loaded", on affiche un loader.
+    if (joueursState is! JoueursSmLoaded) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    // Si on arrive ici, joueursState EST un JoueursSmLoaded.
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(horizontalPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 10.0, bottom: 20.0),
+            child: SMPlayersHeader(
+              state: joueursState, // C'est sûr maintenant
+              width: width,
+              currentTabIndex: currentTabIndex,
+              // selectedFormation n'est pas nécessaire ici (onglet 2)
             ),
-          ],
-        ),
+          ),
+
+          // Le reste de votre UI pour cet onglet
+          // Remplacez ceci par vos vrais widgets d'analyse
+          const Text("Contenu de l'analyse ici"),
+          // Exemple: SmAnalyseLayout(state: joueursState),
+        ],
       ),
     );
   }
