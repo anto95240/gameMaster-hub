@@ -15,11 +15,11 @@ class InstructionAttaqueSm {
     required this.tactiqueId,
     required this.saveId,
     this.userId,
-    this.stylePasse,
-    this.styleAttaque,
-    this.attaquants,
-    this.jeuLarge,
-    this.jeuConstruction,
-    this.contreAttaque,
+    this.stylePasse = '',
+    this.styleAttaque = '',
+    this.attaquants = '',
+    this.jeuLarge = '',
+    this.jeuConstruction = '',
+    this.contreAttaque = '',
   });
 }

@@ -15,11 +15,11 @@ class InstructionGeneralSm {
     required this.tactiqueId,
     required this.saveId,
     this.userId,
-    this.largeur,
-    this.mentalite,
-    this.tempo,
-    this.fluidite,
-    this.rythmeTravail,
-    this.creativite,
+    this.largeur = '',
+    this.mentalite = '',
+    this.tempo = '',
+    this.fluidite = '',
+    this.rythmeTravail = '',
+    this.creativite = '',
   });
 }

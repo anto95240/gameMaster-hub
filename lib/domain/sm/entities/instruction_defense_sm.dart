@@ -14,10 +14,10 @@ class InstructionDefenseSm {
     required this.tactiqueId,
     required this.saveId,
     this.userId,
-    this.pressing,
-    this.styleTacle,
-    this.ligneDefensive,
-    this.gardienLibero,
-    this.perteTemps,
+    this.pressing = '',
+    this.styleTacle = '',
+    this.ligneDefensive = '',
+    this.gardienLibero = '',
+    this.perteTemps = '',
   });
 }
