@@ -28,4 +28,21 @@ class JoueurSm {
     required this.salaire,
     required this.userId,
   });
+
+  factory JoueurSm.empty() {
+    return JoueurSm(
+      id: 0,
+      saveId: 0,
+      nom: 'Vide',
+      age: 0,
+      postes: [],
+      niveauActuel: 0,
+      potentiel: 0,
+      montantTransfert: 0,
+      status: StatusEnum.Titulaire, // ou StatusEnum.libre, selon votre enum
+      dureeContrat: 0,
+      salaire: 0,
+      userId: '',
+    );
+  }
 }

@@ -13,6 +13,5 @@ class TactiqueJoueurSm {
     required this.saveId,
     this.roleId,
     this.userId,
-
   });
 }
