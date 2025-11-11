@@ -3,6 +3,7 @@ import 'package:gamemaster_hub/domain/sm/entities/stats_joueur_sm.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_bloc.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_state.dart';
 
+// ... (le reste de la classe AnalyseResult) ...
 class AnalyseResult {
   final List<String> forces;
   final List<String> faiblesses;
@@ -14,6 +15,7 @@ class AnalyseResult {
     required this.manques,
   });
 }
+
 
 class SMAnalyseLogic {
   static Future<AnalyseResult> analyser({
@@ -43,7 +45,6 @@ class SMAnalyseLogic {
       if (joueur.postes.isEmpty) continue;
       final poste = joueur.postes.first.name.toUpperCase();
       final age = joueur.age;
-      // final age = joueur.age ?? 0;
       ageMoyen += age;
 
       // Comptage postes
@@ -65,15 +66,20 @@ class SMAnalyseLogic {
       }
 
       final stats = await joueurRepo.getStatsByJoueurId(joueur.id, saveId);
-      // if (stats == null) continue;
+      
+      // LA CORRECTION CLÉ EST ICI (ligne décommentée)
+      // Si le joueur n'a pas de stats, on l'ignore et on passe au suivant.
+      if (stats == null) continue;
 
-      // Moyennes
+      // Le code ci-dessous est maintenant sûr
       final defense = (stats.marquage + stats.tacles + stats.positionnement) / 3.0;
       final attaque = (stats.finition + stats.frappesLointaines + stats.creativite) / 3.0;
       final milieu = (stats.passes + stats.controle + stats.dribble) / 3.0;
       final physique = (stats.vitesse + stats.endurance + stats.force) / 3.0;
       final moyenne = (defense + attaque + milieu + physique) / 4.0;
-
+      
+      // ... (le reste de la fonction est identique) ...
+      
       // Par ligne
       if (poste.contains('DC') || poste.contains('DD') || poste.contains('DG')) {
         nbDef++;

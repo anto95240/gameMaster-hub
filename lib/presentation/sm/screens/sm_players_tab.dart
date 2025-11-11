@@ -4,7 +4,8 @@ import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/sm_blocs_export.dart';
 import 'package:gamemaster_hub/presentation/sm/widgets/sm_widgets_export.dart';
 
-class SMPlayersTab extends StatelessWidget {
+// Converti en StatefulWidget pour déclencher le chargement
+class SMPlayersTab extends StatefulWidget {
   final int saveId;
   final int currentTabIndex;
 
@@ -15,25 +16,50 @@ class SMPlayersTab extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  _SMPlayersTabState createState() => _SMPlayersTabState();
+}
+
+class _SMPlayersTabState extends State<SMPlayersTab> {
+  @override
+  void initState() {
+    super.initState();
+    // Déclenche l'événement de chargement une seule fois
+    final state = context.read<JoueursSmBloc>().state;
+    if (state is JoueursSmInitial) {
+      context.read<JoueursSmBloc>().add(LoadJoueursSmEvent(widget.saveId));
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final horizontalPadding = ResponsiveLayout.getHorizontalPadding(width);
 
-    // 🧩 On écoute le Bloc pour les joueurs
+    // Écoute les changements d'état
     final joueursState = context.watch<JoueursSmBloc>().state;
 
-    // ✅✅✅ CORRECTION CRUCIALE POUR LE _CastError ✅✅✅
-    // Si l'état n'est pas "Loaded", on affiche un loader.
-    // Cela empêche le header et la grille de planter lorsque le BLoC
-    // passe en état "Loading" ou "Initial" (par ex. après optimisation).
+    // Gère tous les états non-"Loaded"
     if (joueursState is! JoueursSmLoaded) {
+      // Affiche l'erreur si elle existe
+      if (joueursState is JoueursSmError) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'Erreur: ${joueursState.message}',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        );
+      }
+      // Affiche un loader pour Initial ou Loading
       return const Center(
         child: CircularProgressIndicator(),
       );
     }
 
     // Si on arrive ici, joueursState EST un JoueursSmLoaded.
-    
     return SingleChildScrollView(
       padding: EdgeInsets.all(horizontalPadding),
       child: Column(
@@ -42,24 +68,22 @@ class SMPlayersTab extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 10.0, bottom: 20.0),
             child: SMPlayersHeader(
-              state: joueursState, // C'est sûr maintenant
+              state: joueursState,
               width: width,
-              currentTabIndex: currentTabIndex,
-              // selectedFormation n'est pas nécessaire ici (onglet 0)
+              currentTabIndex: widget.currentTabIndex,
             ),
           ),
           
-          // Le reste de votre UI pour cet onglet
           SMPlayersFilters(
             state: joueursState,
             width: width,
-          ), // Widget de filtres
+          ),
           const SizedBox(height: 20),
           SMPlayersGrid(
             state: joueursState,
             width: width,
-            saveId: saveId,
-          ), // Grille des joueurs
+            saveId: widget.saveId,
+          ),
         ],
       ),
     );

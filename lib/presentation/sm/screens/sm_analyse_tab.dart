@@ -1,61 +1,91 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/sm_blocs_export.dart';
-import 'package:gamemaster_hub/presentation/sm/widgets/sm_widgets_export.dart';
+import 'package:gamemaster_hub/data/data_export.dart'; // Requis pour les Repos
+import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
-// Supposons que vous ayez un widget pour l'analyse
-// import 'package:gamemaster_hub/presentation/sm/widgets/sm_analyse_tab/sm_analyse_layout.dart';
+// ✅ CORRECTION 1: Le nom du fichier est 'sm_analyse_layout.dart'
+// mais la classe à l'intérieur s'appelle 'AnalyseLayout'.
+import 'package:gamemaster_hub/presentation/sm/widgets/sm_analyse_tab/sm_analyse_layout.dart';
 
-class SMAnalyseTab extends StatelessWidget {
+
+class SMAnalyseTab extends StatefulWidget {
   final int saveId;
-  final int currentTabIndex;
 
-  const SMAnalyseTab({
-    Key? key,
-    required this.saveId,
-    required this.currentTabIndex,
-  }) : super(key: key);
+  const SMAnalyseTab({super.key, required this.saveId, required int currentTabIndex});
+
+  @override
+  State<SMAnalyseTab> createState() => _SMAnalyseTabState();
+}
+
+class _SMAnalyseTabState extends State<SMAnalyseTab>
+    with AutomaticKeepAliveClientMixin<SMAnalyseTab> {
+  
+  late Future<AnalyseResult> _analysisFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _analysisFuture = _runAnalysis();
+  }
+
+  // Fonction helper pour appeler la méthode statique
+  Future<AnalyseResult> _runAnalysis() {
+    // Lire les dépendances depuis le contexte
+    final bloc = context.read<JoueursSmBloc>();
+    final joueurRepo = context.read<StatsJoueurSmRepositoryImpl>();
+    final gardienRepo = context.read<StatsGardienSmRepositoryImpl>();
+
+    // Appel à la méthode statique de SMAnalyseLogic
+    return SMAnalyseLogic.analyser(
+      saveId: widget.saveId,
+      bloc: bloc,
+      joueurRepo: joueurRepo,
+      gardienRepo: gardienRepo,
+    );
+  }
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final horizontalPadding = ResponsiveLayout.getHorizontalPadding(width);
+    super.build(context);
 
-    // 🧩 On écoute le Bloc pour les joueurs
-    final joueursState = context.watch<JoueursSmBloc>().state;
+    return FutureBuilder<AnalyseResult>(
+      future: _analysisFuture,
+      builder: (context, snapshot) {
+        
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-    // ✅✅✅ CORRECTION CRUCIALE POUR LE _CastError ✅✅✅
-    // Si l'état n'est pas "Loaded", on affiche un loader.
-    if (joueursState is! JoueursSmLoaded) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
-    // Si on arrive ici, joueursState EST un JoueursSmLoaded.
-
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(horizontalPadding),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 10.0, bottom: 20.0),
-            child: SMPlayersHeader(
-              state: joueursState, // C'est sûr maintenant
-              width: width,
-              currentTabIndex: currentTabIndex,
-              // selectedFormation n'est pas nécessaire ici (onglet 2)
+        if (snapshot.hasError) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                "Erreur lors de l'analyse: ${snapshot.error}",
+                style: const TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
             ),
-          ),
+          );
+        }
 
-          // Le reste de votre UI pour cet onglet
-          // Remplacez ceci par vos vrais widgets d'analyse
-          const Text("Contenu de l'analyse ici"),
-          // Exemple: SmAnalyseLayout(state: joueursState),
-        ],
-      ),
+        if (snapshot.hasData) {
+          // ✅ CORRECTION 2: Nom de classe et constructeur
+          // Nous appelons 'AnalyseLayout' (pas 'SMAnalyseLayout')
+          // et nous lui passons les 3 listes séparément.
+          final result = snapshot.data!;
+          return AnalyseLayout(
+            forces: result.forces,
+            faiblesses: result.faiblesses,
+            manques: result.manques,
+          );
+        }
+
+        return const Center(child: Text("Aucune donnée d'analyse."));
+      },
     );
   }
 }

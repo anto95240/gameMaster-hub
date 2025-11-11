@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
+import 'package:gamemaster_hub/presentation/presentation_export.dart'; // Pour JoueursSmState
 
 import 'football_field_painter.dart';
 import 'player_info_modal.dart';
@@ -7,11 +9,19 @@ import 'player_info_modal.dart';
 class FootballField extends StatelessWidget {
   final String formation;
   final bool isLargeScreen;
+  
+  // ✅ Ces données viennent du TacticsSmBloc
+  final Map<String, JoueurSmWithStats?> assignedPlayersByPoste;
+  final Map<int, RoleModeleSm> assignedRolesByPlayerId;
+  final JoueursSmState allPlayers; // Vient du JoueursSmBloc
 
   const FootballField({
     Key? key,
     required this.formation,
     required this.isLargeScreen,
+    this.assignedPlayersByPoste = const {},
+    this.assignedRolesByPlayerId = const {},
+    required this.allPlayers,
   }) : super(key: key);
 
   @override
@@ -57,6 +67,7 @@ class FootballField extends StatelessWidget {
                       constraints,
                       formation,
                       screenType,
+                      context, // Ajout de context pour le modal
                     ),
                   );
                 },
@@ -68,53 +79,69 @@ class FootballField extends StatelessWidget {
     );
   }
 
+  /// Construit la liste des widgets de joueurs
   List<Widget> _getFormationPositions(
-      BoxConstraints constraints, String formation, ScreenType screenType) {
-    final formations = {
-      '4-3-3': [
-        [0.5, 0.90], // GK
-        [0.18, 0.70], [0.38, 0.70], [0.62, 0.70], [0.82, 0.70], // DEF
-        [0.25, 0.50], [0.5, 0.45], [0.75, 0.50], // MID
-        [0.25, 0.20], [0.5, 0.15], [0.75, 0.20], // ATT
-      ],
-      '4-4-2': [
-        [0.5, 0.90],
-        [0.18, 0.70], [0.38, 0.70], [0.62, 0.70], [0.82, 0.70],
-        [0.18, 0.50], [0.38, 0.50], [0.62, 0.50], [0.82, 0.50],
-        [0.38, 0.20], [0.62, 0.20],
-      ],
-      '3-5-2': [
-        [0.5, 0.90],
-        [0.3, 0.70], [0.5, 0.70], [0.7, 0.70],
-        [0.18, 0.50], [0.35, 0.45], [0.5, 0.40], [0.65, 0.45], [0.82, 0.50],
-        [0.4, 0.20], [0.6, 0.20],
-      ],
-      '4-2-3-1': [
-        [0.5, 0.90],
-        [0.18, 0.70], [0.38, 0.70], [0.62, 0.70], [0.82, 0.70],
-        [0.35, 0.55], [0.65, 0.55],
-        [0.25, 0.40], [0.5, 0.35], [0.75, 0.40],
-        [0.5, 0.20],
-      ],
-      '5-3-2': [
-        [0.5, 0.90],
-        [0.12, 0.70], [0.3, 0.70], [0.5, 0.70], [0.7, 0.70], [0.88, 0.70],
-        [0.3, 0.50], [0.5, 0.45], [0.7, 0.50],
-        [0.4, 0.20], [0.6, 0.20],
-      ],
+      BoxConstraints constraints, String formation, ScreenType screenType, BuildContext context) {
+    
+    // 1. Obtenir les positions (x, y)
+    final formationsXY = {
+      '4-3-3': [ [0.5, 0.90], [0.18, 0.70], [0.38, 0.70], [0.62, 0.70], [0.82, 0.70], [0.25, 0.50], [0.5, 0.45], [0.75, 0.50], [0.25, 0.20], [0.5, 0.15], [0.75, 0.20], ],
+      '4-4-2': [ [0.5, 0.90], [0.18, 0.70], [0.38, 0.70], [0.62, 0.70], [0.82, 0.70], [0.18, 0.50], [0.38, 0.50], [0.62, 0.50], [0.82, 0.50], [0.38, 0.20], [0.62, 0.20], ],
+      '3-5-2': [ [0.5, 0.90], [0.3, 0.70], [0.5, 0.70], [0.7, 0.70], [0.18, 0.50], [0.35, 0.45], [0.5, 0.40], [0.65, 0.45], [0.82, 0.50], [0.4, 0.20], [0.6, 0.20], ],
+      '4-2-3-1': [ [0.5, 0.90], [0.18, 0.70], [0.38, 0.70], [0.62, 0.70], [0.82, 0.70], [0.35, 0.55], [0.65, 0.55], [0.25, 0.40], [0.5, 0.35], [0.75, 0.40], [0.5, 0.20], ],
+      '5-3-2': [ [0.5, 0.90], [0.12, 0.70], [0.3, 0.70], [0.5, 0.70], [0.7, 0.70], [0.88, 0.70], [0.3, 0.50], [0.5, 0.45], [0.7, 0.50], [0.4, 0.20], [0.6, 0.20], ],
+      // EXEMPLE: Si vous ajoutez '4-1-4-1' à Supabase :
+      // '4-1-4-1': [ [0.5, 0.90], [0.18, 0.7], [0.38, 0.7], [0.62, 0.7], [0.82, 0.7], [0.5, 0.6], [0.18, 0.45], [0.38, 0.45], [0.62, 0.45], [0.82, 0.45], [0.5, 0.2] ],
     };
 
-    final positions = formations[formation] ?? formations['4-3-3']!;
-    return positions.map((pos) {
-      final x = pos[0];
-      final y = pos[1];
-      return PlayerPosition(
-        constraints: constraints,
-        x: x,
-        y: y,
-        screenType: screenType,
+    // 2. Obtenir les clés de poste (GK, DC1, DC2...)
+    final posteKeys = _getPosteKeysForFormation(formation);
+    final positionsXY = formationsXY[formation] ?? formationsXY['4-3-3']!;
+
+    if (positionsXY.length != posteKeys.length) {
+      // Sécurité si les maps ne sont pas synchronisées
+      return [const Center(child: Text("Erreur de configuration formation"))];
+    }
+
+    List<Widget> playerWidgets = [];
+    for (int i = 0; i < positionsXY.length; i++) {
+      final posXY = positionsXY[i];
+      final posteKey = posteKeys[i]; // ex: "DC1"
+      final basePoste = posteKey.replaceAll(RegExp(r'[0-9]'), ''); // ex: "DC"
+
+      // 3. Trouver le joueur et le rôle pour ce poste
+      final JoueurSmWithStats? player = assignedPlayersByPoste[posteKey];
+      final RoleModeleSm? role = (player != null) ? assignedRolesByPlayerId[player.joueur.id] : null;
+
+      playerWidgets.add(
+        PlayerPosition(
+          constraints: constraints,
+          x: posXY[0],
+          y: posXY[1],
+          screenType: screenType,
+          player: player,
+          role: role,
+          allPlayers: allPlayers,
+          basePoste: basePoste,
+          buildContext: context, // Passe le context
+        ),
       );
-    }).toList();
+    }
+    return playerWidgets;
+  }
+  
+  // Helper pour mapper les clés de poste
+  List<String> _getPosteKeysForFormation(String formation) {
+    final map = {
+      '4-3-3': ['GK', 'DG', 'DC1', 'DC2', 'DD', 'MC1', 'MC2', 'MC3', 'AG', 'AD', 'BU'],
+      '4-4-2': ['GK', 'DG', 'DC1', 'DC2', 'DD', 'MG', 'MC1', 'MC2', 'MD', 'BU1', 'BU2'],
+      '5-3-2': ['GK', 'DG', 'DC1', 'DC2', 'DC3', 'DD', 'MC1', 'MC2', 'MC3', 'BU1', 'BU2'],
+      '3-5-2': ['GK', 'DC1', 'DC2', 'DC3', 'MG', 'MC1', 'MC2', 'MC3', 'MD', 'BU1', 'BU2'],
+      '4-2-3-1': ['GK', 'DG', 'DC1', 'DC2', 'DD', 'MDC1', 'MDC2', 'MOC', 'AG', 'AD', 'BU'],
+      // EXEMPLE: Si vous ajoutez '4-1-4-1' à Supabase :
+      // '4-1-4-1': ['GK', 'DG', 'DC1', 'DC2', 'DD', 'MDC', 'MG', 'MC1', 'MC2', 'MD', 'BU'],
+    };
+    return map[formation] ?? map['4-3-3']!; // Fallback
   }
 }
 
@@ -124,12 +151,23 @@ class PlayerPosition extends StatelessWidget {
   final double y;
   final ScreenType screenType;
 
+  final JoueurSmWithStats? player;
+  final RoleModeleSm? role;
+  final JoueursSmState allPlayers;
+  final String basePoste;
+  final BuildContext buildContext; // Contexte pour le modal
+
   const PlayerPosition({
     Key? key,
     required this.constraints,
     required this.x,
     required this.y,
     required this.screenType,
+    this.player,
+    this.role,
+    required this.allPlayers,
+    required this.basePoste,
+    required this.buildContext,
   }) : super(key: key);
 
   @override
@@ -140,17 +178,20 @@ class PlayerPosition extends StatelessWidget {
       ScreenType.laptop => 24,
       ScreenType.laptopL => 26,
     };
+    
+    final color = player != null ? Colors.amberAccent : Colors.white;
 
     return Positioned(
       left: constraints.maxWidth * x - (size / 2),
       top: constraints.maxHeight * y - (size / 2),
       child: GestureDetector(
-        onTap: () => _showPlayerModal(context),
+        // Utilise le buildContext passé
+        onTap: () => _showPlayerModal(buildContext, player, role, allPlayers, basePoste),
         child: Container(
           width: size,
           height: size,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: color,
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
@@ -160,15 +201,37 @@ class PlayerPosition extends StatelessWidget {
               ),
             ],
           ),
+          child: player != null ?
+            Center(
+              child: Text(
+                player!.joueur.nom.isNotEmpty ? player!.joueur.nom[0] : '?',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.bold,
+                  fontSize: size * 0.5,
+                ),
+              ),
+            ) : null,
         ),
       ),
     );
   }
 
-  void _showPlayerModal(BuildContext context) {
+  void _showPlayerModal(
+    BuildContext context,
+    JoueurSmWithStats? player,
+    RoleModeleSm? role,
+    JoueursSmState allPlayers,
+    String basePoste,
+  ) {
     showDialog(
       context: context,
-      builder: (BuildContext context) => const PlayerInfoModal(),
+      builder: (BuildContext context) => PlayerInfoModal(
+        player: player,
+        role: role,
+        allPlayers: allPlayers,
+        basePoste: basePoste,
+      ),
     );
   }
 }

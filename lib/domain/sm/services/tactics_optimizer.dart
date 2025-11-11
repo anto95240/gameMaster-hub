@@ -1,6 +1,6 @@
 import 'dart:math';
+import 'package:gamemaster_hub/data/data_export.dart'; // Importation des models
 import 'package:gamemaster_hub/domain/domain_export.dart';
-// ✅ AJOUT DES IMPORTS (que vous avez fournis)
 import 'package:gamemaster_hub/domain/sm/repositories/instruction_attaque_sm_repository.dart';
 import 'package:gamemaster_hub/domain/sm/repositories/instruction_defense_sm_repository.dart';
 import 'package:gamemaster_hub/domain/sm/repositories/instruction_general_sm_repository.dart';
@@ -20,33 +20,46 @@ class OptimizedTacticsResult {
   final int? modeleId;
   final Map<int, int> joueurIdToRoleId; // joueur_id -> role_id
   final OptimizedStyles styles;
+  final Map<String, _JoueurStatsComplet> elevenByPoste; // ex: "DC1" -> JoueurA
+
   OptimizedTacticsResult({
     required this.formation,
     required this.modeleId,
     required this.joueurIdToRoleId,
     required this.styles,
+    required this.elevenByPoste,
   });
 }
 
 /// Classe interne pour fusionner les données joueur + stats
 class _JoueurStatsComplet {
   final JoueurSm joueur;
-  final dynamic stats;
+  final dynamic stats; // Sera StatsJoueurSmModel ou StatsGardienSmModel
   final bool isGk;
   final double averageRating;
+  final PosteEnum? preferredPoste;
 
   _JoueurStatsComplet(
       {required this.joueur, required this.stats, required this.isGk})
-      : averageRating = _calculateAverageRating(stats);
+      : averageRating = _calculateAverageRating(stats),
+        preferredPoste = joueur.postes.isNotEmpty ? joueur.postes.first : null;
 
   static double _calculateAverageRating(dynamic stats) {
     if (stats == null) return 0.0;
     try {
-      final json = stats.toJson();
+      final Map<String, dynamic> json;
+      if (stats is StatsJoueurSmModel) {
+        json = stats.toMap();
+      } else if (stats is StatsGardienSmModel) {
+        json = stats.toMap();
+      } else {
+        return 0.0; // Type non reconnu
+      }
+      
       final values = json.values
           .whereType<num>()
           .map((v) => v.toDouble())
-          .where((v) => v > 0) // Ne pas compter les stats non renseignées
+          .where((v) => v > 0)
           .toList();
       if (values.isEmpty) return 0.0;
       return values.reduce((a, b) => a + b) / values.length;
@@ -55,24 +68,59 @@ class _JoueurStatsComplet {
     }
   }
 
-  /// Vérifie si un joueur peut jouer à un poste (ex: 'DC', 'MC', 'BU')
-  bool canPlay(String poste) {
-    return joueur.postes.any((p) => p.name == poste);
+  bool isPreferredPoste(String basePoste) {
+    return preferredPoste?.name == basePoste;
   }
 
-  /// Retourne la stat spécifique (ex: 'passes', 'tacles')
+  bool canPlayPoste(String basePoste) {
+    return joueur.postes.any((p) => p.name == basePoste);
+  }
+
+  bool isCorrectLateral(String basePoste) {
+    if (basePoste == 'DG') return preferredPoste?.name == 'DG' || preferredPoste?.name == 'DLG';
+    if (basePoste == 'DD') return preferredPoste?.name == 'DD' || preferredPoste?.name == 'DLD';
+    return true;
+  }
+  
+  bool isCorrectWinger(String basePoste) {
+    if (basePoste == 'MG' || basePoste == 'AG') return preferredPoste?.name == 'MG' || preferredPoste?.name == 'MOG' || preferredPoste?.name == 'AG';
+    if (basePoste == 'MD' || basePoste == 'AD') return preferredPoste?.name == 'MD' || preferredPoste?.name == 'MOD' || preferredPoste?.name == 'AD';
+    return true;
+  }
+  
   int getStat(String statName) {
     if (stats == null) return 0;
     try {
-      final json = stats.toJson();
-      if (json.containsKey(statName)) {
-        return (json[statName] as num).toInt();
+      final Map<String, dynamic> json;
+      if (stats is StatsJoueurSmModel) {
+        json = stats.toMap();
+      } else if (stats is StatsGardienSmModel) {
+        json = stats.toMap();
+      } else {
+        return 0; // Type non reconnu
+      }
+      
+      final statKey = _statNameMapping[statName] ?? statName;
+      
+      if (json.containsKey(statKey)) {
+        return (json[statKey] as num? ?? 0).toInt();
       }
     } catch (_) {
       // ignore
     }
     return 0;
   }
+
+  // Mapper les noms de stats de la logique aux noms de la BDD/Model
+  static const Map<String, String> _statNameMapping = {
+    'frappes_lointaines': 'frappesLointaines',
+    'passes_longues': 'passesLongues',
+    'coups_francs': 'coupsFrancs',
+    'stabilite_aerienne': 'stabiliteAerienne',
+    'distance_parcourue': 'distanceParcourue',
+    'sang_froid': 'sangFroid',
+    'autorite_surface': 'autoriteSurface'
+  };
 }
 
 class TacticsOptimizer {
@@ -82,7 +130,6 @@ class TacticsOptimizer {
   final RoleModeleSmRepository roleRepo;
   final TactiqueModeleSmRepository tactiqueModeleRepo;
 
-  // ✅ CORRECTION : Renommage des variables (plus de 'Modele')
   final InstructionGeneralSmRepository instructionGeneralRepo;
   final InstructionAttaqueSmRepository instructionAttaqueRepo;
   final InstructionDefenseSmRepository instructionDefenseRepo;
@@ -93,7 +140,6 @@ class TacticsOptimizer {
     required this.gardienRepo,
     required this.roleRepo,
     required this.tactiqueModeleRepo,
-    // ✅ CORRECTION
     required this.instructionGeneralRepo,
     required this.instructionAttaqueRepo,
     required this.instructionDefenseRepo,
@@ -108,16 +154,10 @@ class TacticsOptimizer {
       throw Exception("Vous devez avoir au moins 11 joueurs pour optimiser.");
     }
 
+    // ✅✅✅ CHARGE LES FORMATIONS DEPUIS SUPABASE ✅✅✅
     final allFormationsPossibles = await tactiqueModeleRepo.getAllTactiques();
+    
     final allRolesPossibles = await roleRepo.getAllRoles();
-
-    // ✅ CORRECTION (Erreurs 1-3) : Ajout de 'saveId'
-    // Note: On n'utilise pas les styles modèles ici, on les génère.
-    // Mais on les charge pour respecter le contrat (au cas où vous voudriez
-    // les utiliser pour une logique plus avancée plus tard).
-    await instructionGeneralRepo.getAllInstructions(saveId);
-    await instructionAttaqueRepo.getAllInstructions(saveId);
-    await instructionDefenseRepo.getAllInstructions(saveId);
 
     // --- 2. 🎯 ETAPE 1: CHOISIR LA MEILLEURE FORMATION ---
     final bestFormationResult =
@@ -144,6 +184,7 @@ class TacticsOptimizer {
       modeleId: bestFormationModele.id,
       joueurIdToRoleId: joueurToRole,
       styles: styles,
+      elevenByPoste: elevenByPoste,
     );
   }
 
@@ -151,6 +192,7 @@ class TacticsOptimizer {
   Future<List<_JoueurStatsComplet>> _getCombinedPlayerData(
       int saveId) async {
     final joueurs = await joueurRepo.getAllJoueurs(saveId);
+    
     final statsList = await statsRepo.getAllStats(saveId);
     final gardienStatsList = await gardienRepo.getAllStats(saveId);
 
@@ -160,62 +202,86 @@ class TacticsOptimizer {
     List<_JoueurStatsComplet> combinedList = [];
     for (final j in joueurs) {
       final isGk = j.postes.any((p) => p.name == 'GK');
-      final stats = isGk ? gkStatsMap[j.id] : statsMap[j.id];
+      final stats = isGk ? gkStatsMap[j.id] : statsMap[j.id]; 
+      
       combinedList.add(_JoueurStatsComplet(joueur: j, stats: stats, isGk: isGk));
     }
     return combinedList;
   }
 
-  /// 🎯 ETAPE 1: Logique de sélection de la formation
+
+  /// ✅ LOGIQUE DE FORMATION REFAITE
   Map<String, dynamic> _findBestFormation(
-    List<TactiqueModeleSm> allFormations,
+    List<TactiqueModeleSm> allFormations, // Vient de Supabase
     List<_JoueurStatsComplet> allPlayers,
   ) {
     if (allFormations.isEmpty) {
+      // Fallback si Supabase est vide
       allFormations.add(TactiqueModeleSm(id: 0, formation: '4-3-3'));
     }
 
-    double bestScore = -1.0;
+    double bestFinalScore = -double.maxFinite; // Commencer au plus bas
     TactiqueModeleSm bestModele = allFormations.first;
     List<_JoueurStatsComplet> bestEleven = [];
     Map<String, _JoueurStatsComplet> bestElevenByPoste = {};
 
     for (final modele in allFormations) {
-      final postes = _getPostesForFormation(modele.formation);
-      if (postes.isEmpty) continue; // Skip si formation inconnue
+      // ✅✅✅ UTILISE LA MAP HARDCODÉE (voir explication à la fin)
+      final postesKeys = _getPosteKeysForFormation(modele.formation);
+      
+      if (postesKeys.isEmpty) continue; // Si la formation de Supabase n'est pas mappée
 
       List<_JoueurStatsComplet> playerPool = List.from(allPlayers);
       List<_JoueurStatsComplet> currentEleven = [];
       Map<String, _JoueurStatsComplet> currentElevenByPoste = {};
-      double currentScore = 0.0;
+      double startersScore = 0.0;
+      double depthScore = 0.0;
+      bool formationFeasible = true;
 
-      for (final poste in postes) {
-        _JoueurStatsComplet? bestPlayerForPoste;
-        // Trouve le meilleur joueur pour ce poste
-        bestPlayerForPoste = playerPool.firstWhere(
-          (p) => p.canPlay(poste),
-          orElse: () => playerPool.firstWhere((p) => !p.isGk,
-              orElse: () =>
-                  _JoueurStatsComplet(joueur: JoueurSm.empty(), stats: null, isGk: false)),
+      // 1. Trouver les TITULAIRES
+      for (final posteKey in postesKeys) {
+        final basePoste = posteKey.replaceAll(RegExp(r'[0-9]'), ''); // 'DC1' -> 'DC'
+
+        _JoueurStatsComplet? bestPlayerForPoste = _findBestPlayerForPoste(
+          playerPool, 
+          basePoste
         );
 
-        if (bestPlayerForPoste.joueur.id != 0) {
+        if (bestPlayerForPoste != null) {
           playerPool.remove(bestPlayerForPoste);
           currentEleven.add(bestPlayerForPoste);
-          // ex: "DC1" -> joueurA, "DC2" -> joueurB
-          String posteKey = poste;
-          int i = 1;
-          while (currentElevenByPoste.containsKey(posteKey)) {
-            posteKey = "$poste$i";
-            i++;
-          }
           currentElevenByPoste[posteKey] = bestPlayerForPoste;
-          currentScore += bestPlayerForPoste.averageRating;
+          startersScore += _calculatePlayerScore(bestPlayerForPoste, basePoste);
+        } else {
+          formationFeasible = false; // Pas assez de joueurs pour un 11
+          break;
         }
       }
 
-      if (currentScore > bestScore) {
-        bestScore = currentScore;
+      if (!formationFeasible) continue; // Essayer la formation suivante
+
+      // 2. Trouver les REMPLAÇANTS (pour la profondeur de banc)
+      for (final posteKey in postesKeys) {
+        final basePoste = posteKey.replaceAll(RegExp(r'[0-9]'), '');
+
+        _JoueurStatsComplet? bestBackup = _findBestPlayerForPoste(
+          playerPool, 
+          basePoste
+        );
+
+        if (bestBackup != null) {
+          playerPool.remove(bestBackup); // Important: ne pas réutiliser le même remplaçant
+          depthScore += _calculatePlayerScore(bestBackup, basePoste);
+        } else {
+          depthScore -= 150; // Pénalité ÉNORME
+        }
+      }
+
+      // Score final : Titulaires comptent pour 100%, Remplaçants pour 50%
+      double totalFormationScore = startersScore + (depthScore * 0.5);
+
+      if (totalFormationScore > bestFinalScore) {
+        bestFinalScore = totalFormationScore;
         bestModele = modele;
         bestEleven = currentEleven;
         bestElevenByPoste = currentElevenByPoste;
@@ -227,6 +293,108 @@ class TacticsOptimizer {
       'eleven': bestEleven,
       'elevenByPoste': bestElevenByPoste,
     };
+  }
+
+  _JoueurStatsComplet? _findBestPlayerForPoste(List<_JoueurStatsComplet> pool, String basePoste) {
+    if (pool.isEmpty) return null;
+
+    _JoueurStatsComplet? bestPlayer;
+    double bestScore = -double.maxFinite;
+
+    for (final player in pool) {
+      double score = _calculatePlayerScore(player, basePoste);
+      if (score > bestScore) {
+        bestScore = score;
+        bestPlayer = player;
+      }
+    }
+    return bestPlayer;
+  }
+
+  // ✅✅✅ CORRECTION LOGIQUE PRINCIPALE (AVEC POTENTIEL) ✅✅✅
+  double _calculatePlayerScore(_JoueurStatsComplet player, String basePoste) {
+    
+    // Gardien ?
+    if (basePoste == 'GK') {
+      // Utilise l'averageRating du gardien (calculé sur ses stats de GK)
+      return player.isGk ? player.averageRating * 1.5 : -1000;
+    }
+    if (player.isGk) return -1000; // Un GK ne peut pas être joueur de champ
+
+    // Récupère les stats clés pour ce POSTE
+    final keyStats = _getKeyStatsForPoste(basePoste);
+    if (keyStats.isEmpty) {
+      return player.averageRating; // Fallback
+    }
+
+    // Calcule le score basé sur les stats clés (ET NON averageRating)
+    double baseScore = 0.0;
+    for (final statName in keyStats) {
+      baseScore += player.getStat(statName);
+    }
+    baseScore = baseScore / keyStats.length; // Moyenne des stats clés
+
+    // --- Bonus/Malus de Poste ---
+    if (player.isPreferredPoste(basePoste)) {
+      baseScore *= 1.25; // Bonus 25%
+    } else if (!player.canPlayPoste(basePoste)) {
+      baseScore *= 0.5; // Pénalité 50%
+    }
+    
+    if (!player.isCorrectLateral(basePoste) || !player.isCorrectWinger(basePoste)) {
+        baseScore *= 0.7; // Pénalité 30%
+    }
+
+    // --- ✅ NOUVEAU : Bonus de Potentiel ---
+    double potentiel = player.joueur.potentiel.toDouble();
+    double niveauActuel = player.joueur.niveauActuel.toDouble();
+    
+    // Assure que le potentiel n'est pas inférieur au niveau actuel
+    if (potentiel < niveauActuel) {
+      potentiel = niveauActuel; 
+    }
+    
+    double potentielMargin = potentiel - niveauActuel;
+    
+    if (potentielMargin > 0) {
+      // Ajoute un bonus basé sur la marge, ex: 10 points = 5% de bonus
+      // (1 + (10 / 200)) = 1.05
+      double potentialBonus = 1 + (potentielMargin / 200);
+      baseScore *= potentialBonus;
+    }
+    // --- Fin Bonus Potentiel ---
+
+    return baseScore;
+  }
+
+  /// NOUVEAU HELPER : Mappe les POSTES aux stats clés
+  List<String> _getKeyStatsForPoste(String poste) {
+    switch (poste) {
+      case 'GK':
+        return ['arrets', 'positionnement', 'duels', 'captation', 'autorite_surface'];
+      case 'DC':
+        return ['marquage', 'tacles', 'force', 'positionnement', 'stabilite_aerienne'];
+      case 'DG':
+      case 'DD':
+        return ['vitesse', 'endurance', 'centres', 'tacles', 'marquage'];
+      case 'MDC':
+        return ['tacles', 'endurance', 'agressivite', 'passes', 'positionnement'];
+      case 'MC':
+        return ['passes', 'creativite', 'controle', 'endurance', 'deplacement'];
+      case 'MOC':
+        return ['creativite', 'dribble', 'frappes_lointaines', 'passes', 'deplacement'];
+      case 'MG':
+      case 'MD':
+      case 'AG':
+      case 'AD':
+        return ['vitesse', 'dribble', 'centres', 'creativite', 'finition'];
+      case 'BU':
+      case 'AT':
+        return ['finition', 'deplacement', 'sang_froid', 'vitesse', 'stabilite_aerienne'];
+      default:
+        // Fallback pour postes inconnus (ex: DLG, MOD)
+        return ['vitesse', 'endurance', 'force'];
+    }
   }
 
   /// 🎯 ETAPE 3: Logique d'assignation des rôles
@@ -248,8 +416,7 @@ class TacticsOptimizer {
 
       for (final role in possibleRoles) {
         double currentScore = 0.0;
-        // Logique de scoring basée sur les attributs clés (simplifiée)
-        final keyStats = _getKeyStatsForRole(role.role);
+        final keyStats = _getKeyStatsForRole(role.role); // Utilise le helper existant
         for (final statName in keyStats) {
           currentScore += player.getStat(statName);
         }
@@ -264,67 +431,239 @@ class TacticsOptimizer {
     return joueurToRole;
   }
 
-  /// 🎯 ETAPE 4: Logique de génération des styles
+  /// ✅ LOGIQUE DE STYLES
   OptimizedStyles _generateBestStyles(List<_JoueurStatsComplet> eleven) {
-    // Calcul des moyennes du 11 de départ
-    double avgVitesse = 0,
-        avgEndurance = 0,
-        avgTacles = 0,
-        avgPasses = 0,
-        avgCreativite = 0,
-        avgFinition = 0;
     
-    for (final p in eleven) {
-      avgVitesse += p.getStat('vitesse');
-      avgEndurance += p.getStat('endurance');
-      avgTacles += p.getStat('tacles');
-      avgPasses += p.getStat('passes');
-      avgCreativite += p.getStat('creativite');
-      avgFinition += p.getStat('finition');
-    }
+    // 1. Calculer les moyennes de l'équipe
+    final stats = _calculateTeamAverages(eleven);
 
-    avgVitesse /= 11;
-    avgEndurance /= 11;
-    avgTacles /= 11;
-    avgPasses /= 11;
-    avgCreativite /= 11;
-    avgFinition /= 11;
-
-    // Génération des styles
-    Map<String, double> general = {
-      'Mentalité: ${avgCreativite > 12 ? "Positive" : "Équilibrée"}': (avgCreativite / 20 * 10).toPrecision(1),
-      'Tempo: ${avgVitesse > 13 ? "Élevé" : "Normal"}': (avgVitesse / 20 * 10).toPrecision(1),
+    // 2. Obtenir le meilleur choix pour chaque catégorie
+    final Map<String, double> general = {
+      ..._getBestLargeur(stats),
+      ..._getBestMentalite(stats),
+      ..._getBestTempo(stats),
+      ..._getBestFluidite(stats),
+      ..._getBestRythmeTravail(stats),
+      ..._getBestCreativite(stats),
     };
-    Map<String, double> attack = {
-      'Style de passe: ${avgPasses > 13 ? "Court" : "Mixte"}': (avgPasses / 20 * 10).toPrecision(1),
-      'Finition: ${avgFinition > 12.5 ? "Chercher le but" : "Patient"}': (avgFinition / 20 * 10).toPrecision(1),
+    
+    final Map<String, double> attack = {
+      ..._getBestStylePasse(stats),
+      ..._getBestStyleAttaque(stats),
+      ..._getBestAttaquants(stats),
+      ..._getBestJeuLarge(stats),
+      ..._getBestJeuConstruction(stats),
+      ..._getBestContreAttaque(stats),
     };
-    Map<String, double> defense = {
-      'Pressing: ${avgEndurance > 13 ? "Intense" : "Standard"}': (avgEndurance / 20 * 10).toPrecision(1),
-      'Style tacle: ${avgTacles > 12 ? "Agressif" : "Mesuré"}': (avgTacles / 20 * 10).toPrecision(1),
+    
+    final Map<String, double> defense = {
+      ..._getBestPressing(stats),
+      ..._getBestStyleTacle(stats),
+      ..._getBestLigneDefensive(stats),
+      ..._getBestGardienLibero(stats),
+      ..._getBestPerteTemps(stats),
     };
 
     return OptimizedStyles(general: general, attack: attack, defense: defense);
   }
 
-  // --- MAPPINGS DE DONNÉES (Logique métier) ---
-
-  /// Retourne les postes requis pour une formation. Ex: '4-3-3' -> ['GK', 'DG', ...]
-  List<String> _getPostesForFormation(String formation) {
-    // Vous devriez externaliser cela ou le charger depuis la DB
-    final map = {
-      '4-3-3': ['GK', 'DG', 'DC', 'DC', 'DD', 'MC', 'MC', 'MC', 'AG', 'AD', 'BU'],
-      '4-4-2': ['GK', 'DG', 'DC', 'DC', 'DD', 'MG', 'MC', 'MC', 'MD', 'BU', 'BU'],
-      '5-3-2': ['GK', 'DG', 'DC', 'DC', 'DC', 'DD', 'MC', 'MC', 'MC', 'BU', 'BU'],
-      '3-5-2': ['GK', 'DC', 'DC', 'DC', 'MG', 'MC', 'MC', 'MC', 'MD', 'BU', 'BU'],
-      '4-2-3-1': ['GK', 'DG', 'DC', 'DC', 'DD', 'MDC', 'MDC', 'MOC', 'AG', 'AD', 'BU'],
+  // --- Helpers pour le calcul des moyennes ---
+  Map<String, double> _calculateTeamAverages(List<_JoueurStatsComplet> eleven) {
+    Map<String, double> averages = {
+      'vitesse': 0, 'endurance': 0, 'agressivite': 0, 'creativite': 0,
+      'passes': 0, 'finition': 0, 'tacles': 0, 'positionnementDef': 0,
+      'deplacementOff': 0, 'passesLongues': 0, 'centres': 0,
+      'controle': 0, 'dribble': 0, 'sangFroid': 0, 'frappesLointaines': 0,
+      'gk_distribution': 0, 'gk_arrets': 0, 'gk_vitesse': 0
     };
-    return map[formation] ?? [];
+    int fieldPlayers = 0;
+    
+    for (final p in eleven) {
+      if (p.isGk) {
+        averages['gk_distribution'] = (averages['gk_distribution'] ?? 0) + p.getStat('distribution');
+        averages['gk_arrets'] = (averages['gk_arrets'] ?? 0) + p.getStat('arrets');
+        averages['gk_vitesse'] = (averages['gk_vitesse'] ?? 0) + p.getStat('vitesse');
+      } else {
+        averages['vitesse'] = (averages['vitesse'] ?? 0) + p.getStat('vitesse');
+        averages['endurance'] = (averages['endurance'] ?? 0) + p.getStat('endurance');
+        averages['agressivite'] = (averages['agressivite'] ?? 0) + p.getStat('agressivite');
+        averages['creativite'] = (averages['creativite'] ?? 0) + p.getStat('creativite');
+        averages['passes'] = (averages['passes'] ?? 0) + p.getStat('passes');
+        averages['finition'] = (averages['finition'] ?? 0) + p.getStat('finition');
+        averages['tacles'] = (averages['tacles'] ?? 0) + p.getStat('tacles');
+        averages['positionnementDef'] = (averages['positionnementDef'] ?? 0) + p.getStat('positionnement');
+        averages['deplacementOff'] = (averages['deplacementOff'] ?? 0) + p.getStat('deplacement');
+        averages['passesLongues'] = (averages['passesLongues'] ?? 0) + p.getStat('passes_longues');
+        averages['centres'] = (averages['centres'] ?? 0) + p.getStat('centres');
+        averages['controle'] = (averages['controle'] ?? 0) + p.getStat('controle');
+        averages['dribble'] = (averages['dribble'] ?? 0) + p.getStat('dribble');
+        averages['sangFroid'] = (averages['sangFroid'] ?? 0) + p.getStat('sang_froid');
+        averages['frappesLointaines'] = (averages['frappesLointaines'] ?? 0) + p.getStat('frappes_lointaines');
+        fieldPlayers++;
+      }
+    }
+
+    if (fieldPlayers > 0) {
+      averages.forEach((key, value) {
+        if (!key.startsWith('gk_')) {
+          averages[key] = value / fieldPlayers;
+        }
+      });
+    }
+    return averages;
   }
 
-  /// Définit quelles stats sont importantes pour quel rôle.
+  // --- Helpers pour la sélection de style (1 par catégorie) ---
+  
+  Map<String, double> _getBestLargeur(Map<String, double> stats) {
+    double avgCentres = stats['centres'] ?? 50;
+    if (avgCentres > 65) return {'Largeur: Jeu large': 1.0};
+    if (avgCentres < 45) return {'Largeur: Étroit': 1.0};
+    return {'Largeur: Normal': 1.0};
+  }
+
+  Map<String, double> _getBestMentalite(Map<String, double> stats) {
+    double avgCreativite = stats['creativite'] ?? 50;
+    double avgFinition = stats['finition'] ?? 50;
+    double avgTacles = stats['tacles'] ?? 50;
+    if (avgCreativite > 75 && avgFinition > 70) return {'Mentalité: Très offensive': 1.0};
+    if (avgCreativite > 60 || avgFinition > 60) return {'Mentalité: Offensive': 1.0};
+    if (avgTacles > 75 && avgCreativite < 40) return {'Mentalité: Très défensive': 1.0};
+    if (avgTacles > 60 && avgCreativite < 50) return {'Mentalité: Défensive': 1.0};
+    return {'Mentalité: Normal': 1.0};
+  }
+
+  Map<String, double> _getBestTempo(Map<String, double> stats) {
+    double avgVitesse = stats['vitesse'] ?? 50;
+    if (avgVitesse > 65) return {'Tempo: Rapide': 1.0};
+    if (avgVitesse < 45) return {'Tempo: Lent': 1.0};
+    return {'Tempo: Normal': 1.0};
+  }
+  
+  Map<String, double> _getBestFluidite(Map<String, double> stats) {
+    double avgDeplacement = stats['deplacementOff'] ?? 50;
+    if (avgDeplacement > 65) return {'Fluidité de la formation: Aventureux': 1.0};
+    if (avgDeplacement < 45) return {'Fluidité de la formation: Discipliné': 1.0};
+    return {'Fluidité de la formation: Normal': 1.0};
+  }
+  
+  Map<String, double> _getBestRythmeTravail(Map<String, double> stats) {
+    double avgEndurance = stats['endurance'] ?? 50;
+    if (avgEndurance > 65) return {'Rythme de travail: Rapide': 1.0};
+    if (avgEndurance < 45) return {'Rythme de travail: Lent': 1.0};
+    return {'Rythme de travail: Normal': 1.0};
+  }
+
+  Map<String, double> _getBestCreativite(Map<String, double> stats) {
+    double avgCreativite = stats['creativite'] ?? 50;
+    if (avgCreativite > 65) return {'Créativité: Audacieux': 1.0};
+    if (avgCreativite < 45) return {'Créativité: Prudent': 1.0};
+    return {'Créativité: Équilibré': 1.0};
+  }
+
+  Map<String, double> _getBestStylePasse(Map<String, double> stats) {
+    double avgPasses = stats['passes'] ?? 50;
+    double avgPassesLongues = stats['passesLongues'] ?? 50;
+    if (avgPassesLongues > 70 && avgPasses < 60) return {'Style de passe: Ballon longs': 1.0};
+    if (avgPasses > 70 && avgPassesLongues < 60) return {'Style de passe: Court': 1.0};
+    if (avgPasses > 60 && avgPassesLongues > 60) return {'Style de passe: Direct': 1.0};
+    return {'Style de passe: Polyvalent': 1.0};
+  }
+  
+  Map<String, double> _getBestStyleAttaque(Map<String, double> stats) {
+    double avgDribble = stats['dribble'] ?? 50;
+    double avgCentres = stats['centres'] ?? 50;
+    if(avgDribble > 65 && avgCentres > 65) return {'Style d\'attaque: Sur les deux ailes': 1.0};
+    if(avgDribble > 60) return {'Style d\'attaque: Par l\'axe': 1.0};
+    return {'Style d\'attaque: Polyvalent': 1.0};
+  }
+
+  Map<String, double> _getBestAttaquants(Map<String, double> stats) {
+    double avgFinition = stats['finition'] ?? 50;
+    double avgFrappesLointaines = stats['frappesLointaines'] ?? 50;
+    if (avgFinition > 65) return {'Attaquants: Jouer le ballon dans la surface': 1.0};
+    if (avgFrappesLointaines > 65) return {'Attaquants: Tirer à vue': 1.0};
+    return {'Attaquants: Polyvalents': 1.0};
+  }
+  
+  Map<String, double> _getBestJeuLarge(Map<String, double> stats) {
+    double avgCentres = stats['centres'] ?? 50;
+    if (avgCentres > 65) return {'Jeu large: Centres de la ligne de touche': 1.0};
+    return {'Jeu large: Polyvalent': 1.0};
+  }
+
+  Map<String, double> _getBestJeuConstruction(Map<String, double> stats) {
+    double avgControle = stats['controle'] ?? 50;
+    if (avgControle > 65) return {'Jeu en contruction: Lent': 1.0}; 
+    if (avgControle < 45) return {'Jeu en contruction: Rapide': 1.0};
+    return {'Jeu en contruction: Normal': 1.0};
+  }
+  
+  Map<String, double> _getBestContreAttaque(Map<String, double> stats) {
+    double avgVitesse = stats['vitesse'] ?? 50;
+    if (avgVitesse > 65) return {'Contre-attaque: Oui': 1.0};
+    return {'Contre-attaque: Non': 1.0};
+  }
+  
+  Map<String, double> _getBestPressing(Map<String, double> stats) {
+    double avgEndurance = stats['endurance'] ?? 50;
+    if (avgEndurance > 70) return {'Pressing: Partout': 1.0};
+    if (avgEndurance > 55) return {'Pressing: Propre moitié de terrain': 1.0};
+    return {'Pressing: Propre surface de réparation': 1.0};
+  }
+
+  Map<String, double> _getBestStyleTacle(Map<String, double> stats) {
+    double avgAgressivite = stats['agressivite'] ?? 50;
+    double avgTacles = stats['tacles'] ?? 50;
+    if (avgAgressivite > 75 && avgTacles > 65) return {'Style tacle: Agressif': 1.0};
+    if (avgAgressivite > 65) return {'Style tacle: Rugeux': 1.0}; // "Rugeux"
+    return {'Style tacle: Normal': 1.0};
+  }
+
+  Map<String, double> _getBestLigneDefensive(Map<String, double> stats) {
+    double avgVitesseDef = stats['vitesse'] ?? 50; 
+    if (avgVitesseDef > 65) return {'Ligne défensive: Haut': 1.0};
+    if (avgVitesseDef < 45) return {'Ligne défensive: Bas': 1.0};
+    return {'Ligne défensive: Normal': 1.0};
+  }
+  
+  Map<String, double> _getBestGardienLibero(Map<String, double> stats) {
+    double avgGkVit = stats['gk_vitesse'] ?? 50;
+    if (avgGkVit > 60) return {'Gardien libéro: Oui': 1.0};
+    return {'Gardien libéro: Non': 1.0};
+  }
+  
+  Map<String, double> _getBestPerteTemps(Map<String, double> stats) {
+    double avgMentalite = (stats['creativite'] ?? 50) + (stats['finition'] ?? 50);
+    if (avgMentalite > 130) return {'Perte de temps: Faible': 1.0};
+    if (avgMentalite < 100) return {'Perte de temps: Haut': 1.0};
+    return {'Perte de temps: Normal': 1.0};
+  }
+
+
+  // --- MAPPINGS DE DONNÉES (Logique métier) ---
+
+  /// ✅✅✅ NOTE IMPORTANTE SUR LES FORMATIONS ✅✅✅
+  /// Cette map EST NÉCESSAIRE.
+  /// Votre base de données (Supabase) stocke "4-4-2",
+  /// mais elle ne stocke PAS la *structure* (['GK', 'DC1', 'DC2'...]).
+  /// Si vous ajoutez une formation à Supabase (ex: '4-1-4-1'),
+  /// vous DEVEZ l'ajouter ici aussi.
+  List<String> _getPosteKeysForFormation(String formation) {
+    final map = {
+      '4-3-3': ['GK', 'DG', 'DC1', 'DC2', 'DD', 'MC1', 'MC2', 'MC3', 'AG', 'AD', 'BU'],
+      '4-4-2': ['GK', 'DG', 'DC1', 'DC2', 'DD', 'MG', 'MC1', 'MC2', 'MD', 'BU1', 'BU2'],
+      '5-3-2': ['GK', 'DG', 'DC1', 'DC2', 'DC3', 'DD', 'MC1', 'MC2', 'MC3', 'BU1', 'BU2'],
+      '3-5-2': ['GK', 'DC1', 'DC2', 'DC3', 'MG', 'MC1', 'MC2', 'MC3', 'MD', 'BU1', 'BU2'],
+      '4-2-3-1': ['GK', 'DG', 'DC1', 'DC2', 'DD', 'MDC1', 'MDC2', 'MOC', 'AG', 'AD', 'BU'],
+      // EXEMPLE: Si vous ajoutez '4-1-4-1' à Supabase :
+      // '4-1-4-1': ['GK', 'DG', 'DC1', 'DC2', 'DD', 'MDC', 'MG', 'MC1', 'MC2', 'MD', 'BU'],
+    };
+    return map[formation] ?? map['4-3-3']!; // Fallback
+  }
+
   List<String> _getKeyStatsForRole(String roleName) {
-    // Logique simplifiée, à enrichir
+    // Mappage RÔLE -> STATS (pour ETAPE 3)
     switch (roleName) {
       case 'Gardien':
         return ['arrets', 'positionnement', 'duels'];
@@ -355,8 +694,4 @@ extension _Precision on double {
     double mod = pow(10.0, fractionDigits).toDouble();
     return ((this * mod).round().toDouble() / mod);
   }
-}
-
-extension _FirstOrNull<E> on Iterable<E> {
-  E? get firstOrNull => isEmpty ? null : first;
 }

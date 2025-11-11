@@ -1,5 +1,5 @@
 enum PosteEnum {
-  GK,
+  G,
   DC,
   DG,
   DD,

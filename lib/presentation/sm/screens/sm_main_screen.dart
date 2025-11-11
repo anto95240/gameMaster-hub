@@ -39,7 +39,10 @@ class _SMMainScreenState extends State<SMMainScreen>
         setState(() => _currentTabIndex = _tabController.index);
       }
     });
-    context.read<JoueursSmBloc>().add(LoadJoueursSmEvent(widget.saveId));
+    
+    // Le chargement des joueurs est maintenant géré par SMPlayersTab.dart
+    // context.read<JoueursSmBloc>().add(LoadJoueursSmEvent(widget.saveId)); 
+    
     _initializeData();
   }
 
@@ -149,6 +152,9 @@ class _SMMainScreenState extends State<SMMainScreen>
             ],
           ),
         ),
+        // Ajout du FAB même sur l'écran d'erreur
+        floatingActionButton: _buildFab(context),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       );
     }
 
@@ -192,7 +198,6 @@ class _SMMainScreenState extends State<SMMainScreen>
         children: [
           SMPlayersTab(
             saveId: widget.saveId,
-            // game: currentGame!,
             currentTabIndex: _currentTabIndex,
           ),
           disableTactics
@@ -206,12 +211,41 @@ class _SMMainScreenState extends State<SMMainScreen>
               ? _lockedTabMessage("Statistiques", 15)
               : SMAnalyseTab(
                   saveId: widget.saveId,
-                  // game: currentGame!,
                   currentTabIndex: _currentTabIndex,
                 ),
         ],
       ),
+      
+      // ✅✅✅ CORRECTION PRINCIPALE ✅✅✅
+      floatingActionButton: _buildFab(context),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
+  }
+
+  /// Helper pour construire le FAB (Floating Action Button)
+  Widget? _buildFab(BuildContext context) {
+    // S'affiche que sur l'onglet Joueurs (index 0)
+    if (_currentTabIndex == 0) { 
+      return FloatingActionButton(
+        onPressed: () {
+          // Ouvre la boîte de dialogue pour ajouter un joueur
+          showDialog(
+            context: context,
+            builder: (BuildContext dialogContext) {
+              // On 'prépare' le contexte du BLoC pour le dialogue
+              // C'est crucial pour que 'handlePlayerSubmit' fonctionne
+              return BlocProvider.value(
+                value: context.read<JoueursSmBloc>(),
+                child: AddPlayerDialog(saveId: widget.saveId),
+              );
+            },
+          );
+        },
+        backgroundColor: Theme.of(context).primaryColor,
+        child: const Icon(Icons.add, color: Colors.white),
+      );
+    }
+    return null; // Masqué sur les autres onglets
   }
 
   /// Message affiché si la section est verrouillée (pas assez de joueurs)
