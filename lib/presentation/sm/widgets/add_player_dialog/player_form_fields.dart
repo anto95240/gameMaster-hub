@@ -15,7 +15,11 @@ class PlayerFormData {
 
 class PlayerFormFields extends StatefulWidget {
   final PlayerFormData formData;
-  const PlayerFormFields({super.key, required this.formData});
+
+  const PlayerFormFields({
+    super.key,
+    required this.formData,
+  });
 
   @override
   State<PlayerFormFields> createState() => _PlayerFormFieldsState();
@@ -26,56 +30,50 @@ class _PlayerFormFieldsState extends State<PlayerFormFields> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    InputDecoration fieldDecoration(String label) => InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(color: theme.textTheme.bodyLarge?.color),
+          border: OutlineInputBorder(
+            borderSide: BorderSide(color: theme.dividerColor),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: theme.dividerColor),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: theme.primaryColor),
+          ),
+        );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // ---- NOM ----
         TextFormField(
           style: TextStyle(color: theme.textTheme.bodyLarge?.color),
-          decoration: InputDecoration(
-            labelText: "Nom",
-            labelStyle: TextStyle(color: theme.textTheme.bodyLarge?.color),
-            border: OutlineInputBorder(
-              borderSide: BorderSide(color: theme.dividerColor),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: theme.dividerColor),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: theme.primaryColor),
-            ),
-          ),
+          decoration: fieldDecoration("Nom"),
           validator: (v) => (v == null || v.isEmpty) ? "Nom obligatoire" : null,
           onSaved: (v) => widget.formData.nom = v!,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
 
+        // ---- ÂGE ----
         TextFormField(
           style: TextStyle(color: theme.textTheme.bodyLarge?.color),
-          decoration: InputDecoration(
-            labelText: "Âge",
-            labelStyle: TextStyle(color: theme.textTheme.bodyLarge?.color),
-            border: OutlineInputBorder(
-              borderSide: BorderSide(color: theme.dividerColor),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: theme.dividerColor),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: theme.primaryColor),
-            ),
-          ),
+          decoration: fieldDecoration("Âge"),
           keyboardType: TextInputType.number,
-          initialValue: "18",
+          initialValue: widget.formData.age.toString(),
           validator: (v) {
             final val = int.tryParse(v ?? '');
             if (val == null) return "Doit être un nombre";
             if (val < 16) return "L'âge doit être ≥ 16";
             return null;
           },
-          onSaved: (v) => widget.formData.age = int.tryParse(v ?? "18") ?? 18,
+          onSaved: (v) =>
+              widget.formData.age = int.tryParse(v ?? "18") ?? 18,
         ),
         const SizedBox(height: 12),
 
+        // ---- POSTES ----
         Text(
           "Postes",
           style: TextStyle(
@@ -110,7 +108,8 @@ class _PlayerFormFieldsState extends State<PlayerFormFields> {
                         style: const TextStyle(
                             color: Colors.white, fontWeight: FontWeight.bold),
                       ),
-                      deleteIcon: const Icon(Icons.close, color: Colors.white, size: 18),
+                      deleteIcon:
+                          const Icon(Icons.close, color: Colors.white, size: 18),
                       onDeleted: () {
                         setState(() {
                           widget.formData.postesSelectionnes.remove(poste);
@@ -182,23 +181,12 @@ class _PlayerFormFieldsState extends State<PlayerFormFields> {
 
         const SizedBox(height: 16),
 
+        // ---- Niveau actuel ----
         TextFormField(
           style: TextStyle(color: theme.textTheme.bodyLarge?.color),
-          decoration: InputDecoration(
-            labelText: "Niveau actuel",
-            labelStyle: TextStyle(color: theme.textTheme.bodyLarge?.color),
-            border: OutlineInputBorder(
-              borderSide: BorderSide(color: theme.dividerColor),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: theme.dividerColor),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: theme.primaryColor),
-            ),
-          ),
+          decoration: fieldDecoration("Niveau actuel"),
           keyboardType: TextInputType.number,
-          initialValue: "60",
+          initialValue: widget.formData.niveauActuel.toString(),
           validator: (v) {
             final val = int.tryParse(v ?? '');
             if (val == null) return "Doit être un nombre";
@@ -210,35 +198,73 @@ class _PlayerFormFieldsState extends State<PlayerFormFields> {
         ),
         const SizedBox(height: 12),
 
+        // ---- Statut ----
         DropdownButtonFormField<StatusEnum>(
           value: widget.formData.status,
           style: TextStyle(color: theme.textTheme.bodyLarge?.color),
-          decoration: InputDecoration(
-            labelText: "Statut",
-            labelStyle: TextStyle(color: theme.textTheme.bodyLarge?.color),
-            border: OutlineInputBorder(
-              borderSide: BorderSide(color: theme.dividerColor),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: theme.dividerColor),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: theme.primaryColor),
-            ),
-          ),
+          decoration: fieldDecoration("Statut"),
           items: StatusEnum.values
               .map(
                 (s) => DropdownMenuItem(
                   value: s,
                   child: Text(
                     s.name,
-                    style:
-                        TextStyle(color: theme.textTheme.bodyLarge?.color),
+                    style: TextStyle(color: theme.textTheme.bodyLarge?.color),
                   ),
                 ),
               )
               .toList(),
           onChanged: (v) => widget.formData.status = v!,
+        ),
+        const SizedBox(height: 12),
+
+        // ---- Potentiel ----
+        TextFormField(
+          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+          decoration: fieldDecoration("Potentiel"),
+          keyboardType: TextInputType.number,
+          initialValue: widget.formData.potentiel.toString(),
+          validator: (v) {
+            final val = int.tryParse(v ?? '');
+            if (val == null) return "Doit être un nombre";
+            if (val < 0 || val > 100) return "Doit être entre 0 et 100";
+            return null;
+          },
+          onSaved: (v) =>
+              widget.formData.potentiel = int.tryParse(v ?? "80") ?? 80,
+        ),
+        const SizedBox(height: 12),
+
+        // ---- Valeur de transfert ----
+        TextFormField(
+          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+          decoration: fieldDecoration("Valeur de transfert (€)"),
+          keyboardType: TextInputType.number,
+          initialValue: widget.formData.montantTransfert.toString(),
+          onSaved: (v) =>
+              widget.formData.montantTransfert = int.tryParse(v ?? "1000000") ?? 1000000,
+        ),
+        const SizedBox(height: 12),
+
+        // ---- Fin de contrat ----
+        TextFormField(
+          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+          decoration: fieldDecoration("Fin de contrat (Année)"),
+          keyboardType: TextInputType.number,
+          initialValue: widget.formData.dureeContrat.toString(),
+          onSaved: (v) =>
+              widget.formData.dureeContrat = int.tryParse(v ?? "2028") ?? 2028,
+        ),
+        const SizedBox(height: 12),
+
+        // ---- Salaire ----
+        TextFormField(
+          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+          decoration: fieldDecoration("Salaire (€/an)"),
+          keyboardType: TextInputType.number,
+          initialValue: widget.formData.salaire.toString(),
+          onSaved: (v) =>
+              widget.formData.salaire = int.tryParse(v ?? "10000") ?? 10000,
         ),
       ],
     );

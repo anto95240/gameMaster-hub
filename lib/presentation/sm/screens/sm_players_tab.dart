@@ -23,11 +23,9 @@ class _SMPlayersTabState extends State<SMPlayersTab> {
   @override
   void initState() {
     super.initState();
-    // Déclenche l'événement de chargement une seule fois
-    final state = context.read<JoueursSmBloc>().state;
-    if (state is JoueursSmInitial) {
-      context.read<JoueursSmBloc>().add(LoadJoueursSmEvent(widget.saveId));
-    }
+    // ✅ CORRECTION : Déclenche l'événement de chargement à chaque
+    // initialisation de l'onglet pour la bonne saveId.
+    context.read<JoueursSmBloc>().add(LoadJoueursSmEvent(widget.saveId));
   }
 
   @override

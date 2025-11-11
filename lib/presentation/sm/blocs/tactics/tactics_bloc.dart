@@ -55,12 +55,14 @@ class TacticsSmBloc extends Bloc<TacticsSmEvent, TacticsSmState> {
       final allPlayersMap = {for (var p in allPlayers) p.joueur.id: p};
       final allRolesMap = {for (var r in allRoles) r.id: r};
       
-      // 4. Mapper les joueurs aux postes
+      // 4. Mapper les joueurs aux postes-clés (logique corrigée)
       final Map<String, JoueurSmWithStats?> assignedPlayers = {};
       final Map<int, RoleModeleSm> assignedRoles = {};
 
       final postesFormation = _getPosteKeysForFormation(lastTactic.formation);
-      final List<int> assignedPlayerIds = [];
+      
+      // Map pour compter les postes déjà assignés (ex: {'DC': 1, 'MC': 2})
+      Map<String, int> posteCounts = {};
 
       for (final assignment in playersAssignments) {
         final player = allPlayersMap[assignment.joueurId];
@@ -69,29 +71,44 @@ class TacticsSmBloc extends Bloc<TacticsSmEvent, TacticsSmState> {
         final role = allRolesMap[assignment.roleId];
         if (role == null) continue;
 
-        // Tenter de trouver le poste clé exact
-        String basePoste = role.poste;
-        String posteKey = basePoste;
-        int i = 1;
-        while(assignedPlayers.containsKey(posteKey) && posteKey.contains(basePoste)) {
-          posteKey = "$basePoste$i";
-          i++;
+        String basePoste = role.poste; // 'DC'
+
+        // Incrémente le compteur pour ce poste de base
+        int currentCount = posteCounts.update(basePoste, (value) => value + 1, ifAbsent: () => 1);
+        String posteKey = "$basePoste$currentCount"; // 'DC1'
+
+        // Cas spécial pour les postes uniques (G, MOC, MDC)
+        if (!posteKey.endsWith('1') && postesFormation.contains(basePoste)) {
+           posteKey = basePoste; // Utilise 'G', pas 'G1'
         }
 
-        // Si on ne trouve pas de clé (ex: DC1, DC2), on cherche un poste libre
-        if (assignedPlayers.containsKey(posteKey)) {
-           posteKey = postesFormation.firstWhere(
-             (pf) => pf.startsWith(basePoste) && !assignedPlayers.containsKey(pf),
-             orElse: () => posteKey // Fallback
-           );
+        // Vérifie si cette clé de poste (ex: 'DC1') existe dans la formation
+        if (postesFormation.contains(posteKey)) {
+          if (!assignedPlayers.containsKey(posteKey)) { // S'assure que le slot est libre
+            assignedPlayers[posteKey] = player;
+            assignedRoles[player.joueur.id] = role;
+          }
+        } else {
+          // ✅✅✅ CORRECTION Ligne 95 (environ) ✅✅✅
+          // Remplacement de firstWhere avec orElse: () => null
+          // par une boucle for sécurisée.
+          String? fallbackKey;
+          for (final pf in postesFormation) {
+            if (pf.startsWith(basePoste) && !assignedPlayers.containsKey(pf)) {
+              fallbackKey = pf;
+              break; // On a trouvé le premier slot libre
+            }
+          }
+          
+          if (fallbackKey != null) {
+            assignedPlayers[fallbackKey] = player;
+            assignedRoles[player.joueur.id] = role;
+          }
+          // Si aucun slot n'est trouvé, le joueur n'est pas affiché sur le terrain
         }
-
-        assignedPlayers[posteKey] = player;
-        assignedRoles[player.joueur.id] = role;
-        assignedPlayerIds.add(player.joueur.id);
       }
       
-      // 5. ✅✅✅ CORRECTION 2 (Null Checks) ✅✅✅
+      // 5. Mapper les styles (avec vérification de nullité)
       final stylesGen = {
         if(instrGen != null && instrGen.largeur != null && instrGen.largeur!.isNotEmpty) instrGen.largeur!: 1.0,
         if(instrGen != null && instrGen.mentalite != null && instrGen.mentalite!.isNotEmpty) instrGen.mentalite!: 1.0,
@@ -115,7 +132,6 @@ class TacticsSmBloc extends Bloc<TacticsSmEvent, TacticsSmState> {
         if(instrDef != null && instrDef.gardienLibero != null && instrDef.gardienLibero!.isNotEmpty) instrDef.gardienLibero!: 1.0,
         if(instrDef != null && instrDef.perteTemps != null && instrDef.perteTemps!.isNotEmpty) instrDef.perteTemps!: 1.0,
       };
-      // ✅✅✅ FIN CORRECTION 2 ✅✅✅
 
       emit(TacticsSmState(
         status: TacticsStatus.loaded,
@@ -179,6 +195,7 @@ class TacticsSmBloc extends Bloc<TacticsSmEvent, TacticsSmState> {
       }
 
       // 4. Insérer les instructions (maintenant 17)
+      // (Déjà corrigé avec orElse: () => '')
       await instructionGeneralRepo.insertInstruction(InstructionGeneralSmModel(
         id: 0,
         tactiqueId: newTactiqueId,
@@ -254,12 +271,13 @@ class TacticsSmBloc extends Bloc<TacticsSmEvent, TacticsSmState> {
 
   // Helper pour mapper les clés de poste (pour le chargement)
   List<String> _getPosteKeysForFormation(String formation) {
+    // ✅ CORRECTION: 'G' au lieu de 'GK'
     final map = {
-      '4-3-3': ['GK', 'DG', 'DC1', 'DC2', 'DD', 'MC1', 'MC2', 'MC3', 'AG', 'AD', 'BU'],
-      '4-4-2': ['GK', 'DG', 'DC1', 'DC2', 'DD', 'MG', 'MC1', 'MC2', 'MD', 'BU1', 'BU2'],
-      '5-3-2': ['GK', 'DG', 'DC1', 'DC2', 'DC3', 'DD', 'MC1', 'MC2', 'MC3', 'BU1', 'BU2'],
-      '3-5-2': ['GK', 'DC1', 'DC2', 'DC3', 'MG', 'MC1', 'MC2', 'MC3', 'MD', 'BU1', 'BU2'],
-      '4-2-3-1': ['GK', 'DG', 'DC1', 'DC2', 'DD', 'MDC1', 'MDC2', 'MOC', 'AG', 'AD', 'BU'],
+      '4-3-3': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MC1', 'MC2', 'MC3', 'AG', 'AD', 'BU'],
+      '4-4-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MG', 'MC1', 'MC2', 'MD', 'BU1', 'BU2'],
+      '5-3-2': ['G', 'DG', 'DC1', 'DC2', 'DC3', 'DD', 'MC1', 'MC2', 'MC3', 'BU1', 'BU2'],
+      '3-5-2': ['G', 'DC1', 'DC2', 'DC3', 'MG', 'MC1', 'MC2', 'MC3', 'MD', 'BU1', 'BU2'],
+      '4-2-3-1': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MDC1', 'MDC2', 'MOC', 'AG', 'AD', 'BU'],
     };
     return map[formation] ?? map['4-3-3']!; // Fallback
   }
@@ -270,7 +288,8 @@ class TacticsSmBloc extends Bloc<TacticsSmEvent, TacticsSmState> {
     final List<JoueurSmWithStats> joueursWithStats = [];
 
     for (final joueur in joueurs) {
-      final bool isGK = joueur.postes.any((p) => p.name == 'GK');
+      // ✅ CORRECTION: 'G' au lieu de 'GK'
+      final bool isGK = joueur.postes.any((p) => p.name == 'G');
       final dynamic stats = isGK
           ? await gardienRepo.getStatsByJoueurId(joueur.id, saveId)
           : await statsRepo.getStatsByJoueurId(joueur.id, saveId);

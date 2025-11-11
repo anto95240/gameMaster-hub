@@ -92,7 +92,8 @@ class JoueursSmLoaded extends JoueursSmState {
   bool _matchesPosition(JoueurSm joueur, String pos) {
     switch (pos) {
       case 'Gardien':
-        return joueur.postes.any((p) => p.name == 'GK');
+        // ✅ CORRECTION: 'G' au lieu de 'GK'
+        return joueur.postes.any((p) => p.name == 'G');
       case 'Défenseur':
         return joueur.postes.any((p) => ['DC', 'DG', 'DD'].contains(p.name));
       case 'Milieu':

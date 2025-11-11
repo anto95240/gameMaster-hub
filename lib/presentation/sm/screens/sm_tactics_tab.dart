@@ -1,4 +1,4 @@
-// import 'package.flutter/material.dart';
+// import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -55,15 +55,12 @@ class _SMTacticsTabState extends State<SMTacticsTab>
   @override
   bool get wantKeepAlive => true;
 
-  // ✅✅✅ CORRECTION (Terrain vide + Erreur Compilation) ✅✅✅
   @override
   void initState() {
     super.initState();
-    final state = context.read<TacticsSmBloc>().state;
-    if (state.status == TacticsStatus.initial) {
-      // CORRECTION : L'événement est 'LoadTactics' et non 'LoadTacticsData'
-      context.read<TacticsSmBloc>().add(LoadTactics(widget.saveId));
-    }
+    // ✅ CORRECTION : Déclenche l'événement de chargement à chaque
+    // initialisation de l'onglet pour la bonne saveId.
+    context.read<TacticsSmBloc>().add(LoadTactics(widget.saveId));
   }
 
   @override

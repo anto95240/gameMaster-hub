@@ -39,8 +39,6 @@ class JoueurSmModel extends JoueurSm {
     // --- Correction pour le Status ---
     final statusString = map['status'] as String?;
     
-    // ✅✅✅ LA CORRECTION EST ICI ✅✅✅
-    // On retire le 'final' pour permettre l'assignation ci-dessous.
     StatusEnum status; 
     
     if (statusString == null) {
@@ -53,36 +51,37 @@ class JoueurSmModel extends JoueurSm {
       }
     }
 
+    // ✅✅✅ CORRECTION PRINCIPALE : Utilisation de snake_case pour la lecture ✅✅✅
     return JoueurSmModel(
       id: map['id'] ?? 0,
-      saveId: map['saveId'] ?? 0,
+      saveId: map['save_id'] ?? 0, // Corrigé
       nom: map['nom'] ?? 'Sans Nom',
       age: map['age'] ?? 0,
       postes: postes, // Utilise la liste sécurisée
-      niveauActuel: map['niveauActuel'] ?? 0,
+      niveauActuel: map['niveau_actuel'] ?? 0, // Corrigé
       potentiel: map['potentiel'] ?? 0,
-      montantTransfert: map['montantTransfert'] ?? 0,
+      montantTransfert: map['montant_transfert'] ?? 0, // Corrigé
       status: status, // Utilise le status sécurisé
-      dureeContrat: map['dureeContrat'] ?? 0,
+      dureeContrat: map['duree_contrat'] ?? 0, // Corrigé
       salaire: map['salaire'] ?? 0,
-      userId: map['userId'] ?? '',
+      userId: map['user_id'] ?? '', // Corrigé
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'saveId': saveId,
+      'save_id': saveId, // Note : Assurez-vous que toMap utilise aussi snake_case
       'nom': nom,
       'age': age,
       'postes': postes.map((e) => e.name).toList(),
-      'niveauActuel': niveauActuel,
+      'niveau_actuel': niveauActuel,
       'potentiel': potentiel,
-      'montantTransfert': montantTransfert,
+      'montant_transfert': montantTransfert,
       'status': status.name,
-      'dureeContrat': dureeContrat,
+      'duree_contrat': dureeContrat,
       'salaire': salaire,
-      'userId': userId,
+      'user_id': userId,
     };
   }
 

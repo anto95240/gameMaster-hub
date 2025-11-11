@@ -94,7 +94,7 @@ class FootballField extends StatelessWidget {
       // '4-1-4-1': [ [0.5, 0.90], [0.18, 0.7], [0.38, 0.7], [0.62, 0.7], [0.82, 0.7], [0.5, 0.6], [0.18, 0.45], [0.38, 0.45], [0.62, 0.45], [0.82, 0.45], [0.5, 0.2] ],
     };
 
-    // 2. Obtenir les clés de poste (GK, DC1, DC2...)
+    // 2. Obtenir les clés de poste (G, DC1, DC2...)
     final posteKeys = _getPosteKeysForFormation(formation);
     final positionsXY = formationsXY[formation] ?? formationsXY['4-3-3']!;
 
@@ -132,14 +132,15 @@ class FootballField extends StatelessWidget {
   
   // Helper pour mapper les clés de poste
   List<String> _getPosteKeysForFormation(String formation) {
+    // ✅ CORRECTION: 'G' au lieu de 'GK'
     final map = {
-      '4-3-3': ['GK', 'DG', 'DC1', 'DC2', 'DD', 'MC1', 'MC2', 'MC3', 'AG', 'AD', 'BU'],
-      '4-4-2': ['GK', 'DG', 'DC1', 'DC2', 'DD', 'MG', 'MC1', 'MC2', 'MD', 'BU1', 'BU2'],
-      '5-3-2': ['GK', 'DG', 'DC1', 'DC2', 'DC3', 'DD', 'MC1', 'MC2', 'MC3', 'BU1', 'BU2'],
-      '3-5-2': ['GK', 'DC1', 'DC2', 'DC3', 'MG', 'MC1', 'MC2', 'MC3', 'MD', 'BU1', 'BU2'],
-      '4-2-3-1': ['GK', 'DG', 'DC1', 'DC2', 'DD', 'MDC1', 'MDC2', 'MOC', 'AG', 'AD', 'BU'],
+      '4-3-3': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MC1', 'MC2', 'MC3', 'AG', 'AD', 'BU'],
+      '4-4-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MG', 'MC1', 'MC2', 'MD', 'BU1', 'BU2'],
+      '5-3-2': ['G', 'DG', 'DC1', 'DC2', 'DC3', 'DD', 'MC1', 'MC2', 'MC3', 'BU1', 'BU2'],
+      '3-5-2': ['G', 'DC1', 'DC2', 'DC3', 'MG', 'MC1', 'MC2', 'MC3', 'MD', 'BU1', 'BU2'],
+      '4-2-3-1': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MDC1', 'MDC2', 'MOC', 'AG', 'AD', 'BU'],
       // EXEMPLE: Si vous ajoutez '4-1-4-1' à Supabase :
-      // '4-1-4-1': ['GK', 'DG', 'DC1', 'DC2', 'DD', 'MDC', 'MG', 'MC1', 'MC2', 'MD', 'BU'],
+      // '4-1-4-1': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MDC', 'MG', 'MC1', 'MC2', 'MD', 'BU'],
     };
     return map[formation] ?? map['4-3-3']!; // Fallback
   }
