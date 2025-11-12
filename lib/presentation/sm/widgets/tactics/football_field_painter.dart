@@ -1,10 +1,14 @@
 // [lib/presentation/sm/widgets/tactics/football_field_painter.dart]
 import 'package:flutter/material.dart';
 import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
-import 'field_position_mapper.dart'; // Importe le mapper pour les étiquettes
+// Note: field_position_mapper.dart n'est plus importé car les étiquettes sont supprimées.
 
 class FootballFieldPainter extends CustomPainter {
   final ScreenType screenType;
+
+  // Couleurs du Thème Dark (pour l'harmonie)
+  static const Color _bgSecondaryDark = Color(0xFF2C2C3A);
+  static const Color _borderDark = Color(0xFF2F2F3A);
 
   FootballFieldPainter(this.screenType);
 
@@ -17,12 +21,10 @@ class FootballFieldPainter extends CustomPainter {
       ScreenType.laptopL => 1.8,
     };
 
-    // Couleurs
-    final fieldColor = const Color(0xFF388E3C); // Vert principal
-    final stripeColor = const Color(0xFF4CAF50); // Vert plus clair
-    final lineColor = Colors.white.withOpacity(0.7);
-    final zoneLineColor = Colors.black.withOpacity(0.5);
-    final labelColor = Colors.white.withOpacity(0.5);
+    // --- COULEURS HARMONISÉES AVEC LE THÈME DARK ---
+    final fieldColor = _bgSecondaryDark;
+    final stripeColor = _borderDark; // Bandes très subtiles
+    final lineColor = Colors.white.withOpacity(0.3); // Lignes blanches fines
 
     // Peinture pour les lignes BLANCHES
     final paintWhite = Paint()
@@ -30,23 +32,17 @@ class FootballFieldPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth;
 
-    // Peinture pour les lignes NOIRES (zones)
-    final paintBlack = Paint()
-      ..color = zoneLineColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth * 1.5; // Un peu plus épaisses
-
-    // 1. Fond vert
+    // 1. Fond
     canvas.drawRect(
       Rect.fromLTWH(0, 0, size.width, size.height),
       Paint()..color = fieldColor,
     );
 
-    // 2. Bandes de pelouse horizontales (mode paysage)
+    // 2. Bandes de pelouse horizontales
     final stripePaint = Paint()
       ..color = stripeColor
       ..style = PaintingStyle.fill;
-    const stripeCount = 6; // Moins de bandes car paysage
+    const stripeCount = 10; // 10 bandes pour un effet subtil
     for (int i = 0; i < stripeCount; i++) {
       if (i % 2 == 0) {
         canvas.drawRect(
@@ -89,74 +85,25 @@ class FootballFieldPainter extends CustomPainter {
     // Surface de réparation DROITE (Attaquants)
     _drawGoalBox(canvas, paintWhite, size.width, size);
 
-    // 4. Lignes NOIRES des zones (selon l'image)
-    // Lignes verticales
-    canvas.drawLine(Offset(size.width * 0.18, 0),
-        Offset(size.width * 0.18, size.height), paintBlack);
-    canvas.drawLine(Offset(size.width * 0.36, 0),
-        Offset(size.width * 0.36, size.height), paintBlack);
-    canvas.drawLine(Offset(size.width * 0.64, 0),
-        Offset(size.width * 0.64, size.height), paintBlack);
-    canvas.drawLine(Offset(size.width * 0.82, 0),
-        Offset(size.width * 0.82, size.height), paintBlack);
-    // Lignes horizontales
-    canvas.drawLine(Offset(size.width * 0.18, size.height * 0.25),
-        Offset(size.width, size.height * 0.25), paintBlack);
-    canvas.drawLine(Offset(size.width * 0.18, size.height * 0.75),
-        Offset(size.width, size.height * 0.75), paintBlack);
-    // Ligne centrale pour MDC/MC/MOC (partielle)
-    canvas.drawLine(Offset(size.width * 0.36, size.height * 0.5),
-        Offset(size.width * 0.64, size.height * 0.5), paintBlack);
-
-    // 5. Étiquettes de postes
-    final textStyle = TextStyle(
-      color: labelColor,
-      fontSize: 14, // Augmentation de la taille
-      fontWeight: FontWeight.w900,
-    );
-    for (var labelInfo in FieldPositionMapper.posteLabels) {
-      final double x = size.width * (labelInfo[0] as double);
-      final double y = size.height * (labelInfo[1] as double);
-      final String label = labelInfo[2] as String;
-
-      final textSpan = TextSpan(text: label, style: textStyle);
-      final textPainter = TextPainter(
-        text: textSpan,
-        textAlign: TextAlign.center,
-        textDirection: TextDirection.ltr,
-      );
-      textPainter.layout();
-      textPainter.paint(
-          canvas, Offset(x - textPainter.width / 2, y - textPainter.height / 2));
-    }
+    // 4. Lignes de zone et étiquettes -> SUPPRIMÉES
   }
 
   // Helper pour dessiner les surfaces de réparation
   void _drawGoalBox(Canvas canvas, Paint paint, double x, Size size) {
     // Dimensions en mode paysage
-    final double boxWidth = size.width * 0.18; // 18% de la largeur
-    final double boxHeight = size.height * 0.5; // 50% de la hauteur
-    final double goalWidth = size.width * 0.08;
-    final double goalHeight = size.height * 0.25;
+    final double boxWidth = size.width * 0.17; // 17% de la largeur
+    final double boxHeight = size.height * 0.7; // 70% de la hauteur
 
     if (x == 0) {
       // Côté gauche (Gardien)
       canvas.drawRect(
           Rect.fromLTWH(0, (size.height - boxHeight) / 2, boxWidth, boxHeight),
           paint);
-      canvas.drawRect(
-          Rect.fromLTWH(
-              0, (size.height - goalHeight) / 2, goalWidth, goalHeight),
-          paint);
     } else {
       // Côté droit (Attaquant)
       canvas.drawRect(
-          Rect.fromLTWH(
-              size.width - boxWidth, (size.height - boxHeight) / 2, boxWidth, boxHeight),
-          paint);
-      canvas.drawRect(
-          Rect.fromLTWH(size.width - goalWidth, (size.height - goalHeight) / 2,
-              goalWidth, goalHeight),
+          Rect.fromLTWH(size.width - boxWidth, (size.height - boxHeight) / 2,
+              boxWidth, boxHeight),
           paint);
     }
   }

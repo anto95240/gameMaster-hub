@@ -18,6 +18,9 @@ class FootballField extends StatelessWidget {
   final Map<int, RoleModeleSm> assignedRolesByPlayerId;
   final JoueursSmState allPlayers; // Vient du JoueursSmBloc
 
+  // ✅ MODIFIÉ : Couleur d'harmonie (Thème Dark)
+  static const Color _bgSecondaryDark = Color(0xFF2C2C3A);
+
   const FootballField({
     Key? key,
     required this.formation,
@@ -31,19 +34,19 @@ class FootballField extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenType = ResponsiveLayout.getScreenType(context);
 
-    // ✅ Aspect ratio paysage (plus large que haut)
-    final double aspectRatio = 1.5;
+    // ✅ MODIFIÉ : Aspect ratio 1.6:1 (plus large, comme l'exemple)
+    final double aspectRatio = 1.6;
 
     // Contraintes
     final constraints = switch (screenType) {
       ScreenType.mobile =>
-          const BoxConstraints(maxWidth: 500, maxHeight: 333),
+          const BoxConstraints(maxWidth: 500, maxHeight: 312),
       ScreenType.tablet =>
-          const BoxConstraints(maxWidth: 700, maxHeight: 466),
+          const BoxConstraints(maxWidth: 700, maxHeight: 437),
       ScreenType.laptop =>
-          const BoxConstraints(maxWidth: 800, maxHeight: 533),
+          const BoxConstraints(maxWidth: 800, maxHeight: 500),
       ScreenType.laptopL =>
-          const BoxConstraints(maxWidth: 900, maxHeight: 600),
+          const BoxConstraints(maxWidth: 900, maxHeight: 562),
     };
 
     return Container(
@@ -52,13 +55,14 @@ class FootballField extends StatelessWidget {
         aspectRatio: aspectRatio,
         child: Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF388E3C), // Fond vert
+            // ✅ MODIFIÉ : Couleur de fond harmonisée
+            color: _bgSecondaryDark,
             borderRadius: BorderRadius.circular(12),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: CustomPaint(
-              painter: FootballFieldPainter(screenType), // ✅ Nouveau painter
+              painter: FootballFieldPainter(screenType), // ✅ Painter mis à jour
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   return Stack(
@@ -91,9 +95,9 @@ class FootballField extends StatelessWidget {
     // 2. Obtenir le mappage de position [x, y] pour cette formation
     final positionMapping = FieldPositionMapper.getFormationPositions(formation);
 
-    // 3. Dimensions des cartes de joueur (réduites)
-    final double cardWidth = constraints.maxWidth * 0.13; // 13% de la largeur
-    final double cardHeight = cardWidth * 1.15; // Un peu plus hautes
+    // 3. Dimensions des cartes de joueur
+    // ✅ MODIFIÉ : 14% de la largeur
+    final double cardWidth = constraints.maxWidth * 0.14;
 
     for (final posteKey in posteKeys) {
       // 4. Trouver le joueur et le rôle pour ce poste (ex: "DC1")
@@ -110,9 +114,16 @@ class FootballField extends StatelessWidget {
           Positioned(
             // Calcule le coin supérieur gauche pour centrer la carte
             left: (constraints.maxWidth * pos.dx) - (cardWidth / 2),
-            top: (constraints.maxHeight * pos.dy) - (cardHeight / 2),
+            
+            // ✅ MODIFIÉ : 'top' est ajusté pour centrer verticalement
+            // en se basant sur une hauteur de carte approximative (50px)
+            top: (constraints.maxHeight * pos.dy) - 28, // 28 ~ 56px / 2
+            
             width: cardWidth,
-            height: cardHeight,
+
+            // ✅ MODIFIÉ : La hauteur fixe (height) a été SUPPRIMÉE.
+            // La carte gère sa propre hauteur.
+            
             child: FieldPlayerCard(
               player: player,
               role: role,
