@@ -1,5 +1,7 @@
+// [lib/presentation/sm/widgets/tactics/football_field_painter.dart]
 import 'package:flutter/material.dart';
 import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
+import 'field_position_mapper.dart'; // Importe le mapper pour les étiquettes
 
 class FootballFieldPainter extends CustomPainter {
   final ScreenType screenType;
@@ -15,86 +17,36 @@ class FootballFieldPainter extends CustomPainter {
       ScreenType.laptopL => 1.8,
     };
 
-    final paint = Paint()
-      ..color = Colors.white.withOpacity(0.9)
+    // Couleurs
+    final fieldColor = const Color(0xFF388E3C); // Vert principal
+    final stripeColor = const Color(0xFF4CAF50); // Vert plus clair
+    final lineColor = Colors.white.withOpacity(0.7);
+    final zoneLineColor = Colors.black.withOpacity(0.5);
+    final labelColor = Colors.white.withOpacity(0.5);
+
+    // Peinture pour les lignes BLANCHES
+    final paintWhite = Paint()
+      ..color = lineColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth;
 
-    // Rectangle extérieur du terrain
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
+    // Peinture pour les lignes NOIRES (zones)
+    final paintBlack = Paint()
+      ..color = zoneLineColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth * 1.5; // Un peu plus épaisses
 
-    // Ligne médiane
-    canvas.drawLine(
-      Offset(0, size.height / 2),
-      Offset(size.width, size.height / 2),
-      paint,
+    // 1. Fond vert
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Paint()..color = fieldColor,
     );
 
-    // Cercle central (ajusté selon largeur)
-    canvas.drawCircle(
-      Offset(size.width / 2, size.height / 2),
-      size.width * 0.12,
-      paint,
-    );
-
-    // Point central
-    final pointPaint = Paint()
-      ..color = Colors.white.withOpacity(0.9)
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(Offset(size.width / 2, size.height / 2), 2.5, pointPaint);
-
-    // 🥅 Surface de réparation BAS
-    _drawBox(
-      canvas,
-      paint,
-      x: size.width * 0.22,
-      y: size.height * 0.82,
-      w: size.width * 0.56,
-      h: size.height * 0.18,
-    );
-
-    // Petite surface BAS
-    _drawBox(
-      canvas,
-      paint,
-      x: size.width * 0.36,
-      y: size.height * 0.935,
-      w: size.width * 0.28,
-      h: size.height * 0.065,
-    );
-
-    // 🥅 Surface de réparation HAUT
-    _drawBox(
-      canvas,
-      paint,
-      x: size.width * 0.22,
-      y: 0,
-      w: size.width * 0.56,
-      h: size.height * 0.18,
-    );
-
-    // Petite surface HAUT
-    _drawBox(
-      canvas,
-      paint,
-      x: size.width * 0.36,
-      y: 0,
-      w: size.width * 0.28,
-      h: size.height * 0.065,
-    );
-
-    // Bandes de pelouse horizontales (adaptées à la hauteur)
+    // 2. Bandes de pelouse horizontales (mode paysage)
     final stripePaint = Paint()
-      ..color = Colors.white.withOpacity(0.03)
+      ..color = stripeColor
       ..style = PaintingStyle.fill;
-
-    final stripeCount = switch (screenType) {
-      ScreenType.mobile => 10,
-      ScreenType.tablet => 12,
-      ScreenType.laptop => 14,
-      ScreenType.laptopL => 16,
-    };
-
+    const stripeCount = 6; // Moins de bandes car paysage
     for (int i = 0; i < stripeCount; i++) {
       if (i % 2 == 0) {
         canvas.drawRect(
@@ -108,11 +60,105 @@ class FootballFieldPainter extends CustomPainter {
         );
       }
     }
+
+    // 3. Lignes blanches classiques (terrain en paysage)
+    // Ligne de touche extérieure
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paintWhite);
+    // Ligne médiane
+    canvas.drawLine(
+      Offset(size.width / 2, 0),
+      Offset(size.width / 2, size.height),
+      paintWhite,
+    );
+    // Cercle central
+    canvas.drawCircle(
+      Offset(size.width / 2, size.height / 2),
+      size.height * 0.2, // Rayon basé sur la hauteur
+      paintWhite,
+    );
+    // Point central
+    canvas.drawCircle(
+      Offset(size.width / 2, size.height / 2),
+      2.5,
+      Paint()
+        ..color = lineColor
+        ..style = PaintingStyle.fill,
+    );
+    // Surface de réparation GAUCHE (Gardien)
+    _drawGoalBox(canvas, paintWhite, 0, size);
+    // Surface de réparation DROITE (Attaquants)
+    _drawGoalBox(canvas, paintWhite, size.width, size);
+
+    // 4. Lignes NOIRES des zones (selon l'image)
+    // Lignes verticales
+    canvas.drawLine(Offset(size.width * 0.18, 0),
+        Offset(size.width * 0.18, size.height), paintBlack);
+    canvas.drawLine(Offset(size.width * 0.36, 0),
+        Offset(size.width * 0.36, size.height), paintBlack);
+    canvas.drawLine(Offset(size.width * 0.64, 0),
+        Offset(size.width * 0.64, size.height), paintBlack);
+    canvas.drawLine(Offset(size.width * 0.82, 0),
+        Offset(size.width * 0.82, size.height), paintBlack);
+    // Lignes horizontales
+    canvas.drawLine(Offset(size.width * 0.18, size.height * 0.25),
+        Offset(size.width, size.height * 0.25), paintBlack);
+    canvas.drawLine(Offset(size.width * 0.18, size.height * 0.75),
+        Offset(size.width, size.height * 0.75), paintBlack);
+    // Ligne centrale pour MDC/MC/MOC (partielle)
+    canvas.drawLine(Offset(size.width * 0.36, size.height * 0.5),
+        Offset(size.width * 0.64, size.height * 0.5), paintBlack);
+
+    // 5. Étiquettes de postes
+    final textStyle = TextStyle(
+      color: labelColor,
+      fontSize: 14, // Augmentation de la taille
+      fontWeight: FontWeight.w900,
+    );
+    for (var labelInfo in FieldPositionMapper.posteLabels) {
+      final double x = size.width * (labelInfo[0] as double);
+      final double y = size.height * (labelInfo[1] as double);
+      final String label = labelInfo[2] as String;
+
+      final textSpan = TextSpan(text: label, style: textStyle);
+      final textPainter = TextPainter(
+        text: textSpan,
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      );
+      textPainter.layout();
+      textPainter.paint(
+          canvas, Offset(x - textPainter.width / 2, y - textPainter.height / 2));
+    }
   }
 
-  void _drawBox(Canvas canvas, Paint paint,
-      {required double x, required double y, required double w, required double h}) {
-    canvas.drawRect(Rect.fromLTWH(x, y, w, h), paint);
+  // Helper pour dessiner les surfaces de réparation
+  void _drawGoalBox(Canvas canvas, Paint paint, double x, Size size) {
+    // Dimensions en mode paysage
+    final double boxWidth = size.width * 0.18; // 18% de la largeur
+    final double boxHeight = size.height * 0.5; // 50% de la hauteur
+    final double goalWidth = size.width * 0.08;
+    final double goalHeight = size.height * 0.25;
+
+    if (x == 0) {
+      // Côté gauche (Gardien)
+      canvas.drawRect(
+          Rect.fromLTWH(0, (size.height - boxHeight) / 2, boxWidth, boxHeight),
+          paint);
+      canvas.drawRect(
+          Rect.fromLTWH(
+              0, (size.height - goalHeight) / 2, goalWidth, goalHeight),
+          paint);
+    } else {
+      // Côté droit (Attaquant)
+      canvas.drawRect(
+          Rect.fromLTWH(
+              size.width - boxWidth, (size.height - boxHeight) / 2, boxWidth, boxHeight),
+          paint);
+      canvas.drawRect(
+          Rect.fromLTWH(size.width - goalWidth, (size.height - goalHeight) / 2,
+              goalWidth, goalHeight),
+          paint);
+    }
   }
 
   @override

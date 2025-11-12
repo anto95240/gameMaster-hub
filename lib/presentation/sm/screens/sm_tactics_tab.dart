@@ -1,4 +1,4 @@
-// import 'package:flutter/material.dart';
+// [lib/presentation/sm/screens/sm_tactics_tab.dart]
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,7 +7,7 @@ import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
 import 'package:gamemaster_hub/presentation/sm/widgets/sm_widgets_export.dart';
 import '../blocs/sm_blocs_export.dart';
 
-// La map _allStyles (17 styles) reste la même
+// ... (la map _allStyles reste la même)
 const Map<String, List<String>> _allStyles = {
   'Général': [
     'Largeur: Étroit', 'Largeur: Normal', 'Largeur: Jeu large',
@@ -34,6 +34,7 @@ const Map<String, List<String>> _allStyles = {
   ],
 };
 
+
 class SMTacticsTab extends StatefulWidget {
   final int saveId;
   final Game game;
@@ -58,8 +59,6 @@ class _SMTacticsTabState extends State<SMTacticsTab>
   @override
   void initState() {
     super.initState();
-    // ✅ CORRECTION : Déclenche l'événement de chargement à chaque
-    // initialisation de l'onglet pour la bonne saveId.
     context.read<TacticsSmBloc>().add(LoadTactics(widget.saveId));
   }
 
@@ -89,7 +88,6 @@ class _SMTacticsTabState extends State<SMTacticsTab>
         ? joueursState
         : const JoueursSmLoaded(joueurs: []); // Fallback
 
-    // Gère l'état initial ET le chargement
     if (tacticsState.status == TacticsStatus.loading ||
         tacticsState.status == TacticsStatus.initial) {
       return const Center(
@@ -127,7 +125,6 @@ class _SMTacticsTabState extends State<SMTacticsTab>
             _buildOptimizeButton(
               context,
               screenType,
-              // L'optimisation recharge les données
               () => context
                   .read<TacticsSmBloc>()
                   .add(OptimizeTactics(widget.saveId)),
@@ -161,19 +158,15 @@ class _SMTacticsTabState extends State<SMTacticsTab>
                   .add(OptimizeTactics(widget.saveId)),
             ),
             SizedBox(height: spacing * 1.2),
-            SizedBox(
-              height: isTablet ? 440 : 360,
-              child: FootballField(
-                formation: tacticsState.selectedFormation,
-                isLargeScreen: false,
-                assignedPlayersByPoste: tacticsState.assignedPlayersByPoste,
-                assignedRolesByPlayerId: tacticsState.assignedRolesByPlayerId,
-                allPlayers: joueursState,
-              ),
+            FootballField(
+              formation: tacticsState.selectedFormation,
+              isLargeScreen: false,
+              assignedPlayersByPoste: tacticsState.assignedPlayersByPoste,
+              assignedRolesByPlayerId: tacticsState.assignedRolesByPlayerId,
+              allPlayers: joueursState,
             ),
             SizedBox(height: spacing * 1.2),
             _buildStyleCard(
-              height: null,
               optimizedStyles: {
                 'Général': tacticsState.stylesGeneral,
                 'Attaque': tacticsState.stylesAttack,
@@ -207,26 +200,25 @@ class _SMTacticsTabState extends State<SMTacticsTab>
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ✅ Flex ratio ajusté (terrain plus grand)
                 Expanded(
-                  flex: 3,
+                  flex: 6,
                   child: Center(
-                    child: AspectRatio(
-                      aspectRatio: 0.65,
-                      child: FootballField(
-                        formation: tacticsState.selectedFormation,
-                        isLargeScreen: true,
-                        assignedPlayersByPoste:
-                            tacticsState.assignedPlayersByPoste,
-                        assignedRolesByPlayerId:
-                            tacticsState.assignedRolesByPlayerId,
-                        allPlayers: joueursState,
-                      ),
+                    child: FootballField(
+                      formation: tacticsState.selectedFormation,
+                      isLargeScreen: true,
+                      assignedPlayersByPoste:
+                          tacticsState.assignedPlayersByPoste,
+                      assignedRolesByPlayerId:
+                          tacticsState.assignedRolesByPlayerId,
+                      allPlayers: joueursState,
                     ),
                   ),
                 ),
                 SizedBox(width: spacing * 1.4),
+                // ✅ Flex ratio ajusté (carte style plus étroite)
                 Expanded(
-                  flex: 6,
+                  flex: 4,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
@@ -238,14 +230,18 @@ class _SMTacticsTabState extends State<SMTacticsTab>
                             .add(OptimizeTactics(widget.saveId)),
                       ),
                       SizedBox(height: spacing),
+                      // L'Expanded ici permet à la carte de ne pas déborder
+                      // si le contenu est grand, mais _buildStyleCard
+                      // utilisera MainAxisSize.min
                       Expanded(
-                        child: _buildStyleCard(
-                          height: null,
-                          optimizedStyles: {
-                            'Général': tacticsState.stylesGeneral,
-                            'Attaque': tacticsState.stylesAttack,
-                            'Défense': tacticsState.stylesDefense,
-                          },
+                        child: SingleChildScrollView(
+                          child: _buildStyleCard(
+                            optimizedStyles: {
+                              'Général': tacticsState.stylesGeneral,
+                              'Attaque': tacticsState.stylesAttack,
+                              'Défense': tacticsState.stylesDefense,
+                            },
+                          ),
                         ),
                       ),
                     ],
@@ -361,6 +357,7 @@ class _SMTacticsTabState extends State<SMTacticsTab>
             return Padding(
               padding: const EdgeInsets.only(bottom: 6.0),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start, // Gère les retours à la ligne
                 children: [
                   Text(
                     "$styleType: ",
@@ -370,15 +367,16 @@ class _SMTacticsTabState extends State<SMTacticsTab>
                       height: 1.4,
                     ),
                   ),
-                  Text(
-                    selectedOption.split(': ').last,
-                    style: const TextStyle(
-                      color: Colors.amberAccent,
-                      fontSize: 13,
-                      height: 1.4,
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Text(
+                      selectedOption.split(': ').last,
+                      style: const TextStyle(
+                        color: Colors.amberAccent,
+                        fontSize: 13,
+                        height: 1.4,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -391,7 +389,6 @@ class _SMTacticsTabState extends State<SMTacticsTab>
 
   /// Carte de style
   Widget _buildStyleCard({
-    double? height,
     required Map<String, Map<String, double>> optimizedStyles,
   }) {
     final bool hasStyles = (optimizedStyles['Général']?.isNotEmpty ?? false) ||
@@ -400,7 +397,6 @@ class _SMTacticsTabState extends State<SMTacticsTab>
 
     return Container(
       width: double.infinity,
-      height: height,
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         color: const Color(0xFF2d3142),
@@ -408,6 +404,7 @@ class _SMTacticsTabState extends State<SMTacticsTab>
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min, // ✅ Raccourcit la carte
         children: [
           const Text(
             'Styles de jeu optimisés',
@@ -419,8 +416,9 @@ class _SMTacticsTabState extends State<SMTacticsTab>
           ),
           const SizedBox(height: 14),
           if (!hasStyles)
-            const Expanded(
-              child: Center(
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 24.0),
                 child: Text(
                   'Cliquez sur "Optimiser" pour générer les styles de jeu adaptés.',
                   textAlign: TextAlign.center,
@@ -432,29 +430,26 @@ class _SMTacticsTabState extends State<SMTacticsTab>
               ),
             ),
           if (hasStyles)
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            // ✅ Layout changé pour s'adapter à une largeur réduite
+            Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: _buildStyleSection(
-                    'Général',
-                    _allStyles['Général']!,
-                    optimizedStyles['Général']!,
-                  ),
+                _buildStyleSection(
+                  'Général',
+                  _allStyles['Général']!,
+                  optimizedStyles['Général']!,
                 ),
-                Expanded(
-                  child: _buildStyleSection(
-                    'Attaque',
-                    _allStyles['Attaque']!,
-                    optimizedStyles['Attaque']!,
-                  ),
+                const SizedBox(height: 12),
+                _buildStyleSection(
+                  'Attaque',
+                  _allStyles['Attaque']!,
+                  optimizedStyles['Attaque']!,
                 ),
-                Expanded(
-                  child: _buildStyleSection(
-                    'Défense',
-                    _allStyles['Défense']!,
-                    optimizedStyles['Défense']!,
-                  ),
+                const SizedBox(height: 12),
+                _buildStyleSection(
+                  'Défense',
+                  _allStyles['Défense']!,
+                  optimizedStyles['Défense']!,
                 ),
               ],
             ),
