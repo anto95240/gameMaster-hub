@@ -69,31 +69,35 @@ class _JoueurStatsComplet {
     }
   }
 
-  // ✅✅✅ NOUVELLE LOGIQUE DE COMPATIBILITÉ ✅✅✅
-  // Vérifie si un joueur peut jouer à un poste "de base" (ex: AG)
+  // ✅✅✅ LOGIQUE DE COMPATIBILITÉ CORRIGÉE ✅✅✅
+  // Vérifie si un joueur peut jouer à un poste "de base" (ex: MOG)
   bool canPlayPoste(String basePoste) {
     // Map des postes logiques (ceux demandés) vers les postes réels (ceux du joueur)
     // C'est la liste de "compatibilité"
+    // ✅ CORRIGÉ : N'utilise que des PosteEnum valides
     const Map<String, List<String>> compatibilityMap = {
       'G': ['G'],
       'DC': ['DC'],
-      'DG': ['DG', 'DLG'],
-      'DD': ['DD', 'DLD'],
-      'MDC': ['MDC', 'MC'], // Un MC peut jouer MDC
-      'MC': ['MC', 'MDC', 'MOC'], // Un MDC/MOC peut jouer MC
-      'MOC': ['MOC', 'MC', 'MOG', 'MOD', 'BU', 'AT'], 
-      'MG': ['MG', 'MOG'],
-      'MD': ['MD', 'MOD'],
-      'AG': ['AG', 'MOG', 'MG', 'BU', 'AT'], // Un MOG/MG/BU peut jouer AG
-      'AD': ['AD', 'MOD', 'MD', 'BU', 'AT'], // Un MOD/MD/BU peut jouer AD
-      'BU': ['BU', 'AT', 'MOG', 'MOD', 'AD', 'AG'], // Un BU/AT ou un ailier très offensif
-      'AT': ['BU', 'AT', 'MOG', 'MOD', 'AD', 'AG', 'MOC'],
+      'DG': ['DG', 'DLG', 'DC'],
+      'DD': ['DD', 'DLD', 'DC'],
+      'DLG': ['DLG', 'DG', 'MG'],
+      'DLD': ['DLD', 'DD', 'MD'],
+      'MDC': ['MDC', 'MC', 'DC'], // Un MC/DC peut jouer MDC
+      'MC': ['MC', 'MDC', 'MOC', 'MG', 'MD'], // Un MDC/MOC/MG/MD peut jouer MC
+      'MOC': ['MOC', 'MC', 'MOG', 'MOD', 'BUC', 'BUG', 'BUD'],
+      'MG': ['MG', 'MOG', 'DG', 'DLG'],
+      'MD': ['MD', 'MOD', 'DD', 'DLD'],
+      'MOG': ['MOG', 'MG', 'BUC', 'BUG', 'MOC'], // AG = MOG
+      'MOD': ['MOD', 'MD', 'BUC', 'BUD', 'MOC'], // AD = MOD
+      'BUC': ['BUC', 'BUG', 'BUD', 'MOG', 'MOD', 'MOC'],
+      'BUG': ['BUG', 'BUC', 'MOG'],
+      'BUD': ['BUD', 'BUC', 'MOD'],
     };
     
-    // Prend la liste des postes compatibles pour le poste demandé (ex: "AG" -> ["AG", "MOG", "MG", "BU", "AT"])
+    // Prend la liste des postes compatibles pour le poste demandé (ex: "MOG" -> ["MOG", "MG", "BUC", "BUG", "MOC"])
     final List<String> compatibleEnumPostes = compatibilityMap[basePoste] ?? [basePoste];
     
-    // Vérifie si *un seul* des postes du joueur (ex: "MOG") est dans cette liste
+    // Vérifie si *un seul* des postes du joueur (ex: "MOC") est dans cette liste
     for (final playerPoste in joueur.postes) {
       if (compatibleEnumPostes.contains(playerPoste.name)) {
         return true; // Trouvé ! Il peut jouer à ce poste.
@@ -102,27 +106,31 @@ class _JoueurStatsComplet {
     return false; // Non trouvé. (Ex: un "MC" ne peut pas jouer "DC")
   }
   
-  // ✅✅✅ NOUVELLE LOGIQUE DE POSTE PRÉFÉRÉ ✅✅✅
+  // ✅✅✅ LOGIQUE DE POSTE PRÉFÉRÉ CORRIGÉE ✅✅✅
   // Vérifie si le poste *préféré* (le premier) du joueur correspond au poste demandé
   bool isPreferredPoste(String basePoste) {
     if (preferredPoste == null) return false;
     
     // Map de compatibilité plus stricte pour le *bonus*
     // Un "MC" qui joue "MDC" n'aura pas de bonus, mais n'est pas disqualifié.
+    // ✅ CORRIGÉ : N'utilise que des PosteEnum valides
     const Map<String, List<String>> preferredMap = {
       'G': ['G'],
       'DC': ['DC'],
       'DG': ['DG', 'DLG'],
       'DD': ['DD', 'DLD'],
+      'DLG': ['DLG', 'DG'],
+      'DLD': ['DLD', 'DD'],
       'MDC': ['MDC'], // Seul un vrai MDC a le bonus
       'MC': ['MC'], // Seul un vrai MC a le bonus
       'MOC': ['MOC'],
       'MG': ['MG', 'MOG'],
       'MD': ['MD', 'MOD'],
-      'AG': ['AG', 'MOG', 'MG'],
-      'AD': ['AD', 'MOD', 'MD'],
-      'BU': ['BU', 'AT'],
-      'AT': ['BU', 'AT'],
+      'MOG': ['MOG', 'MG'], // AG = MOG
+      'MOD': ['MOD', 'MD'], // AD = MOD
+      'BUC': ['BUC', 'BUG', 'BUD'],
+      'BUG': ['BUG', 'BUC'],
+      'BUD': ['BUD', 'BUC'],
     };
     
     final List<String> compatibleEnumPostes = preferredMap[basePoste] ?? [basePoste];
@@ -139,8 +147,8 @@ class _JoueurStatsComplet {
   
   bool isCorrectWinger(String basePoste) {
     if (preferredPoste == null) return true;
-    if (basePoste == 'MG' || basePoste == 'AG') return preferredPoste!.name == 'MG' || preferredPoste!.name == 'MOG' || preferredPoste!.name == 'AG';
-    if (basePoste == 'MD' || basePoste == 'AD') return preferredPoste!.name == 'MD' || preferredPoste!.name == 'MOD' || preferredPoste!.name == 'AD';
+    if (basePoste == 'MG' || basePoste == 'MOG') return preferredPoste!.name == 'MG' || preferredPoste!.name == 'MOG' || preferredPoste!.name == 'BUG';
+    if (basePoste == 'MD' || basePoste == 'MOD') return preferredPoste!.name == 'MD' || preferredPoste!.name == 'MOD' || preferredPoste!.name == 'BUD';
     return true;
   }
   
@@ -271,6 +279,7 @@ class TacticsOptimizer {
     List<_JoueurStatsComplet> allPlayers,
   ) {
     if (allFormations.isEmpty) {
+      // Fallback au cas où Supabase est vide
       allFormations.add(TactiqueModeleSm(id: 0, formation: '4-3-3'));
     }
 
@@ -282,7 +291,7 @@ class TacticsOptimizer {
     for (final modele in allFormations) {
       final postesKeys = _getPosteKeysForFormation(modele.formation);
       
-      if (postesKeys.isEmpty) continue; 
+      if (postesKeys.isEmpty) continue; // Formation non reconnue
 
       List<_JoueurStatsComplet> playerPool = List.from(allPlayers);
       List<_JoueurStatsComplet> currentEleven = [];
@@ -410,27 +419,30 @@ class TacticsOptimizer {
     }
 
 
-    // 4. Apply *Bonus* for preferred position
-    if (player.isPreferredPoste(basePoste)) {
-      baseScore *= 1.60; // ✅ MODIFIÉ: 60% bonus (au lieu de 1.40)
-    }
+    // 4. ✅ CORRIGÉ : Application des bonus/malus
+    // Priorité au statut, PUIS au poste préféré
     
     // Malus for playing on the wrong side (even if compatible)
     if (!player.isCorrectLateral(basePoste) || !player.isCorrectWinger(basePoste)) {
-        baseScore *= 0.6; // 40% penalty (inchangé)
+        baseScore *= 0.6; // 40% penalty
     }
-
-    // ✅ AJOUT : Pondération du statut
+    
+    // Bonus pour poste préféré (le premier de la liste)
+    if (player.isPreferredPoste(basePoste)) {
+      baseScore *= 1.5; // Bonus de 50%
+    }
+    
+    // Pondération du statut (PRIORITAIRE)
     switch (player.joueur.status) {
       case StatusEnum.Titulaire:
-        baseScore *= 1.50; // ✅ MODIFIÉ: Bonus de 50% (au lieu de 1.15)
+        baseScore *= 2.0; // Bonus de 100%
         break;
       case StatusEnum.Remplacant:
-        baseScore *= 0.95; // ✅ AJOUTÉ: Léger malus de 5%
+        baseScore *= 0.8; // Pénalité de 20%
         break;
       case StatusEnum.Preter:
       case StatusEnum.Vendre:
-        return -1000; // DISQUALIFIED (inchangé)
+        return -1000; // DISQUALIFIED
     }
 
     // 5. Apply potential bonus
@@ -456,6 +468,8 @@ class TacticsOptimizer {
         return ['marquage', 'tacles', 'force', 'positionnement', 'stabilite_aerienne'];
       case 'DG':
       case 'DD':
+      case 'DLG':
+      case 'DLD':
         return ['vitesse', 'endurance', 'centres', 'tacles', 'marquage'];
       case 'MDC':
         return ['tacles', 'endurance', 'agressivite', 'passes', 'positionnement'];
@@ -465,14 +479,15 @@ class TacticsOptimizer {
         return ['creativite', 'dribble', 'frappes_lointaines', 'passes', 'deplacement'];
       case 'MG':
       case 'MD':
-      case 'AG':
-      case 'AD':
+      case 'MOG': // AG = MOG
+      case 'MOD': // AD = MOD
         return ['vitesse', 'dribble', 'centres', 'creativite', 'finition'];
-      case 'BU':
-      case 'AT':
+      case 'BUC':
+      case 'BUG':
+      case 'BUD':
         return ['finition', 'deplacement', 'sang_froid', 'vitesse', 'stabilite_aerienne'];
       default:
-        // Fallback (DLG, MOD, etc. utiliseront ça si non mappés dans canPlayPoste)
+        // Fallback
         return ['vitesse', 'endurance', 'force'];
     }
   }
@@ -723,16 +738,21 @@ class TacticsOptimizer {
 
   // --- MAPPINGS DE DONNÉES (Logique métier) ---
 
+  // ✅✅✅ CARTE CANONIQUE DES FORMATIONS ✅✅✅
   List<String> _getPosteKeysForFormation(String formation) {
+    // Utilise les clés de la base (ex: MOG, BUC) et des numéros pour les doublons
     final map = {
-      '4-3-3': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MC1', 'MC2', 'MC3', 'AG', 'AD', 'BU'],
-      '4-4-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MG', 'MC1', 'MC2', 'MD', 'BU1', 'BU2'],
-      '5-3-2': ['G', 'DG', 'DC1', 'DC2', 'DC3', 'DD', 'MC1', 'MC2', 'MC3', 'BU1', 'BU2'],
-      '3-5-2': ['G', 'DC1', 'DC2', 'DC3', 'MG', 'MC1', 'MC2', 'MC3', 'MD', 'BU1', 'BU2'],
-      '4.2.3.1': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MDC1', 'MDC2', 'MOC', 'AG', 'AD', 'BU'],
-      '4-2-3-1': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MDC1', 'MDC2', 'MOC', 'AG', 'AD', 'BU'],
+      '4-4-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MG', 'MC1', 'MC2', 'MD', 'BUC1', 'BUC2'],
+      '4-3-1-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MC1', 'MC2', 'MC3', 'MOC', 'BUC1', 'BUC2'],
+      '4-2-3-1': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MDC1', 'MDC2', 'MOG', 'MOC', 'MOD', 'BUC'],
+      '4-2-2-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MDC1', 'MDC2', 'MOC1', 'MOC2', 'BUC1', 'BUC2'],
+      '4-3-3': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MC1', 'MC2', 'MC3', 'MOG', 'MOD', 'BUC'],
+      '3-4-3': ['G', 'DC1', 'DC2', 'DC3', 'MG', 'MC1', 'MC2', 'MD', 'MOG', 'MOD', 'BUC'],
+      '3-5-2': ['G', 'DC1', 'DC2', 'DC3', 'MG', 'MDC', 'MC1', 'MC2', 'MD', 'BUC1', 'BUC2'],
+      '3-3-3-1': ['G', 'DC1', 'DC2', 'DC3', 'MDC1', 'MDC2', 'MDC3', 'MOG', 'MOC', 'MOD', 'BUC'],
+      '3-2-4-1': ['G', 'DC1', 'DC2', 'DC3', 'MDC1', 'MDC2', 'MOG', 'MOC1', 'MOC2', 'MOD', 'BUC'],
     };
-    return map[formation] ?? map['4-3-3']!; // Fallback
+    return map[formation] ?? map['4-3-3']!; // Fallback sur 4-3-3
   }
 
   List<String> _getKeyStatsForRole(String roleName) {

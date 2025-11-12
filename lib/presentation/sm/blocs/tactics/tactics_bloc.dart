@@ -1,7 +1,5 @@
 // [lib/presentation/sm/blocs/tactics/tactics_bloc.dart]
-// (Ce fichier est identique à la version précédente, car la logique de chargement
-// des rôles était déjà correcte. Le problème venait de la sélection des joueurs
-// par l'optimiseur.)
+// (Seule la fonction _getPosteKeysForFormation est modifiée)
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gamemaster_hub/data/data_export.dart';
 import 'package:gamemaster_hub/domain/domain_export.dart';
@@ -63,6 +61,7 @@ class TacticsSmBloc extends Bloc<TacticsSmEvent, TacticsSmState> {
       final Map<String, JoueurSmWithStats?> assignedPlayers = {};
       final Map<int, RoleModeleSm> assignedRoles = {};
 
+      // ✅✅✅ CORRECTION : Utilisation de la nouvelle carte de formation
       final postesFormation = _getPosteKeysForFormation(lastTactic.formation);
       
       // Map pour compter les postes déjà assignés (ex: {'DC': 1, 'MC': 2})
@@ -273,22 +272,22 @@ class TacticsSmBloc extends Bloc<TacticsSmEvent, TacticsSmState> {
     }
   }
 
+  // ✅✅✅ CARTE CANONIQUE DES FORMATIONS ✅✅✅
   // Helper pour mapper les clés de poste (pour le chargement)
   List<String> _getPosteKeysForFormation(String formation) {
-    // ✅ CORRECTION: 'G' au lieu de 'GK'
+    // Utilise les clés de la base (ex: MOG, BUC) et des numéros pour les doublons
     final map = {
-      '4-4-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MG', 'MC1', 'MC2', 'MD', 'BU1', 'BU2'],
-      '4-3-1-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MDC1', 'MC1', 'MC2', 'MOC', 'BU1', 'BU2'],
-      '4-2-3-1': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MDC1', 'MDC2', 'MOC', 'AG', 'AD', 'BU'],
-      '4-2-2-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MDC1', 'MDC2', 'MOC1', 'MOC2', 'BU1', 'BU2'],
-      '4-3-3': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MC1', 'MC2', 'MC3', 'AG', 'AD', 'BU'],
-      '3-4-3': ['G', 'DC1', 'DC2', 'DC3', 'MG', 'MC1', 'MC2', 'MD', 'AG', 'AD', 'BU'],
-      '3-5-2': ['G', 'DC1', 'DC2', 'DC3', 'MDG', 'MDC', 'MDD', 'MC1', 'MC2', 'BU1', 'BU2'],
-      '3-3-3-1': ['G', 'DC1', 'DC2', 'DC3', 'MDC1', 'MDC2', 'MOC1', 'MOC2', 'MOC3', 'BU'], 
-      '3-2-4-1': ['G', 'DC1', 'DC2', 'DC3', 'MDC1', 'MDC2', 'AG', 'MOC1', 'MOC2', 'AD', 'BU'],
-
+      '4-4-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MG', 'MC1', 'MC2', 'MD', 'BUC1', 'BUC2'],
+      '4-3-1-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MC1', 'MC2', 'MC3', 'MOC', 'BUC1', 'BUC2'],
+      '4-2-3-1': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MDC1', 'MDC2', 'MOG', 'MOC', 'MOD', 'BUC'],
+      '4-2-2-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MDC1', 'MDC2', 'MOC1', 'MOC2', 'BUC1', 'BUC2'],
+      '4-3-3': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MC1', 'MC2', 'MC3', 'MOG', 'MOD', 'BUC'],
+      '3-4-3': ['G', 'DC1', 'DC2', 'DC3', 'MG', 'MC1', 'MC2', 'MD', 'MOG', 'MOD', 'BUC'],
+      '3-5-2': ['G', 'DC1', 'DC2', 'DC3', 'MG', 'MDC', 'MC1', 'MC2', 'MD', 'BUC1', 'BUC2'],
+      '3-3-3-1': ['G', 'DC1', 'DC2', 'DC3', 'MDC1', 'MDC2', 'MDC3', 'MOG', 'MOC', 'MOD', 'BUC'],
+      '3-2-4-1': ['G', 'DC1', 'DC2', 'DC3', 'MDC1', 'MDC2', 'MOG', 'MOC1', 'MOC2', 'MOD', 'BUC'],
     };
-    return map[formation] ?? map['4-3-3']!; // Fallback
+    return map[formation] ?? map['4-3-3']!; // Fallback sur 4-3-3
   }
 
   // Helper pour récupérer les données combinées (utilisé par _onLoadTactics)
