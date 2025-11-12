@@ -1,3 +1,7 @@
+// [lib/presentation/sm/blocs/tactics/tactics_bloc.dart]
+// (Ce fichier est identique à la version précédente, car la logique de chargement
+// des rôles était déjà correcte. Le problème venait de la sélection des joueurs
+// par l'optimiseur.)
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gamemaster_hub/data/data_export.dart';
 import 'package:gamemaster_hub/domain/domain_export.dart';
@@ -273,11 +277,16 @@ class TacticsSmBloc extends Bloc<TacticsSmEvent, TacticsSmState> {
   List<String> _getPosteKeysForFormation(String formation) {
     // ✅ CORRECTION: 'G' au lieu de 'GK'
     final map = {
-      '4-3-3': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MC1', 'MC2', 'MC3', 'AG', 'AD', 'BU'],
       '4-4-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MG', 'MC1', 'MC2', 'MD', 'BU1', 'BU2'],
-      '5-3-2': ['G', 'DG', 'DC1', 'DC2', 'DC3', 'DD', 'MC1', 'MC2', 'MC3', 'BU1', 'BU2'],
-      '3-5-2': ['G', 'DC1', 'DC2', 'DC3', 'MG', 'MC1', 'MC2', 'MC3', 'MD', 'BU1', 'BU2'],
+      '4-3-1-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MDC1', 'MC1', 'MC2', 'MOC', 'BU1', 'BU2'],
       '4-2-3-1': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MDC1', 'MDC2', 'MOC', 'AG', 'AD', 'BU'],
+      '4-2-2-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MDC1', 'MDC2', 'MOC1', 'MOC2', 'BU1', 'BU2'],
+      '4-3-3': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MC1', 'MC2', 'MC3', 'AG', 'AD', 'BU'],
+      '3-4-3': ['G', 'DC1', 'DC2', 'DC3', 'MG', 'MC1', 'MC2', 'MD', 'AG', 'AD', 'BU'],
+      '3-5-2': ['G', 'DC1', 'DC2', 'DC3', 'MDG', 'MDC', 'MDD', 'MC1', 'MC2', 'BU1', 'BU2'],
+      '3-3-3-1': ['G', 'DC1', 'DC2', 'DC3', 'MDC1', 'MDC2', 'MOC1', 'MOC2', 'MOC3', 'BU'], 
+      '3-2-4-1': ['G', 'DC1', 'DC2', 'DC3', 'MDC1', 'MDC2', 'AG', 'MOC1', 'MOC2', 'AD', 'BU'],
+
     };
     return map[formation] ?? map['4-3-3']!; // Fallback
   }

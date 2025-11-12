@@ -1,3 +1,4 @@
+// [lib/presentation/core/utils/responsive_layout.dart]
 import 'package:flutter/material.dart';
 
 enum ScreenType { mobile, tablet, laptop, laptopL }
@@ -88,29 +89,29 @@ class ResponsiveLayout {
         return CardConstraints(
           minWidth: 280,
           maxWidth: 400,
-          minHeight: 140,
-          maxHeight: 180,
+          minHeight: 150, // Modifié
+          maxHeight: 190, // Modifié
         );
       case ScreenType.tablet:
         return CardConstraints(
           minWidth: 300,
           maxWidth: 380,
-          minHeight: 160,
-          maxHeight: 200,
+          minHeight: 170, // Modifié
+          maxHeight: 210, // Modifié
         );
       case ScreenType.laptop:
         return CardConstraints(
           minWidth: 300,
           maxWidth: 400,
-          minHeight: 180,
-          maxHeight: 220,
+          minHeight: 190, // Modifié
+          maxHeight: 230, // Modifié
         );
       case ScreenType.laptopL:
         return CardConstraints(
           minWidth: 320,
           maxWidth: 420,
-          minHeight: 180,
-          maxHeight: 240,
+          minHeight: 195, // Modifié
+          maxHeight: 250, // Modifié
         );
     }
   }

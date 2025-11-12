@@ -1,3 +1,4 @@
+// [lib/domain/sm/services/tactics_optimizer.dart]
 import 'dart:math';
 import 'package:gamemaster_hub/data/data_export.dart'; // Importation des models
 import 'package:gamemaster_hub/domain/domain_export.dart';
@@ -411,12 +412,25 @@ class TacticsOptimizer {
 
     // 4. Apply *Bonus* for preferred position
     if (player.isPreferredPoste(basePoste)) {
-      baseScore *= 1.25; // 25% bonus for being a "natural" fit
+      baseScore *= 1.60; // ✅ MODIFIÉ: 60% bonus (au lieu de 1.40)
     }
     
     // Malus for playing on the wrong side (even if compatible)
     if (!player.isCorrectLateral(basePoste) || !player.isCorrectWinger(basePoste)) {
-        baseScore *= 0.7; // 30% penalty
+        baseScore *= 0.6; // 40% penalty (inchangé)
+    }
+
+    // ✅ AJOUT : Pondération du statut
+    switch (player.joueur.status) {
+      case StatusEnum.Titulaire:
+        baseScore *= 1.50; // ✅ MODIFIÉ: Bonus de 50% (au lieu de 1.15)
+        break;
+      case StatusEnum.Remplacant:
+        baseScore *= 0.95; // ✅ AJOUTÉ: Léger malus de 5%
+        break;
+      case StatusEnum.Preter:
+      case StatusEnum.Vendre:
+        return -1000; // DISQUALIFIED (inchangé)
     }
 
     // 5. Apply potential bonus

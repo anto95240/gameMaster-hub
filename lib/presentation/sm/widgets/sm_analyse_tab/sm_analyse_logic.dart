@@ -54,7 +54,7 @@ class SMAnalyseLogic {
       if (age > 30) nbVieux++;
 
       // === Gardien ===
-      if (poste == 'GK') {
+      if (poste == 'G') {
         nbGk++;
         final gk = await gardienRepo.getStatsByJoueurId(joueur.id, saveId);
         if (gk != null) {
