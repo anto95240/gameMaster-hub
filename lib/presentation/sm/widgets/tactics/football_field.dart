@@ -18,9 +18,6 @@ class FootballField extends StatelessWidget {
   final Map<int, RoleModeleSm> assignedRolesByPlayerId;
   final JoueursSmState allPlayers; // Vient du JoueursSmBloc
 
-  // ✅ MODIFIÉ : Couleur d'harmonie (Thème Dark)
-  static const Color _bgSecondaryDark = Color(0xFF2C2C3A);
-
   const FootballField({
     Key? key,
     required this.formation,
@@ -33,6 +30,8 @@ class FootballField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenType = ResponsiveLayout.getScreenType(context);
+    // ✅ 3. Fond du terrain : Récupération du thème
+    final theme = Theme.of(context);
 
     // ✅ MODIFIÉ : Aspect ratio 1.6:1 (plus large, comme l'exemple)
     final double aspectRatio = 1.6;
@@ -55,14 +54,15 @@ class FootballField extends StatelessWidget {
         aspectRatio: aspectRatio,
         child: Container(
           decoration: BoxDecoration(
-            // ✅ MODIFIÉ : Couleur de fond harmonisée
-            color: _bgSecondaryDark,
+            // ✅ 3. Fond du terrain : Utilisation de la couleur du thème
+            color: theme.cardColor,
             borderRadius: BorderRadius.circular(12),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: CustomPaint(
-              painter: FootballFieldPainter(screenType), // ✅ Painter mis à jour
+              // ✅ 3. Fond du terrain : Thème passé au painter
+              painter: FootballFieldPainter(screenType, theme: theme),
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   return Stack(
@@ -70,6 +70,7 @@ class FootballField extends StatelessWidget {
                       constraints,
                       formation,
                       context,
+                      screenType, // ✅ 1. Texte réactif : screenType passé ici
                     ),
                   );
                 },
@@ -86,6 +87,7 @@ class FootballField extends StatelessWidget {
     BoxConstraints constraints,
     String formation,
     BuildContext context,
+    ScreenType screenType, // ✅ 1. Texte réactif : Réception de screenType
   ) {
     final List<Widget> playerWidgets = [];
 
@@ -97,7 +99,13 @@ class FootballField extends StatelessWidget {
 
     // 3. Dimensions des cartes de joueur
     // ✅ MODIFIÉ : 14% de la largeur
-    final double cardWidth = constraints.maxWidth * 0.14;
+    // final double cardWidth = constraints.maxWidth * 0.14;
+
+    final double cardWidth = switch (screenType) {
+      ScreenType.mobile   => constraints.maxWidth * 0.17, // Augmenté à 17%
+      ScreenType.tablet   => constraints.maxWidth * 0.15, // Augmenté à 15%
+      _                   => constraints.maxWidth * 0.14, // 14% pour laptop/desktop
+    };
 
     for (final posteKey in posteKeys) {
       // 4. Trouver le joueur et le rôle pour ce poste (ex: "DC1")
@@ -127,6 +135,8 @@ class FootballField extends StatelessWidget {
             child: FieldPlayerCard(
               player: player,
               role: role,
+              // ✅ 1. Texte réactif : screenType passé à la carte
+              screenType: screenType,
               onTap: () {
                 _showPlayerModal(
                     context, player, role, allPlayers, role.poste);

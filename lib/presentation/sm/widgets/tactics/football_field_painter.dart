@@ -5,12 +5,10 @@ import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
 
 class FootballFieldPainter extends CustomPainter {
   final ScreenType screenType;
+  // ✅ 3. Fond du terrain : Ajout du thème
+  final ThemeData theme;
 
-  // Couleurs du Thème Dark (pour l'harmonie)
-  static const Color _bgSecondaryDark = Color(0xFF2C2C3A);
-  static const Color _borderDark = Color(0xFF2F2F3A);
-
-  FootballFieldPainter(this.screenType);
+  FootballFieldPainter(this.screenType, {required this.theme});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -21,13 +19,13 @@ class FootballFieldPainter extends CustomPainter {
       ScreenType.laptopL => 1.8,
     };
 
-    // --- COULEURS HARMONISÉES AVEC LE THÈME DARK ---
-    final fieldColor = _bgSecondaryDark;
-    final stripeColor = _borderDark; // Bandes très subtiles
-    final lineColor = Colors.white.withOpacity(0.3); // Lignes blanches fines
+    // --- ✅ 3. Fond du terrain : COULEURS HARMONISÉES ---
+    final fieldColor = theme.cardColor;
+    final stripeColor = theme.dividerColor; // Bandes subtiles
+    final lineColor = theme.colorScheme.onSurface.withOpacity(0.3); // Lignes fines
 
-    // Peinture pour les lignes BLANCHES
-    final paintWhite = Paint()
+    // Peinture pour les lignes (anciennement paintWhite)
+    final paintLine = Paint()
       ..color = lineColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth;
@@ -57,20 +55,20 @@ class FootballFieldPainter extends CustomPainter {
       }
     }
 
-    // 3. Lignes blanches classiques (terrain en paysage)
+    // 3. Lignes classiques (terrain en paysage)
     // Ligne de touche extérieure
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paintWhite);
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paintLine);
     // Ligne médiane
     canvas.drawLine(
       Offset(size.width / 2, 0),
       Offset(size.width / 2, size.height),
-      paintWhite,
+      paintLine,
     );
     // Cercle central
     canvas.drawCircle(
       Offset(size.width / 2, size.height / 2),
       size.height * 0.2, // Rayon basé sur la hauteur
-      paintWhite,
+      paintLine,
     );
     // Point central
     canvas.drawCircle(
@@ -81,9 +79,9 @@ class FootballFieldPainter extends CustomPainter {
         ..style = PaintingStyle.fill,
     );
     // Surface de réparation GAUCHE (Gardien)
-    _drawGoalBox(canvas, paintWhite, 0, size);
+    _drawGoalBox(canvas, paintLine, 0, size);
     // Surface de réparation DROITE (Attaquants)
-    _drawGoalBox(canvas, paintWhite, size.width, size);
+    _drawGoalBox(canvas, paintLine, size.width, size);
 
     // 4. Lignes de zone et étiquettes -> SUPPRIMÉES
   }
@@ -109,5 +107,7 @@ class FootballFieldPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  // ✅ 3. Fond du terrain : Repeint si le thème change
+  bool shouldRepaint(covariant FootballFieldPainter oldDelegate) =>
+      oldDelegate.theme != theme || oldDelegate.screenType != screenType;
 }

@@ -200,7 +200,6 @@ class _SMMainScreenState extends State<SMMainScreen>
               text: 'Analyse',
             ),
           ],
-          labelColor: Colors.white,
           indicatorColor: Colors.amberAccent,
         ),
       ),
@@ -246,7 +245,7 @@ class _SMMainScreenState extends State<SMMainScreen>
             },
           );
         },
-        // backgroundColor: Theme.of(context).primaryColor,
+        // // backgroundColor: Theme.of(context).primaryColor,
         child: const Icon(Icons.add, color: Colors.white),
       );
     }

@@ -167,6 +167,9 @@ class _SMTacticsTabState extends State<SMTacticsTab>
             ),
             SizedBox(height: spacing * 1.2),
             _buildStyleCard(
+              context: context,
+              // ✅ screenType passé pour la police
+              screenType: screenType,
               optimizedStyles: {
                 'Général': tacticsState.stylesGeneral,
                 'Attaque': tacticsState.stylesAttack,
@@ -236,6 +239,9 @@ class _SMTacticsTabState extends State<SMTacticsTab>
                       Expanded(
                         child: SingleChildScrollView(
                           child: _buildStyleCard(
+                            context: context,
+                            // ✅ screenType passé pour la police
+                            screenType: screenType,
                             optimizedStyles: {
                               'Général': tacticsState.stylesGeneral,
                               'Attaque': tacticsState.stylesAttack,
@@ -274,8 +280,9 @@ class _SMTacticsTabState extends State<SMTacticsTab>
                 ? 200.0
                 : 220.0;
 
+    // ✅ Police réduite pour mobile
     final fontSize = (screenType == ScreenType.mobile)
-        ? 14.0
+        ? 13.0
         : (screenType == ScreenType.tablet)
             ? 15.0
             : (screenType == ScreenType.laptop)
@@ -316,9 +323,11 @@ class _SMTacticsTabState extends State<SMTacticsTab>
 
   /// Section de style
   Widget _buildStyleSection(
+    BuildContext context, // ✅ Contexte passé
     String title,
     List<String> allStyles,
     Map<String, double> optimizedStyles,
+    ScreenType screenType, // ✅ screenType ajouté
   ) {
     final optimizedKeys = optimizedStyles.keys.toSet();
 
@@ -330,6 +339,10 @@ class _SMTacticsTabState extends State<SMTacticsTab>
       }
       groupedStyles[type]!.add(styleName);
     }
+    
+    // ✅ Tailles de police dynamiques
+    final double titleSize = (screenType == ScreenType.mobile) ? 15.0 : 16.0;
+    final double textSize = (screenType == ScreenType.mobile) ? 12.0 : 13.0;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
@@ -338,9 +351,9 @@ class _SMTacticsTabState extends State<SMTacticsTab>
         children: [
           Text(
             title,
-            style: const TextStyle(
-              color: Color(0xFF4dd0e1),
-              fontSize: 16,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+              fontSize: titleSize, // ✅ dynamique
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -361,18 +374,18 @@ class _SMTacticsTabState extends State<SMTacticsTab>
                 children: [
                   Text(
                     "$styleType: ",
-                    style: const TextStyle(
-                      color: Colors.white54,
-                      fontSize: 13,
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodySmall?.color,
+                      fontSize: textSize, // ✅ dynamique
                       height: 1.4,
                     ),
                   ),
                   Expanded(
                     child: Text(
                       selectedOption.split(': ').last,
-                      style: const TextStyle(
-                        color: Colors.amberAccent,
-                        fontSize: 13,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                        fontSize: textSize, // ✅ dynamique
                         height: 1.4,
                         fontWeight: FontWeight.bold,
                       ),
@@ -389,42 +402,48 @@ class _SMTacticsTabState extends State<SMTacticsTab>
 
   /// Carte de style
   Widget _buildStyleCard({
+    required BuildContext context, // ✅ Contexte ajouté
     required Map<String, Map<String, double>> optimizedStyles,
+    required ScreenType screenType, // ✅ screenType ajouté
   }) {
     final bool hasStyles = (optimizedStyles['Général']?.isNotEmpty ?? false) ||
         (optimizedStyles['Attaque']?.isNotEmpty ?? false) ||
         (optimizedStyles['Défense']?.isNotEmpty ?? false);
 
+    // ✅ Tailles de police dynamiques
+    final double titleSize = (screenType == ScreenType.mobile) ? 16.0 : 18.0;
+    final double emptyTextSize = (screenType == ScreenType.mobile) ? 14.0 : 15.0;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: const Color(0xFF2d3142),
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min, // ✅ Raccourcit la carte
         children: [
-          const Text(
+          Text(
             'Styles de jeu optimisés',
             style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
+              color: Theme.of(context).textTheme.titleLarge?.color,
+              fontSize: titleSize, // ✅ dynamique
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 14),
           if (!hasStyles)
-            const Center(
+            Center(
               child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 24.0),
+                padding: const EdgeInsets.symmetric(vertical: 24.0),
                 child: Text(
                   'Cliquez sur "Optimiser" pour générer les styles de jeu adaptés.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: 15,
+                    color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                    fontSize: emptyTextSize, // ✅ dynamique
                   ),
                 ),
               ),
@@ -435,21 +454,27 @@ class _SMTacticsTabState extends State<SMTacticsTab>
               mainAxisSize: MainAxisSize.min,
               children: [
                 _buildStyleSection(
+                  context, // ✅ Contexte passé
                   'Général',
                   _allStyles['Général']!,
                   optimizedStyles['Général']!,
+                  screenType, // ✅ screenType passé
                 ),
                 const SizedBox(height: 12),
                 _buildStyleSection(
+                  context, // ✅ Contexte passé
                   'Attaque',
                   _allStyles['Attaque']!,
                   optimizedStyles['Attaque']!,
+                  screenType, // ✅ screenType passé
                 ),
                 const SizedBox(height: 12),
                 _buildStyleSection(
+                  context, // ✅ Contexte passé
                   'Défense',
                   _allStyles['Défense']!,
                   optimizedStyles['Défense']!,
+                  screenType, // ✅ screenType passé
                 ),
               ],
             ),
