@@ -94,11 +94,11 @@ class JoueursSmLoaded extends JoueursSmState {
       case 'Gardien':
         return joueur.postes.any((p) => p.name == 'G');
       case 'Défenseur':
-        return joueur.postes.any((p) => ['DC', 'DG', 'DD'].contains(p.name));
+        return joueur.postes.any((p) => ['DC', 'DG', 'DD', 'DLG', 'DLD'].contains(p.name));
       case 'Milieu':
-        return joueur.postes.any((p) => ['MC', 'MDC', 'MOC'].contains(p.name));
+        return joueur.postes.any((p) => ['MC', 'MDC', 'MG', 'MD'].contains(p.name));
       case 'Attaquant':
-        return joueur.postes.any((p) => ['BU', 'MOG', 'MOD'].contains(p.name));
+        return joueur.postes.any((p) => ['MOG', 'MOD', 'BUC', 'BUG', 'BUD'].contains(p.name));
       default:
         return true;
     }
