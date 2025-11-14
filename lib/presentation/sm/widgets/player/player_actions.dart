@@ -61,7 +61,6 @@ class PlayerActions extends StatelessWidget {
 
   Future<void> _deletePlayer(BuildContext context) async {
     final playerId = item.joueur.id;
-    // ✅ CORRECTION: 'G' au lieu de 'GK'
     final isGK = item.joueur.postes.any((p) => p.name == 'G');
     
     if (isGK) {

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamemaster_hub/data/data_export.dart'; // Requis pour les Repos
+import 'package:gamemaster_hub/data/data_export.dart'; 
 import 'package:gamemaster_hub/presentation/presentation_export.dart';
 import 'package:gamemaster_hub/presentation/sm/widgets/sm_analyse_tab/sm_analyse_layout.dart';
 
-// ✅ Converti en StatelessWidget
 class SMAnalyseTab extends StatelessWidget {
   final int saveId;
   final int currentTabIndex;
@@ -14,11 +13,9 @@ class SMAnalyseTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Écoute les deux BLoCs
     final joueursState = context.watch<JoueursSmBloc>().state;
     final tacticsState = context.watch<TacticsSmBloc>().state;
 
-    // Gère les états de chargement ou d'erreur
     if (joueursState is! JoueursSmLoaded ||
         tacticsState.status != TacticsStatus.loaded) {
       if (joueursState is JoueursSmLoading ||
@@ -35,14 +32,12 @@ class SMAnalyseTab extends StatelessWidget {
             child: Text("Erreur tactique: ${tacticsState.errorMessage}",
                 style: const TextStyle(color: Colors.red)));
       }
-      // L'état de l'analyse dépend de la tactique (nouvelle règle)
       if (tacticsState.status != TacticsStatus.loaded) {
          return const Center(child: Text("Veuillez d'abord optimiser une tactique."));
       }
       return const Center(child: Text("Chargement des données..."));
     }
 
-    // ✅ Les deux états sont chargés, lance le FutureBuilder pour l'analyse
     return FutureBuilder<AnalyseResult>(
       future: SMAnalyseLogic.analyser(
         saveId: saveId,

@@ -1,9 +1,6 @@
 import 'package:gamemaster_hub/data/data_export.dart';
-import 'package:gamemaster_hub/domain/sm/entities/stats_joueur_sm.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_bloc.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_state.dart';
-// ✅ Ajout de l'import pour TacticsSmState
-import 'package:gamemaster_hub/presentation/sm/blocs/tactics/tactics_state.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
+import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
 class AnalyseResult {
   final List<String> forces;
@@ -18,7 +15,6 @@ class AnalyseResult {
 }
 
 class SMAnalyseLogic {
-  // ✅ Signature de la fonction mise à jour
   static Future<AnalyseResult> analyser({
     required int saveId,
     required JoueursSmLoaded joueursState,
@@ -37,7 +33,6 @@ class SMAnalyseLogic {
     double ageMoyen = 0;
     final postesCount = <String, int>{};
 
-    // ✅ Ajout des variables pour l'analyse tactique
     double avgPassesLongues = 0;
     double avgEndurance = 0;
     double avgVitesseDef = 0;
@@ -77,9 +72,8 @@ class SMAnalyseLogic {
       final stats = await joueurRepo.getStatsByJoueurId(joueur.id, saveId);
       if (stats == null) continue;
       
-      fieldPlayersCount++; // Compte les joueurs de champ
+      fieldPlayersCount++; 
       
-      // Calcul des stats pour l'analyse tactique
       avgPassesLongues += stats.passesLongues;
       avgEndurance += stats.endurance;
       
@@ -138,7 +132,6 @@ class SMAnalyseLogic {
     midRating = nbMil > 0 ? midRating / nbMil : 0;
     attRating = nbAtt > 0 ? attRating / nbAtt : 0;
 
-    // Finalisation des moyennes pour l'analyse tactique
     if (fieldPlayersCount > 0) {
       avgPassesLongues /= fieldPlayersCount;
       avgEndurance /= fieldPlayersCount;
@@ -196,7 +189,6 @@ class SMAnalyseLogic {
     if ((defRating - attRating).abs() < 5)
       forces.add("Équipe équilibrée entre défense et attaque");
 
-    // ✅✅✅ NOUVELLE SECTION : ANALYSE TACTIQUE ✅✅✅
     final stylesGen = tacticsState.stylesGeneral;
     final stylesAtt = tacticsState.stylesAttack;
     final stylesDef = tacticsState.stylesDefense;
@@ -207,7 +199,6 @@ class SMAnalyseLogic {
     } else {
       forces.add("Analyse basée sur la formation : $formation");
       
-      // Analyse de la formation
       if (formation == '3-5-2' || formation == '3-4-3') {
         if (defRating < 70 && defRating > 0) {
           faiblesses.add(
@@ -224,7 +215,6 @@ class SMAnalyseLogic {
         }
       }
 
-      // Analyse des styles
       if (stylesGen.keys.any((k) => k.contains('Très offensive'))) {
         if (attRating < 75 && attRating > 0) {
           faiblesses.add(
@@ -273,7 +263,6 @@ class SMAnalyseLogic {
         manques.add("La tactique n'est pas complète, 11 joueurs ne sont pas assignés.");
       }
     }
-    // ✅✅✅ FIN NOUVELLE SECTION ✅✅✅
 
     return AnalyseResult(
         forces: forces, faiblesses: faiblesses, manques: manques);

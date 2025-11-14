@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 enum ScreenType { mobile, tablet, laptop, laptopL }
 
 class ResponsiveLayout {
-  // Breakpoints standards
   static const double mobileBreakpoint = 768;   // < 768px = mobile
   static const double tabletBreakpoint = 1024;  // 768-1023px = tablet
   static const double laptopBreakpoint = 1440;  // 1024-1439px = laptop
@@ -82,41 +81,39 @@ class ResponsiveLayout {
     }
   }
 
-  // Contraintes pour les cartes de joueurs
   static CardConstraints getPlayerCardConstraints(ScreenType screenType) {
     switch (screenType) {
       case ScreenType.mobile:
         return CardConstraints(
           minWidth: 280,
           maxWidth: 400,
-          minHeight: 150, // Modifié
-          maxHeight: 190, // Modifié
+          minHeight: 150, 
+          maxHeight: 190, 
         );
       case ScreenType.tablet:
         return CardConstraints(
           minWidth: 300,
           maxWidth: 380,
-          minHeight: 170, // Modifié
-          maxHeight: 210, // Modifié
+          minHeight: 170,
+          maxHeight: 210,
         );
       case ScreenType.laptop:
         return CardConstraints(
           minWidth: 300,
           maxWidth: 400,
-          minHeight: 190, // Modifié
-          maxHeight: 230, // Modifié
+          minHeight: 190,
+          maxHeight: 230,
         );
       case ScreenType.laptopL:
         return CardConstraints(
           minWidth: 320,
           maxWidth: 420,
-          minHeight: 195, // Modifié
-          maxHeight: 250, // Modifié
+          minHeight: 195,
+          maxHeight: 250, 
         );
     }
   }
 
-  // Contraintes pour les cartes de jeux
   static CardConstraints getGameCardConstraints(ScreenType screenType) {
     switch (screenType) {
       case ScreenType.mobile:
@@ -150,7 +147,6 @@ class ResponsiveLayout {
     }
   }
 
-  // Calcul optimisé du nombre de colonnes basé sur les contraintes
   static int calculateOptimalColumns({
     required double availableWidth,
     required CardConstraints constraints,

@@ -97,11 +97,10 @@ class _SMMainScreenState extends State<SMMainScreen>
   }
 
   void _handleTabSelection(int index) {
-    // ✅ Logique de limitation mise à jour
     final tacticsState = context.read<TacticsSmBloc>().state;
-    final notEnoughForTactics = _currentPlayerCount < 22; // 22 joueurs
+    final notEnoughForTactics = _currentPlayerCount < 22; 
     final tacticsNotDone = tacticsState.status != TacticsStatus.loaded ||
-        tacticsState.assignedPlayersByPoste.isEmpty; // Tactique non faite
+        tacticsState.assignedPlayersByPoste.isEmpty; 
 
     if ((index == 1 && notEnoughForTactics) ||
         (index == 2 && tacticsNotDone)) {
@@ -110,8 +109,8 @@ class _SMMainScreenState extends State<SMMainScreen>
         SnackBar(
           content: Text(
             index == 1
-                ? "Vous devez avoir au moins 22 joueurs pour accéder à la tactique." // Message mis à jour
-                : "Vous devez d'abord optimiser une tactique pour accéder à l'analyse.", // Message mis à jour
+                ? "Vous devez avoir au moins 22 joueurs pour accéder à la tactique." 
+                : "Vous devez d'abord optimiser une tactique pour accéder à l'analyse.",
           ),
           duration: const Duration(seconds: 2),
         ),
@@ -122,7 +121,7 @@ class _SMMainScreenState extends State<SMMainScreen>
   @override
   Widget build(BuildContext context) {
     final joueursState = context.watch<JoueursSmBloc>().state;
-    final tacticsState = context.watch<TacticsSmBloc>().state; // Ajouté
+    final tacticsState = context.watch<TacticsSmBloc>().state; 
 
     if (joueursState is JoueursSmLoaded) {
       _currentPlayerCount = joueursState.joueurs.length;
@@ -158,7 +157,6 @@ class _SMMainScreenState extends State<SMMainScreen>
       );
     }
 
-    // ✅ Logique de désactivation mise à jour
     final disableTactics = _currentPlayerCount < 22;
     final disableStats = tacticsState.status != TacticsStatus.loaded ||
         tacticsState.assignedPlayersByPoste.isEmpty;
@@ -168,16 +166,13 @@ class _SMMainScreenState extends State<SMMainScreen>
         title: '${currentGame!.name} - ${currentSave!.name}',
         onBackPressed: () =>
             context.go('/saves/${currentGame!.gameId}', extra: currentGame),
-        // ✅ Logique de synchronisation mise à jour
         onSync: () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
                 content: Text('Synchronisation des données...'),
                 duration: Duration(seconds: 1)),
           );
-          // Rafraîchit les méta-données
           _initializeData();
-          // Rafraîchit les BLoCs
           context.read<JoueursSmBloc>().add(LoadJoueursSmEvent(widget.saveId));
           context.read<TacticsSmBloc>().add(LoadTactics(widget.saveId));
         },
@@ -191,12 +186,12 @@ class _SMMainScreenState extends State<SMMainScreen>
             ),
             Tab(
               icon: Icon(Icons.sports_soccer,
-                  color: disableTactics ? Colors.white38 : null), // Mis à jour
+                  color: disableTactics ? Colors.white38 : null),
               text: 'Tactique',
             ),
             Tab(
               icon: Icon(Icons.bar_chart,
-                  color: disableStats ? Colors.white38 : null), // Mis à jour
+                  color: disableStats ? Colors.white38 : null), 
               text: 'Analyse',
             ),
           ],
@@ -211,14 +206,14 @@ class _SMMainScreenState extends State<SMMainScreen>
             currentTabIndex: _currentTabIndex,
           ),
           disableTactics
-              ? _lockedTabMessage("Tactique", 22) // Mis à jour
+              ? _lockedTabMessage("Tactique", 22)  
               : SMTacticsTab(
                   saveId: widget.saveId,
                   game: currentGame!,
                   currentTabIndex: _currentTabIndex,
                 ),
           disableStats
-              ? _lockedTabMessage("Analyse", 0, // Mis à jour
+              ? _lockedTabMessage("Analyse", 0,
                   "Vous devez d'abord optimiser une tactique.")
               : SMAnalyseTab(
                   saveId: widget.saveId,
@@ -245,14 +240,12 @@ class _SMMainScreenState extends State<SMMainScreen>
             },
           );
         },
-        // // backgroundColor: Theme.of(context).primaryColor,
         child: const Icon(Icons.add, color: Colors.white),
       );
     }
     return null;
   }
 
-  // ✅ Signature de la fonction mise à jour
   Widget _lockedTabMessage(String tabName, int requiredCount,
       [String? customMessage]) {
     final message = customMessage ??

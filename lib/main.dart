@@ -66,11 +66,9 @@ Future<void> main() async {
   final statsRepository =
       StatsJoueurSmRepositoryImpl(StatsJoueurSmRemoteDataSource(supabaseClient));
 
-  // Repository gardien
   final statsGardienRepository = StatsGardienSmRepositoryImpl(
       StatsGardienSmRemoteDataSource(supabaseClient));
 
-  // SM Tactics related repositories
   final roleRepository =
       RoleModeleSmRepositoryImpl(RoleModeleSmRemoteDataSource(supabaseClient));
   final tactiqueModeleRepository = TactiqueModeleSmRepositoryImpl(

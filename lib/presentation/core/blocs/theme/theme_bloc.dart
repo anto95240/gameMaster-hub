@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-// Events
 abstract class ThemeEvent extends Equatable {
   const ThemeEvent();
   @override
@@ -12,7 +11,7 @@ abstract class ThemeEvent extends Equatable {
 class ToggleTheme extends ThemeEvent {}
 class LoadTheme extends ThemeEvent {}
 
-// States
+
 class ThemeState extends Equatable {
   final bool isDarkMode;
   const ThemeState({required this.isDarkMode});
@@ -21,7 +20,7 @@ class ThemeState extends Equatable {
   List<Object> get props => [isDarkMode];
 }
 
-// Bloc
+
 class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
   final Box _box = Hive.box('theme_box');
 

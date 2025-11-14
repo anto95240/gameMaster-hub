@@ -21,7 +21,6 @@ class PlayerInfoModal extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenType = ResponsiveLayout.getScreenType(context);
 
-    // Données dynamiques
     final String nom = player?.joueur.nom ?? 'Poste non assigné';
     final String poste = player?.joueur.postes.map((p) => p.name).join('/') ?? basePoste;
     final String age = player?.joueur.age.toString() ?? '-';
@@ -57,8 +56,6 @@ class PlayerInfoModal extends StatelessWidget {
       ScreenType.laptopL => 16.0,
     };
     
-    // ✅ LA LOGIQUE DES REMPLAÇANTS ("otherOptions") A ÉTÉ SUPPRIMÉE, CE QUI CORRIGE L'ERREUR
-
     return Dialog(
       backgroundColor: const Color(0xFF2b2e3c),
       insetPadding: const EdgeInsets.all(16),
@@ -71,7 +68,6 @@ class PlayerInfoModal extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- Section Titulaire ---
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -133,7 +129,6 @@ class PlayerInfoModal extends StatelessWidget {
             const Divider(color: Color(0xFF3d4254)),
             const SizedBox(height: 14),
 
-            // --- Section Rôle ---
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -162,15 +157,11 @@ class PlayerInfoModal extends StatelessWidget {
               ),
               textAlign: TextAlign.justify,
             ),
-            
-            // ✅ SECTION REMPLAÇANTS SUPPRIMÉE
           ],
         ),
       ),
     );
   }
-
-  // ✅ HELPER _buildPlayerRow SUPPRIMÉ
 
   static Widget _buildRatingBadge(
     String value,

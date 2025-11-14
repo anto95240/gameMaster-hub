@@ -12,17 +12,15 @@ class StatsJoueurSmRepositoryImpl implements StatsJoueurSmRepository {
   }
 
   @override
-  // Changé pour retourner un type nullable
   Future<StatsJoueurSm?> getStatsByJoueurId(int joueurId, int saveId) async {
     final statsList = await remoteDataSource.fetchStats(saveId);
 
-    // Utilise .where et .firstOrNull (ou une vérification .isEmpty)
     final stats = statsList.where((s) => s.joueurId == joueurId);
 
     if (stats.isEmpty) {
-      return null; // Retourne null si rien n'est trouvé
+      return null; 
     } else {
-      return stats.first; // Retourne le premier (et unique) stat
+      return stats.first; 
     }
   }
 

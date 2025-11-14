@@ -11,7 +11,6 @@ class PlayerAvatar extends StatelessWidget {
     final isMobile = screenWidth < 600;
     final isTablet = screenWidth >= 600 && screenWidth < 1024;
 
-    // 🔹 Taille du cercle et de la police selon l’écran
     final double avatarSize = isMobile ? 48 : (isTablet ? 64 : 80);
     final double fontSize = isMobile ? 20 : (isTablet ? 26 : 32);
 

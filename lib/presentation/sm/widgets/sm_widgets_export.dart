@@ -1,4 +1,3 @@
-// SM Widgets Exports
 export 'add_player_dialog/add_player_dialog.dart';
 export 'add_player_dialog/player_form_fields.dart';
 export 'add_player_dialog/player_submit_handler.dart';

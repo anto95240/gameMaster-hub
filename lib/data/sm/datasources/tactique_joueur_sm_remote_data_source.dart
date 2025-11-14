@@ -17,7 +17,6 @@ class TactiqueJoueurSmRemoteDataSource {
   }
 
   Future<void> insert(TactiqueJoueurSmModel tj) async {
-    // ✅ CORRECTION : Retirer l'ID avant l'insertion
     final data = tj.toMap()..remove('id');
     await supabase.from('tactique_joueur_sm').insert(data).execute();
   }
@@ -30,7 +29,6 @@ class TactiqueJoueurSmRemoteDataSource {
     await supabase.from('tactique_joueur_sm').delete().eq('id', id).execute();
   }
   
-  // Vous pouvez aussi ajouter cette méthode pour un nettoyage plus propre
   Future<void> deleteBySaveId(int saveId) async {
     await supabase.from('tactique_joueur_sm').delete().eq('save_id', saveId).execute();
   }

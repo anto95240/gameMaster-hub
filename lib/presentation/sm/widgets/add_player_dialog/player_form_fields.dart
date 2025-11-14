@@ -47,7 +47,6 @@ class _PlayerFormFieldsState extends State<PlayerFormFields> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ---- NOM ----
         TextFormField(
           style: TextStyle(color: theme.textTheme.bodyLarge?.color),
           decoration: fieldDecoration("Nom"),
@@ -56,7 +55,6 @@ class _PlayerFormFieldsState extends State<PlayerFormFields> {
         ),
         const SizedBox(height: 12),
 
-        // ---- ÂGE ----
         TextFormField(
           style: TextStyle(color: theme.textTheme.bodyLarge?.color),
           decoration: fieldDecoration("Âge"),
@@ -73,7 +71,6 @@ class _PlayerFormFieldsState extends State<PlayerFormFields> {
         ),
         const SizedBox(height: 12),
 
-        // ---- POSTES ----
         Text(
           "Postes",
           style: TextStyle(
@@ -181,7 +178,6 @@ class _PlayerFormFieldsState extends State<PlayerFormFields> {
 
         const SizedBox(height: 16),
 
-        // ---- Niveau actuel ----
         TextFormField(
           style: TextStyle(color: theme.textTheme.bodyLarge?.color),
           decoration: fieldDecoration("Niveau actuel"),
@@ -198,7 +194,6 @@ class _PlayerFormFieldsState extends State<PlayerFormFields> {
         ),
         const SizedBox(height: 12),
 
-        // ---- Statut ----
         DropdownButtonFormField<StatusEnum>(
           value: widget.formData.status,
           style: TextStyle(color: theme.textTheme.bodyLarge?.color),
@@ -218,7 +213,6 @@ class _PlayerFormFieldsState extends State<PlayerFormFields> {
         ),
         const SizedBox(height: 12),
 
-        // ---- Potentiel ----
         TextFormField(
           style: TextStyle(color: theme.textTheme.bodyLarge?.color),
           decoration: fieldDecoration("Potentiel"),
@@ -235,7 +229,6 @@ class _PlayerFormFieldsState extends State<PlayerFormFields> {
         ),
         const SizedBox(height: 12),
 
-        // ---- Valeur de transfert ----
         TextFormField(
           style: TextStyle(color: theme.textTheme.bodyLarge?.color),
           decoration: fieldDecoration("Valeur de transfert (€)"),
@@ -246,7 +239,6 @@ class _PlayerFormFieldsState extends State<PlayerFormFields> {
         ),
         const SizedBox(height: 12),
 
-        // ---- Fin de contrat ----
         TextFormField(
           style: TextStyle(color: theme.textTheme.bodyLarge?.color),
           decoration: fieldDecoration("Fin de contrat (Année)"),
@@ -257,7 +249,6 @@ class _PlayerFormFieldsState extends State<PlayerFormFields> {
         ),
         const SizedBox(height: 12),
 
-        // ---- Salaire ----
         TextFormField(
           style: TextStyle(color: theme.textTheme.bodyLarge?.color),
           decoration: fieldDecoration("Salaire (€/an)"),

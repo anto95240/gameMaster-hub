@@ -16,7 +16,7 @@ class TacticsSmState extends Equatable {
 
   const TacticsSmState({
     this.status = TacticsStatus.initial,
-    this.selectedFormation = '4-3-3', // Formation par défaut
+    this.selectedFormation = '4-3-3', 
     this.stylesGeneral = const {},
     this.stylesAttack = const {},
     this.stylesDefense = const {},

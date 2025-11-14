@@ -18,7 +18,6 @@ class InstructionDefenseSmRemoteDataSource {
   }
 
   Future<void> insertInstruction(InstructionDefenseSmModel instruction) async {
-    // ✅ CORRECTION : Retirer l'ID avant l'insertion
     final data = instruction.toMap()..remove('id');
     await supabase.from('instruction_defense_sm').insert(data).execute();
   }

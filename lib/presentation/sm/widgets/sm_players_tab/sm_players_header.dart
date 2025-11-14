@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-
-// Imports ajoutés pour assurer la complétude
 import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_bloc_export.dart';
-
 import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
 class SMPlayersHeader extends StatelessWidget {
@@ -36,12 +33,11 @@ class SMPlayersHeader extends StatelessWidget {
         : (screenType == ScreenType.tablet ? 24.0 : 28.0);
     final isMobile = screenType == ScreenType.mobile;
 
-    // === Détermine dynamiquement le contenu selon l'onglet ===
     String title;
     List<Widget> statCards = [];
 
     switch (currentTabIndex) {
-      case 0: // Onglet Joueurs
+      case 0:
         title = "Gestion des joueurs";
         statCards = [
           _buildStatCard(context, 'Joueurs', totalPlayers.toString(),
@@ -51,19 +47,16 @@ class SMPlayersHeader extends StatelessWidget {
         ];
         break;
 
-      case 1: // Onglet Tactique
+      case 1:
         title = "Tactique de l’équipe";
         statCards = [
           _buildStatCard(context, 'Joueurs', totalPlayers.toString(),
               Icons.people, screenType),
-          
-          // ✅ CORRIGÉ : Utilise selectedFormation (avec un fallback 'Aucune')
-          // et une icône plus appropriée.
           _buildStatCard(
             context,
             'Tactique',
-            selectedFormation ?? 'Aucune', // <-- Utilise la variable passée
-            Icons.grid_view, // <-- Changé l'icône
+            selectedFormation ?? 'Aucune',
+            Icons.grid_view,
             screenType,
           ),
 
@@ -72,7 +65,7 @@ class SMPlayersHeader extends StatelessWidget {
         ];
         break;
 
-      case 2: // Onglet Analyse
+      case 2:
         title = "Analyse d’équipe";
         statCards = [
           _buildStatCard(context, 'Joueurs', totalPlayers.toString(),
@@ -86,7 +79,6 @@ class SMPlayersHeader extends StatelessWidget {
         title = "Gestion";
     }
 
-    // === Responsive design ===
     if (isMobile) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.center,

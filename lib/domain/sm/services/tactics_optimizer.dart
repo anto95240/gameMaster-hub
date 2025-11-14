@@ -1,15 +1,8 @@
-// [lib/domain/sm/services/tactics_optimizer.dart]
-import 'dart:math';
-import 'package:gamemaster_hub/data/data_export.dart'; // Importation des models
+import 'package:gamemaster_hub/data/data_export.dart'; 
 import 'package:gamemaster_hub/domain/domain_export.dart';
-import 'package:gamemaster_hub/domain/sm/repositories/instruction_attaque_sm_repository.dart';
-import 'package:gamemaster_hub/domain/sm/repositories/instruction_defense_sm_repository.dart';
-import 'package:gamemaster_hub/domain/sm/repositories/instruction_general_sm_repository.dart';
-
-// --- CLASSES HELPER POUR L'OPTIMISATION ---
 
 class OptimizedStyles {
-  final Map<String, double> general; // name -> score
+  final Map<String, double> general;
   final Map<String, double> attack;
   final Map<String, double> defense;
   OptimizedStyles(
@@ -19,9 +12,9 @@ class OptimizedStyles {
 class OptimizedTacticsResult {
   final String formation;
   final int? modeleId;
-  final Map<int, int> joueurIdToRoleId; // joueur_id -> role_id
+  final Map<int, int> joueurIdToRoleId;
   final OptimizedStyles styles;
-  final Map<String, _JoueurStatsComplet> elevenByPoste; // ex: "DC1" -> JoueurA
+  final Map<String, _JoueurStatsComplet> elevenByPoste; 
 
   OptimizedTacticsResult({
     required this.formation,
@@ -32,13 +25,12 @@ class OptimizedTacticsResult {
   });
 }
 
-/// Classe interne pour fusionner les données joueur + stats
 class _JoueurStatsComplet {
   final JoueurSm joueur;
-  final dynamic stats; // Sera StatsJoueurSmModel ou StatsGardienSmModel
+  final dynamic stats; 
   final bool isGk;
   final double averageRating;
-  final PosteEnum? preferredPoste; // Le *premier* poste de la liste
+  final PosteEnum? preferredPoste; 
 
   _JoueurStatsComplet(
       {required this.joueur, required this.stats, required this.isGk})
@@ -54,7 +46,7 @@ class _JoueurStatsComplet {
       } else if (stats is StatsGardienSmModel) {
         json = stats.toMap();
       } else {
-        return 0.0; // Type non reconnu
+        return 0.0; 
       }
       
       final values = json.values
@@ -69,12 +61,7 @@ class _JoueurStatsComplet {
     }
   }
 
-  // ✅✅✅ LOGIQUE DE COMPATIBILITÉ CORRIGÉE ✅✅✅
-  // Vérifie si un joueur peut jouer à un poste "de base" (ex: MOG)
   bool canPlayPoste(String basePoste) {
-    // Map des postes logiques (ceux demandés) vers les postes réels (ceux du joueur)
-    // C'est la liste de "compatibilité"
-    // ✅ CORRIGÉ : N'utilise que des PosteEnum valides
     const Map<String, List<String>> compatibilityMap = {
       'G': ['G'],
       'DC': ['DC'],
@@ -82,38 +69,31 @@ class _JoueurStatsComplet {
       'DD': ['DD', 'DLD', 'DC'],
       'DLG': ['DLG', 'DG', 'MG'],
       'DLD': ['DLD', 'DD', 'MD'],
-      'MDC': ['MDC', 'MC', 'DC'], // Un MC/DC peut jouer MDC
-      'MC': ['MC', 'MDC', 'MOC', 'MG', 'MD'], // Un MDC/MOC/MG/MD peut jouer MC
+      'MDC': ['MDC', 'MC', 'DC'], 
+      'MC': ['MC', 'MDC', 'MOC', 'MG', 'MD'], 
       'MOC': ['MOC', 'MC', 'MOG', 'MOD', 'BUC', 'BUG', 'BUD'],
       'MG': ['MG', 'MOG', 'DG', 'DLG'],
       'MD': ['MD', 'MOD', 'DD', 'DLD'],
-      'MOG': ['MOG', 'MG', 'BUC', 'BUG', 'MOC'], // AG = MOG
-      'MOD': ['MOD', 'MD', 'BUC', 'BUD', 'MOC'], // AD = MOD
+      'MOG': ['MOG', 'MG', 'BUC', 'BUG', 'MOC'], 
+      'MOD': ['MOD', 'MD', 'BUC', 'BUD', 'MOC'], 
       'BUC': ['BUC', 'BUG', 'BUD', 'MOG', 'MOD', 'MOC'],
       'BUG': ['BUG', 'BUC', 'MOG'],
       'BUD': ['BUD', 'BUC', 'MOD'],
     };
     
-    // Prend la liste des postes compatibles pour le poste demandé (ex: "MOG" -> ["MOG", "MG", "BUC", "BUG", "MOC"])
     final List<String> compatibleEnumPostes = compatibilityMap[basePoste] ?? [basePoste];
     
-    // Vérifie si *un seul* des postes du joueur (ex: "MOC") est dans cette liste
     for (final playerPoste in joueur.postes) {
       if (compatibleEnumPostes.contains(playerPoste.name)) {
-        return true; // Trouvé ! Il peut jouer à ce poste.
+        return true; 
       }
     }
-    return false; // Non trouvé. (Ex: un "MC" ne peut pas jouer "DC")
+    return false;
   }
   
-  // ✅✅✅ LOGIQUE DE POSTE PRÉFÉRÉ CORRIGÉE ✅✅✅
-  // Vérifie si le poste *préféré* (le premier) du joueur correspond au poste demandé
   bool isPreferredPoste(String basePoste) {
     if (preferredPoste == null) return false;
     
-    // Map de compatibilité plus stricte pour le *bonus*
-    // Un "MC" qui joue "MDC" n'aura pas de bonus, mais n'est pas disqualifié.
-    // ✅ CORRIGÉ : N'utilise que des PosteEnum valides
     const Map<String, List<String>> preferredMap = {
       'G': ['G'],
       'DC': ['DC'],
@@ -121,13 +101,13 @@ class _JoueurStatsComplet {
       'DD': ['DD', 'DLD'],
       'DLG': ['DLG', 'DG'],
       'DLD': ['DLD', 'DD'],
-      'MDC': ['MDC'], // Seul un vrai MDC a le bonus
-      'MC': ['MC'], // Seul un vrai MC a le bonus
+      'MDC': ['MDC'],
+      'MC': ['MC'], 
       'MOC': ['MOC'],
       'MG': ['MG', 'MOG'],
       'MD': ['MD', 'MOD'],
-      'MOG': ['MOG', 'MG'], // AG = MOG
-      'MOD': ['MOD', 'MD'], // AD = MOD
+      'MOG': ['MOG', 'MG'],
+      'MOD': ['MOD', 'MD'], 
       'BUC': ['BUC', 'BUG', 'BUD'],
       'BUG': ['BUG', 'BUC'],
       'BUD': ['BUD', 'BUC'],
@@ -139,10 +119,10 @@ class _JoueurStatsComplet {
 
 
   bool isCorrectLateral(String basePoste) {
-    if (preferredPoste == null) return true; // Ne peut pas pénaliser si pas de poste pref
+    if (preferredPoste == null) return true; 
     if (basePoste == 'DG') return preferredPoste!.name == 'DG' || preferredPoste!.name == 'DLG';
     if (basePoste == 'DD') return preferredPoste!.name == 'DD' || preferredPoste!.name == 'DLD';
-    return true; // Pas un latéral, pas de pénalité
+    return true; 
   }
   
   bool isCorrectWinger(String basePoste) {
@@ -161,7 +141,7 @@ class _JoueurStatsComplet {
       } else if (stats is StatsGardienSmModel) {
         json = stats.toMap();
       } else {
-        return 0; // Type non reconnu
+        return 0; 
       }
       
       final statKey = _statNameMapping[statName] ?? statName;
@@ -170,12 +150,10 @@ class _JoueurStatsComplet {
         return (json[statKey] as num? ?? 0).toInt();
       }
     } catch (_) {
-      // ignore
     }
     return 0;
   }
 
-  // Mapper les noms de stats de la logique aux noms de la BDD/Model
   static const Map<String, String> _statNameMapping = {
     'frappes_lointaines': 'frappesLointaines',
     'passes_longues': 'passesLongues',
@@ -209,9 +187,7 @@ class TacticsOptimizer {
     required this.instructionDefenseRepo,
   });
 
-  /// 🎯 LOGIQUE PRINCIPALE D'OPTIMISATION 🎯
   Future<OptimizedTacticsResult> optimize({required int saveId}) async {
-    // --- 1. RÉCUPÉRATION ET PRÉPARATION DES DONNÉES ---
     final allPlayers = await _getCombinedPlayerData(saveId);
 
     if (allPlayers.length < 11) {
@@ -222,7 +198,6 @@ class TacticsOptimizer {
     
     final allRolesPossibles = await roleRepo.getAllRoles();
 
-    // --- 2. 🎯 ETAPE 1: CHOISIR LA MEILLEURE FORMATION ---
     final bestFormationResult =
         _findBestFormation(allFormationsPossibles, allPlayers);
 
@@ -232,16 +207,13 @@ class TacticsOptimizer {
     final Map<String, _JoueurStatsComplet> elevenByPoste =
         bestFormationResult['elevenByPoste'];
 
-    // --- 3. 🎯 ETAPE 3: ATTRIBUER LES MEILLEURS RÔLES ---
     final Map<int, int> joueurToRole = _assignBestRoles(
       elevenByPoste,
       allRolesPossibles,
     );
 
-    // --- 4. 🎯 ETAPE 4: DÉFINIR LES STYLES DE JEU ---
     final styles = _generateBestStyles(startingEleven);
 
-    // --- 5. RETOURNER LE RÉSULTAT ---
     return OptimizedTacticsResult(
       formation: bestFormationModele.formation,
       modeleId: bestFormationModele.id,
@@ -251,7 +223,6 @@ class TacticsOptimizer {
     );
   }
 
-  /// Helper pour fusionner joueurs et stats
   Future<List<_JoueurStatsComplet>> _getCombinedPlayerData(
       int saveId) async {
     final joueurs = await joueurRepo.getAllJoueurs(saveId);
@@ -272,14 +243,12 @@ class TacticsOptimizer {
     return combinedList;
   }
 
-
-  /// LOGIQUE DE FORMATION
   Map<String, dynamic> _findBestFormation(
-    List<TactiqueModeleSm> allFormations, // Vient de Supabase
+    List<TactiqueModeleSm> allFormations, 
     List<_JoueurStatsComplet> allPlayers,
   ) {
     if (allFormations.isEmpty) {
-      // Fallback au cas où Supabase est vide
+
       allFormations.add(TactiqueModeleSm(id: 0, formation: '4-3-3'));
     }
 
@@ -291,7 +260,7 @@ class TacticsOptimizer {
     for (final modele in allFormations) {
       final postesKeys = _getPosteKeysForFormation(modele.formation);
       
-      if (postesKeys.isEmpty) continue; // Formation non reconnue
+      if (postesKeys.isEmpty) continue; 
 
       List<_JoueurStatsComplet> playerPool = List.from(allPlayers);
       List<_JoueurStatsComplet> currentEleven = [];
@@ -300,7 +269,6 @@ class TacticsOptimizer {
       double depthScore = 0.0;
       bool formationFeasible = true;
 
-      // 1. Trouver les TITULAIRES
       for (final posteKey in postesKeys) {
         final basePoste = posteKey.replaceAll(RegExp(r'[0-9]'), ''); 
 
@@ -315,14 +283,13 @@ class TacticsOptimizer {
           currentElevenByPoste[posteKey] = bestPlayerForPoste;
           startersScore += _calculatePlayerScore(bestPlayerForPoste, basePoste);
         } else {
-          formationFeasible = false; // Ex: Pas de Gardien trouvé
+          formationFeasible = false; 
           break;
         }
       }
 
-      if (!formationFeasible) continue; // Cette formation est impossible
-
-      // 2. Trouver les REMPLAÇANTS
+      if (!formationFeasible) continue; 
+      
       for (final posteKey in postesKeys) {
         final basePoste = posteKey.replaceAll(RegExp(r'[0-9]'), '');
 
@@ -335,7 +302,7 @@ class TacticsOptimizer {
           playerPool.remove(bestBackup); 
           depthScore += _calculatePlayerScore(bestBackup, basePoste);
         } else {
-          depthScore -= 150; // Pénalité lourde si pas de banc
+          depthScore -= 150; 
         }
       }
 
@@ -349,16 +316,12 @@ class TacticsOptimizer {
       }
     }
 
-    // ✅✅✅ CORRECTION DU BUG "TERRAIN VIDE" ✅✅✅
-    // Si bestEleven est vide, cela signifie qu'AUCUNE formation n'a pu être
-    // complétée (probablement pas de gardien).
     if (bestEleven.isEmpty) {
       throw Exception(
         "Impossible de former une équipe de 11 joueurs valides avec l'effectif actuel. "
         "Assurez-vous d'avoir au moins un Gardien (G) et suffisamment de défenseurs/milieux/attaquants."
       );
     }
-    // ✅✅✅ FIN CORRECTION ✅✅✅
 
     return {
       'modele': bestModele,
@@ -381,7 +344,6 @@ class TacticsOptimizer {
       }
     }
     
-    // Si le meilleur score est -1000, personne ne peut jouer à ce poste
     if (bestScore <= -1000) {
       return null;
     }
@@ -389,28 +351,24 @@ class TacticsOptimizer {
     return bestPlayer;
   }
 
-  /// CALUL DU SCORE D'UN JOUEUR POUR UN POSTE
   double _calculatePlayerScore(_JoueurStatsComplet player, String basePoste) {
     
-    // 1. Handle GK
     if (basePoste == 'G') {
       return player.isGk ? player.averageRating * 1.5 : -1000;
     }
     if (player.isGk) {
-      return -1000; // GK can't be field player
+      return -1000;
     }
 
-    // 2. ✅ DISQUALIFICATION (This is the key fix)
     if (!player.canPlayPoste(basePoste)) {
-      return -1000; // DISQUALIFIED. Cannot play this position at all.
+      return -1000; 
     }
 
-    // 3. Calculate score based on *key stats* for the role
     final keyStats = _getKeyStatsForPoste(basePoste);
     double baseScore = 0.0;
     
     if (keyStats.isEmpty) {
-      baseScore = player.averageRating; // Fallback si le poste n'est pas mappé
+      baseScore = player.averageRating; 
     } else {
       for (final statName in keyStats) {
         baseScore += player.getStat(statName);
@@ -418,34 +376,26 @@ class TacticsOptimizer {
       baseScore = baseScore / keyStats.length;
     }
 
-
-    // 4. ✅ CORRIGÉ : Application des bonus/malus
-    // Priorité au statut, PUIS au poste préféré
-    
-    // Malus for playing on the wrong side (even if compatible)
     if (!player.isCorrectLateral(basePoste) || !player.isCorrectWinger(basePoste)) {
-        baseScore *= 0.6; // 40% penalty
+        baseScore *= 0.6;
     }
     
-    // Bonus pour poste préféré (le premier de la liste)
     if (player.isPreferredPoste(basePoste)) {
-      baseScore *= 1.5; // Bonus de 50%
+      baseScore *= 1.5; 
     }
     
-    // Pondération du statut (PRIORITAIRE)
     switch (player.joueur.status) {
       case StatusEnum.Titulaire:
-        baseScore *= 2.0; // Bonus de 100%
+        baseScore *= 2.0;
         break;
       case StatusEnum.Remplacant:
-        baseScore *= 0.8; // Pénalité de 20%
+        baseScore *= 0.8; 
         break;
       case StatusEnum.Preter:
       case StatusEnum.Vendre:
-        return -1000; // DISQUALIFIED
+        return -1000; 
     }
 
-    // 5. Apply potential bonus
     double potentiel = player.joueur.potentiel.toDouble();
     double niveauActuel = player.joueur.niveauActuel.toDouble();
     if (potentiel < niveauActuel) potentiel = niveauActuel;
@@ -459,7 +409,6 @@ class TacticsOptimizer {
     return baseScore;
   }
 
-  /// Mappe les POSTES aux stats clés
   List<String> _getKeyStatsForPoste(String poste) {
     switch (poste) {
       case 'G':
@@ -479,20 +428,18 @@ class TacticsOptimizer {
         return ['creativite', 'dribble', 'frappes_lointaines', 'passes', 'deplacement'];
       case 'MG':
       case 'MD':
-      case 'MOG': // AG = MOG
-      case 'MOD': // AD = MOD
+      case 'MOG': 
+      case 'MOD': 
         return ['vitesse', 'dribble', 'centres', 'creativite', 'finition'];
       case 'BUC':
       case 'BUG':
       case 'BUD':
         return ['finition', 'deplacement', 'sang_froid', 'vitesse', 'stabilite_aerienne'];
       default:
-        // Fallback
         return ['vitesse', 'endurance', 'force'];
     }
   }
 
-  /// 🎯 ETAPE 3: Logique d'assignation des rôles
   Map<int, int> _assignBestRoles(
     Map<String, _JoueurStatsComplet> elevenByPoste,
     List<RoleModeleSm> allRoles,
@@ -500,7 +447,7 @@ class TacticsOptimizer {
     final Map<int, int> joueurToRole = {};
 
     for (final entry in elevenByPoste.entries) {
-      final String poste = entry.key.replaceAll(RegExp(r'[0-9]'), ''); // 'DC1' -> 'DC'
+      final String poste = entry.key.replaceAll(RegExp(r'[0-9]'), ''); 
       final _JoueurStatsComplet player = entry.value;
 
       final possibleRoles = allRoles.where((r) => r.poste == poste).toList();
@@ -513,14 +460,12 @@ class TacticsOptimizer {
         double currentScore = 0.0;
         final keyStats = _getKeyStatsForRole(role.role); 
         
-        // MODIFICATION : Calcul de la moyenne au lieu de la somme
         if (keyStats.isNotEmpty) {
            for (final statName in keyStats) {
             currentScore += player.getStat(statName);
           }
-          currentScore = currentScore / keyStats.length; // Calcul de la moyenne
+          currentScore = currentScore / keyStats.length; 
         }
-        // FIN MODIFICATION
 
         if (currentScore > bestScore) {
           bestScore = currentScore;
@@ -532,13 +477,10 @@ class TacticsOptimizer {
     return joueurToRole;
   }
 
-  /// ✅ LOGIQUE DE STYLES
   OptimizedStyles _generateBestStyles(List<_JoueurStatsComplet> eleven) {
-    
-    // 1. Calculer les moyennes de l'équipe
+
     final stats = _calculateTeamAverages(eleven);
 
-    // 2. Obtenir le meilleur choix pour chaque catégorie
     final Map<String, double> general = {
       ..._getBestLargeur(stats),
       ..._getBestMentalite(stats),
@@ -568,7 +510,6 @@ class TacticsOptimizer {
     return OptimizedStyles(general: general, attack: attack, defense: defense);
   }
 
-  // --- Helpers pour le calcul des moyennes ---
   Map<String, double> _calculateTeamAverages(List<_JoueurStatsComplet> eleven) {
     Map<String, double> averages = {
       'vitesse': 0, 'endurance': 0, 'agressivite': 0, 'creativite': 0,
@@ -613,8 +554,6 @@ class TacticsOptimizer {
     }
     return averages;
   }
-
-  // --- Helpers pour la sélection de style (1 par catégorie) ---
   
   Map<String, double> _getBestLargeur(Map<String, double> stats) {
     double avgCentres = stats['centres'] ?? 50;
@@ -717,7 +656,7 @@ class TacticsOptimizer {
     double avgAgressivite = stats['agressivite'] ?? 50;
     double avgTacles = stats['tacles'] ?? 50;
     if (avgAgressivite > 75 && avgTacles > 65) return {'Style tacle: Agressif': 1.0};
-    if (avgAgressivite > 65) return {'Style tacle: Rugeux': 1.0}; // "Rugeux"
+    if (avgAgressivite > 65) return {'Style tacle: Rugeux': 1.0};
     return {'Style tacle: Normal': 1.0};
   }
 
@@ -741,12 +680,7 @@ class TacticsOptimizer {
     return {'Perte de temps: Normal': 1.0};
   }
 
-
-  // --- MAPPINGS DE DONNÉES (Logique métier) ---
-
-  // ✅✅✅ CARTE CANONIQUE DES FORMATIONS ✅✅✅
   List<String> _getPosteKeysForFormation(String formation) {
-    // Utilise les clés de la base (ex: MOG, BUC) et des numéros pour les doublons
     final map = {
       '4-4-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MG', 'MC1', 'MC2', 'MD', 'BUC1', 'BUC2'],
       '4-3-1-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MC1', 'MC2', 'MC3', 'MOC', 'BUC1', 'BUC2'],
@@ -758,11 +692,10 @@ class TacticsOptimizer {
       '3-3-3-1': ['G', 'DC1', 'DC2', 'DC3', 'MDC1', 'MDC2', 'MDC3', 'MOG', 'MOC', 'MOD', 'BUC'],
       '3-2-4-1': ['G', 'DC1', 'DC2', 'DC3', 'MDC1', 'MDC2', 'MOG', 'MOC1', 'MOC2', 'MOD', 'BUC'],
     };
-    return map[formation] ?? map['4-3-3']!; // Fallback sur 4-3-3
+    return map[formation] ?? map['4-3-3']!; 
   }
 
   List<String> _getKeyStatsForRole(String roleName) {
-    // Mappage RÔLE -> STATS (pour ETAPE 3)
     switch (roleName) {
       case 'Gardien':
         return ['arrets', 'positionnement', 'duels'];
@@ -785,12 +718,5 @@ class TacticsOptimizer {
       default:
         return ['vitesse', 'endurance', 'force'];
     }
-  }
-}
-
-extension _Precision on double {
-  double toPrecision(int fractionDigits) {
-    double mod = pow(10.0, fractionDigits).toDouble();
-    return ((this * mod).round().toDouble() / mod);
   }
 }

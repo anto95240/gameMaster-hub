@@ -1,5 +1,3 @@
-// [lib/presentation/sm/blocs/tactics/tactics_bloc.dart]
-// (Seule la fonction _getPosteKeysForFormation est modifiée)
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gamemaster_hub/data/data_export.dart';
 import 'package:gamemaster_hub/domain/domain_export.dart';
@@ -38,33 +36,27 @@ class TacticsSmBloc extends Bloc<TacticsSmEvent, TacticsSmState> {
   Future<void> _onLoadTactics(LoadTactics event, Emitter<TacticsSmState> emit) async {
     emit(state.copyWith(status: TacticsStatus.loading));
     try {
-      // 1. Charger la dernière tactique utilisateur
       final lastTactic = await tactiqueUserRepo.getLatest(event.saveId);
       if (lastTactic == null) {
         emit(state.copyWith(status: TacticsStatus.loaded, selectedFormation: '4-3-3'));
         return;
       }
 
-      // 2. Charger les données associées (maintenant null-safe)
       final playersAssignments = await tactiqueJoueurRepo.getByTactiqueId(lastTactic.id, event.saveId);
       final instrGen = await instructionGeneralRepo.getInstructionByTactiqueId(lastTactic.id, event.saveId);
       final instrAtt = await instructionAttaqueRepo.getInstructionByTactiqueId(lastTactic.id, event.saveId);
       final instrDef = await instructionDefenseRepo.getInstructionByTactiqueId(lastTactic.id, event.saveId);
       final allRoles = await roleRepo.getAllRoles();
 
-      // 3. Charger les données des joueurs (nécessaire pour le modal)
       final allPlayers = await _getCombinedPlayerData(event.saveId);
       final allPlayersMap = {for (var p in allPlayers) p.joueur.id: p};
       final allRolesMap = {for (var r in allRoles) r.id: r};
       
-      // 4. Mapper les joueurs aux postes-clés (logique corrigée)
       final Map<String, JoueurSmWithStats?> assignedPlayers = {};
       final Map<int, RoleModeleSm> assignedRoles = {};
 
-      // ✅✅✅ CORRECTION : Utilisation de la nouvelle carte de formation
       final postesFormation = _getPosteKeysForFormation(lastTactic.formation);
       
-      // Map pour compter les postes déjà assignés (ex: {'DC': 1, 'MC': 2})
       Map<String, int> posteCounts = {};
 
       for (final assignment in playersAssignments) {
@@ -74,32 +66,26 @@ class TacticsSmBloc extends Bloc<TacticsSmEvent, TacticsSmState> {
         final role = allRolesMap[assignment.roleId];
         if (role == null) continue;
 
-        String basePoste = role.poste; // 'DC'
+        String basePoste = role.poste; 
 
-        // Incrémente le compteur pour ce poste de base
         int currentCount = posteCounts.update(basePoste, (value) => value + 1, ifAbsent: () => 1);
-        String posteKey = "$basePoste$currentCount"; // 'DC1'
+        String posteKey = "$basePoste$currentCount";
 
-        // Cas spécial pour les postes uniques (G, MOC, MDC)
         if (!posteKey.endsWith('1') && postesFormation.contains(basePoste)) {
-           posteKey = basePoste; // Utilise 'G', pas 'G1'
+           posteKey = basePoste; 
         }
 
-        // Vérifie si cette clé de poste (ex: 'DC1') existe dans la formation
         if (postesFormation.contains(posteKey)) {
-          if (!assignedPlayers.containsKey(posteKey)) { // S'assure que le slot est libre
+          if (!assignedPlayers.containsKey(posteKey)) {
             assignedPlayers[posteKey] = player;
             assignedRoles[player.joueur.id] = role;
           }
         } else {
-          // ✅✅✅ CORRECTION Ligne 95 (environ) ✅✅✅
-          // Remplacement de firstWhere avec orElse: () => null
-          // par une boucle for sécurisée.
           String? fallbackKey;
           for (final pf in postesFormation) {
             if (pf.startsWith(basePoste) && !assignedPlayers.containsKey(pf)) {
               fallbackKey = pf;
-              break; // On a trouvé le premier slot libre
+              break; 
             }
           }
           
@@ -107,11 +93,9 @@ class TacticsSmBloc extends Bloc<TacticsSmEvent, TacticsSmState> {
             assignedPlayers[fallbackKey] = player;
             assignedRoles[player.joueur.id] = role;
           }
-          // Si aucun slot n'est trouvé, le joueur n'est pas affiché sur le terrain
         }
       }
       
-      // 5. Mapper les styles (avec vérification de nullité)
       final stylesGen = {
         if(instrGen != null && instrGen.largeur != null && instrGen.largeur!.isNotEmpty) instrGen.largeur!: 1.0,
         if(instrGen != null && instrGen.mentalite != null && instrGen.mentalite!.isNotEmpty) instrGen.mentalite!: 1.0,
@@ -168,14 +152,12 @@ class TacticsSmBloc extends Bloc<TacticsSmEvent, TacticsSmState> {
       final authUserId = Supabase.instance.client.auth.currentUser?.id ?? '';
       final supabaseClient = Supabase.instance.client;
 
-      // 1. Nettoyer les anciennes données tactiques
       await supabaseClient.from('tactique_joueur_sm').delete().eq('save_id', event.saveId);
       await supabaseClient.from('instruction_attaque_sm').delete().eq('save_id', event.saveId);
       await supabaseClient.from('instruction_defense_sm').delete().eq('save_id', event.saveId);
       await supabaseClient.from('instruction_general_sm').delete().eq('save_id', event.saveId);
       await supabaseClient.from('tactique_user_sm').delete().eq('save_id', event.saveId);
 
-      // 2. Insérer la nouvelle tactique utilisateur
       final newTactiqueId = await tactiqueUserRepo.insert(TactiqueUserSmModel(
         id: 0,
         formation: result.formation,
@@ -185,7 +167,6 @@ class TacticsSmBloc extends Bloc<TacticsSmEvent, TacticsSmState> {
         saveId: event.saveId,
       ));
 
-      // 3. Insérer les assignations joueurs-rôles
       for (final entry in result.joueurIdToRoleId.entries) {
         await tactiqueJoueurRepo.insert(TactiqueJoueurSmModel(
           id: 0,
@@ -197,8 +178,6 @@ class TacticsSmBloc extends Bloc<TacticsSmEvent, TacticsSmState> {
         ));
       }
 
-      // 4. Insérer les instructions (maintenant 17)
-      // (Déjà corrigé avec orElse: () => '')
       await instructionGeneralRepo.insertInstruction(InstructionGeneralSmModel(
         id: 0,
         tactiqueId: newTactiqueId,
@@ -221,7 +200,7 @@ class TacticsSmBloc extends Bloc<TacticsSmEvent, TacticsSmState> {
         styleAttaque: result.styles.attack.keys.firstWhere((k) => k.startsWith('Style d\'attaque:'), orElse: () => ''),
         attaquants: result.styles.attack.keys.firstWhere((k) => k.startsWith('Attaquants:'), orElse: () => ''),
         jeuLarge: result.styles.attack.keys.firstWhere((k) => k.startsWith('Jeu large:'), orElse: () => ''),
-        jeuConstruction: result.styles.attack.keys.firstWhere((k) => k.startsWith('Jeu en contruction:'), orElse: () => ''), // Note: "contruction"
+        jeuConstruction: result.styles.attack.keys.firstWhere((k) => k.startsWith('Jeu en contruction:'), orElse: () => ''), 
         contreAttaque: result.styles.attack.keys.firstWhere((k) => k.startsWith('Contre-attaque:'), orElse: () => ''),
       ));
 
@@ -237,7 +216,6 @@ class TacticsSmBloc extends Bloc<TacticsSmEvent, TacticsSmState> {
         perteTemps: result.styles.defense.keys.firstWhere((k) => k.startsWith('Perte de temps:'), orElse: () => ''),
       ));
 
-      // 5. Préparer le nouvel état pour l'interface
       final allRoles = await roleRepo.getAllRoles();
       final allRolesMap = {for (var r in allRoles) r.id: r};
       
@@ -245,7 +223,7 @@ class TacticsSmBloc extends Bloc<TacticsSmEvent, TacticsSmState> {
       final Map<int, RoleModeleSm> assignedRoles = {};
 
       for (final entry in result.elevenByPoste.entries) {
-        final posteKey = entry.key; // "DC1"
+        final posteKey = entry.key;
         final player = entry.value;
         
         assignedPlayers[posteKey] = JoueurSmWithStats(joueur: player.joueur, stats: player.stats);
@@ -256,7 +234,6 @@ class TacticsSmBloc extends Bloc<TacticsSmEvent, TacticsSmState> {
         }
       }
 
-      // 6. Émettre le nouvel état
       emit(TacticsSmState(
         status: TacticsStatus.loaded,
         selectedFormation: result.formation,
@@ -272,10 +249,7 @@ class TacticsSmBloc extends Bloc<TacticsSmEvent, TacticsSmState> {
     }
   }
 
-  // ✅✅✅ CARTE CANONIQUE DES FORMATIONS ✅✅✅
-  // Helper pour mapper les clés de poste (pour le chargement)
   List<String> _getPosteKeysForFormation(String formation) {
-    // Utilise les clés de la base (ex: MOG, BUC) et des numéros pour les doublons
     final map = {
       '4-4-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MG', 'MC1', 'MC2', 'MD', 'BUC1', 'BUC2'],
       '4-3-1-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MC1', 'MC2', 'MC3', 'MOC', 'BUC1', 'BUC2'],
@@ -287,16 +261,14 @@ class TacticsSmBloc extends Bloc<TacticsSmEvent, TacticsSmState> {
       '3-3-3-1': ['G', 'DC1', 'DC2', 'DC3', 'MDC1', 'MDC2', 'MDC3', 'MOG', 'MOC', 'MOD', 'BUC'],
       '3-2-4-1': ['G', 'DC1', 'DC2', 'DC3', 'MDC1', 'MDC2', 'MOG', 'MOC1', 'MOC2', 'MOD', 'BUC'],
     };
-    return map[formation] ?? map['4-3-3']!; // Fallback sur 4-3-3
+    return map[formation] ?? map['4-3-3']!; 
   }
 
-  // Helper pour récupérer les données combinées (utilisé par _onLoadTactics)
   Future<List<JoueurSmWithStats>> _getCombinedPlayerData(int saveId) async {
     final joueurs = await joueurRepo.getAllJoueurs(saveId);
     final List<JoueurSmWithStats> joueursWithStats = [];
 
     for (final joueur in joueurs) {
-      // ✅ CORRECTION: 'G' au lieu de 'GK'
       final bool isGK = joueur.postes.any((p) => p.name == 'G');
       final dynamic stats = isGK
           ? await gardienRepo.getStatsByJoueurId(joueur.id, saveId)

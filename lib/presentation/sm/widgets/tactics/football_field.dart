@@ -1,14 +1,12 @@
-// [lib/presentation/sm/widgets/tactics/football_field.dart]
 import 'package:flutter/material.dart';
 import 'package:gamemaster_hub/domain/domain_export.dart';
 import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
 import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
-// Imports des widgets
 import 'football_field_painter.dart';
 import 'player_info_modal.dart';
 import 'field_player_card.dart';
-import 'field_position_mapper.dart'; // ✅ Utilisation du nouveau mapper
+import 'field_position_mapper.dart'; 
 
 class FootballField extends StatelessWidget {
   final String formation;
@@ -16,8 +14,8 @@ class FootballField extends StatelessWidget {
 
   final Map<String, JoueurSmWithStats?> assignedPlayersByPoste;
   final Map<int, RoleModeleSm> assignedRolesByPlayerId;
-  final JoueursSmState allPlayers; // Vient du JoueursSmBloc
-
+  final JoueursSmState allPlayers; 
+  
   const FootballField({
     Key? key,
     required this.formation,
@@ -30,13 +28,10 @@ class FootballField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenType = ResponsiveLayout.getScreenType(context);
-    // ✅ 3. Fond du terrain : Récupération du thème
     final theme = Theme.of(context);
 
-    // ✅ MODIFIÉ : Aspect ratio 1.6:1 (plus large, comme l'exemple)
     final double aspectRatio = 1.6;
 
-    // Contraintes
     final constraints = switch (screenType) {
       ScreenType.mobile =>
           const BoxConstraints(maxWidth: 500, maxHeight: 312),
@@ -54,14 +49,12 @@ class FootballField extends StatelessWidget {
         aspectRatio: aspectRatio,
         child: Container(
           decoration: BoxDecoration(
-            // ✅ 3. Fond du terrain : Utilisation de la couleur du thème
             color: theme.cardColor,
             borderRadius: BorderRadius.circular(12),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: CustomPaint(
-              // ✅ 3. Fond du terrain : Thème passé au painter
               painter: FootballFieldPainter(screenType, theme: theme),
               child: LayoutBuilder(
                 builder: (context, constraints) {
@@ -70,7 +63,7 @@ class FootballField extends StatelessWidget {
                       constraints,
                       formation,
                       context,
-                      screenType, // ✅ 1. Texte réactif : screenType passé ici
+                      screenType, 
                     ),
                   );
                 },
@@ -82,60 +75,44 @@ class FootballField extends StatelessWidget {
     );
   }
 
-  /// Construit la liste des widgets de joueurs positionnés
   List<Widget> _buildPlayerWidgets(
     BoxConstraints constraints,
     String formation,
     BuildContext context,
-    ScreenType screenType, // ✅ 1. Texte réactif : Réception de screenType
+    ScreenType screenType,
   ) {
     final List<Widget> playerWidgets = [];
 
-    // 1. Obtenir les clés de poste (G, DC1, DC2...)
     final posteKeys = _getPosteKeysForFormation(formation);
 
-    // 2. Obtenir le mappage de position [x, y] pour cette formation
     final positionMapping = FieldPositionMapper.getFormationPositions(formation);
 
-    // 3. Dimensions des cartes de joueur
-    // ✅ MODIFIÉ : 14% de la largeur
-    // final double cardWidth = constraints.maxWidth * 0.14;
-
     final double cardWidth = switch (screenType) {
-      ScreenType.mobile   => constraints.maxWidth * 0.17, // Augmenté à 17%
-      ScreenType.tablet   => constraints.maxWidth * 0.15, // Augmenté à 15%
-      _                   => constraints.maxWidth * 0.14, // 14% pour laptop/desktop
+      ScreenType.mobile   => constraints.maxWidth * 0.17, 
+      ScreenType.tablet   => constraints.maxWidth * 0.15, 
+      _                   => constraints.maxWidth * 0.14, 
     };
 
     for (final posteKey in posteKeys) {
-      // 4. Trouver le joueur et le rôle pour ce poste (ex: "DC1")
       final JoueurSmWithStats? player = assignedPlayersByPoste[posteKey];
       final RoleModeleSm? role = (player != null)
           ? assignedRolesByPlayerId[player.joueur.id]
           : null;
 
-      // 5. Trouver la position [x, y] pour ce poste
       final Offset? pos = positionMapping[posteKey];
 
       if (pos != null && player != null && role != null) {
         playerWidgets.add(
           Positioned(
-            // Calcule le coin supérieur gauche pour centrer la carte
             left: (constraints.maxWidth * pos.dx) - (cardWidth / 2),
             
-            // ✅ MODIFIÉ : 'top' est ajusté pour centrer verticalement
-            // en se basant sur une hauteur de carte approximative (50px)
-            top: (constraints.maxHeight * pos.dy) - 28, // 28 ~ 56px / 2
+            top: (constraints.maxHeight * pos.dy) - 28,
             
             width: cardWidth,
-
-            // ✅ MODIFIÉ : La hauteur fixe (height) a été SUPPRIMÉE.
-            // La carte gère sa propre hauteur.
             
             child: FieldPlayerCard(
               player: player,
               role: role,
-              // ✅ 1. Texte réactif : screenType passé à la carte
               screenType: screenType,
               onTap: () {
                 _showPlayerModal(
@@ -167,8 +144,6 @@ class FootballField extends StatelessWidget {
     );
   }
 
-  // ✅✅✅ CARTE CANONIQUE DES FORMATIONS ✅✅✅
-  // Cette fonction DOIT être identique à celle dans tactics_bloc.dart
   List<String> _getPosteKeysForFormation(String formation) {
     final map = {
       '4-4-2': [
@@ -289,6 +264,6 @@ class FootballField extends StatelessWidget {
         'BUC'
       ],
     };
-    return map[formation] ?? map['4-3-3']!; // Fallback sur 4-3-3
+    return map[formation] ?? map['4-3-3']!;
   }
 }

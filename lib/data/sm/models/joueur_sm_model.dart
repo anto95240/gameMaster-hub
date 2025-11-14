@@ -17,61 +17,56 @@ class JoueurSmModel extends JoueurSm {
   });
 
   factory JoueurSmModel.fromMap(Map<String, dynamic> map) {
-    // --- Correction pour les Postes ---
     final postesList = map['postes'] as List<dynamic>?;
     final List<PosteEnum> postes;
     if (postesList == null || postesList.isEmpty) {
-      postes = [PosteEnum.G]; // Valeur par défaut si c'est vide ou null
+      postes = [PosteEnum.G]; 
     } else {
       postes = postesList
           .map((e) {
             try {
-              // Tente de trouver le poste
               return PosteEnum.values.firstWhere((p) => p.name == e);
             } catch (err) {
-              // Si échec, retourne un poste par défaut (ex: G)
               return PosteEnum.G; 
             }
           })
           .toList();
     }
 
-    // --- Correction pour le Status ---
     final statusString = map['status'] as String?;
     
     StatusEnum status; 
     
     if (statusString == null) {
-      status = StatusEnum.Remplacant; // Valeur par défaut
+      status = StatusEnum.Remplacant;
     } else {
       try {
         status = StatusEnum.values.firstWhere((e) => e.name == statusString);
       } catch (e) {
-        status = StatusEnum.Remplacant; // Valeur par défaut si inconnu
+        status = StatusEnum.Remplacant; 
       }
     }
 
-    // ✅✅✅ CORRECTION PRINCIPALE : Utilisation de snake_case pour la lecture ✅✅✅
     return JoueurSmModel(
       id: map['id'] ?? 0,
-      saveId: map['save_id'] ?? 0, // Corrigé
+      saveId: map['save_id'] ?? 0, 
       nom: map['nom'] ?? 'Sans Nom',
       age: map['age'] ?? 0,
-      postes: postes, // Utilise la liste sécurisée
-      niveauActuel: map['niveau_actuel'] ?? 0, // Corrigé
+      postes: postes, 
+      niveauActuel: map['niveau_actuel'] ?? 0, 
       potentiel: map['potentiel'] ?? 0,
-      montantTransfert: map['montant_transfert'] ?? 0, // Corrigé
-      status: status, // Utilise le status sécurisé
-      dureeContrat: map['duree_contrat'] ?? 0, // Corrigé
+      montantTransfert: map['montant_transfert'] ?? 0,
+      status: status, 
+      dureeContrat: map['duree_contrat'] ?? 0,
       salaire: map['salaire'] ?? 0,
-      userId: map['user_id'] ?? '', // Corrigé
+      userId: map['user_id'] ?? '',
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'save_id': saveId, // Note : Assurez-vous que toMap utilise aussi snake_case
+      'save_id': saveId,
       'nom': nom,
       'age': age,
       'postes': postes.map((e) => e.name).toList(),

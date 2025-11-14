@@ -41,7 +41,6 @@ Future<void> handlePlayerSubmit(
 
   if (joueurId != null) {
     final userId = Supabase.instance.client.auth.currentUser!.id;
-    // ✅ CORRECTION: 'G' au lieu de 'GK'
     final isGK = formData.postesSelectionnes.any((p) => p.name == 'G');
 
     if (isGK) {

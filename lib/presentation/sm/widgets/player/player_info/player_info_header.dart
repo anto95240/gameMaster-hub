@@ -6,7 +6,7 @@ class PlayerInfoHeader extends StatelessWidget {
   final bool isEditing;
   final ValueChanged<bool> onEditingChanged;
   final TextEditingController? nameController;
-  final TextEditingController? ageController; // ✅ Nouveau : controller pour l'âge
+  final TextEditingController? ageController;
 
   const PlayerInfoHeader({
     super.key,
@@ -42,7 +42,6 @@ class PlayerInfoHeader extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // ---- NOM ----
           Expanded(
             child: isEditing
                 ? TextField(
@@ -70,7 +69,6 @@ class PlayerInfoHeader extends StatelessWidget {
 
           const SizedBox(width: 16),
 
-          // ---- ÂGE ----
           SizedBox(
             width: 80,
             child: isEditing
@@ -104,7 +102,6 @@ class PlayerInfoHeader extends StatelessWidget {
 
           const SizedBox(width: 12),
 
-          // ---- BOUTON FERMER ----
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(Icons.close),

@@ -39,7 +39,7 @@ class JoueurSm {
       niveauActuel: 0,
       potentiel: 0,
       montantTransfert: 0,
-      status: StatusEnum.Titulaire, // ou StatusEnum.libre, selon votre enum
+      status: StatusEnum.Titulaire, 
       dureeContrat: 0,
       salaire: 0,
       userId: '',

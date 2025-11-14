@@ -4,7 +4,6 @@ import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
 import 'package:gamemaster_hub/presentation/sm/blocs/sm_blocs_export.dart';
 import 'package:gamemaster_hub/presentation/sm/widgets/sm_widgets_export.dart';
 
-// Converti en StatefulWidget pour déclencher le chargement
 class SMPlayersTab extends StatefulWidget {
   final int saveId;
   final int currentTabIndex;
@@ -23,8 +22,6 @@ class _SMPlayersTabState extends State<SMPlayersTab> {
   @override
   void initState() {
     super.initState();
-    // ✅ CORRECTION : Déclenche l'événement de chargement à chaque
-    // initialisation de l'onglet pour la bonne saveId.
     context.read<JoueursSmBloc>().add(LoadJoueursSmEvent(widget.saveId));
   }
 
@@ -33,12 +30,9 @@ class _SMPlayersTabState extends State<SMPlayersTab> {
     final width = MediaQuery.of(context).size.width;
     final horizontalPadding = ResponsiveLayout.getHorizontalPadding(width);
 
-    // Écoute les changements d'état
     final joueursState = context.watch<JoueursSmBloc>().state;
 
-    // Gère tous les états non-"Loaded"
     if (joueursState is! JoueursSmLoaded) {
-      // Affiche l'erreur si elle existe
       if (joueursState is JoueursSmError) {
         return Center(
           child: Padding(
@@ -51,13 +45,11 @@ class _SMPlayersTabState extends State<SMPlayersTab> {
           ),
         );
       }
-      // Affiche un loader pour Initial ou Loading
       return const Center(
         child: CircularProgressIndicator(),
       );
     }
 
-    // Si on arrive ici, joueursState EST un JoueursSmLoaded.
     return SingleChildScrollView(
       padding: EdgeInsets.all(horizontalPadding),
       child: Column(
