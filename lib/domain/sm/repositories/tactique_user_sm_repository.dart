@@ -7,5 +7,3 @@ abstract class TactiqueUserSmRepository {
   Future<void> update(TactiqueUserSm tactique);
   Future<void> delete(int id);
 }
-
-

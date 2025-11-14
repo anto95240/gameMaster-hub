@@ -41,7 +41,7 @@ Future<void> handlePlayerSubmit(
 
   if (joueurId != null) {
     final userId = Supabase.instance.client.auth.currentUser!.id;
-    final isGK = formData.postesSelectionnes.any((p) => p.name == 'GK');
+    final isGK = formData.postesSelectionnes.any((p) => p.name == 'G');
 
     if (isGK) {
       await Supabase.instance.client.from('stats_gardien_sm').insert({

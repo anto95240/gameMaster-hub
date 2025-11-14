@@ -1,27 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:gamemaster_hub/domain/domain_export.dart';
 import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
+import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
 class PlayerInfoModal extends StatelessWidget {
-  final String? roleName;
-  final String? roleDescription;
+  final JoueurSmWithStats? player;
+  final RoleModeleSm? role;
+  final JoueursSmState allPlayers;
+  final String basePoste;
 
-  const PlayerInfoModal({Key? key, this.roleName, this.roleDescription}) : super(key: key);
+  const PlayerInfoModal({
+    Key? key,
+    this.player,
+    this.role,
+    required this.allPlayers,
+    required this.basePoste,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final screenType = ResponsiveLayout.getScreenType(context);
 
-    final playerData = {
-      'Nom': 'Chevalier',
-      'Poste': 'GK',
-      'Âge': '18 ans',
-      'Contrat': '2029',
-      'Note': '86',
-      'Potentiel': '95',
-      'Rôle individuel': roleName ?? 'Rôle optimisé',
-      'Description du rôle': roleDescription ??
-          'Rôle attribué automatiquement en fonction de la formation et des statistiques.',
-    };
+    final String nom = player?.joueur.nom ?? 'Poste non assigné';
+    final String poste = player?.joueur.postes.map((p) => p.name).join('/') ?? basePoste;
+    final String age = player?.joueur.age.toString() ?? '-';
+    final String contrat = player?.joueur.dureeContrat.toString() ?? '-';
+    final String note = player?.joueur.niveauActuel.toString() ?? '-';
+    final String potentiel = player?.joueur.potentiel.toString() ?? '-';
+    final String roleNom = role?.role ?? 'Rôle non défini';
+    final String roleDesc = role?.description ?? 'Aucun rôle optimisé n\'a été assigné pour ce poste.';
+
 
     final maxWidth = switch (screenType) {
       ScreenType.mobile => 360.0,
@@ -29,33 +37,30 @@ class PlayerInfoModal extends StatelessWidget {
       ScreenType.laptop => 480.0,
       ScreenType.laptopL => 520.0,
     };
-
     final avatarSize = switch (screenType) {
       ScreenType.mobile => 42.0,
       ScreenType.tablet => 50.0,
       ScreenType.laptop => 56.0,
       ScreenType.laptopL => 60.0,
     };
-
     final titleSize = switch (screenType) {
       ScreenType.mobile => 16.0,
       ScreenType.tablet => 17.0,
       ScreenType.laptop => 18.0,
       ScreenType.laptopL => 20.0,
     };
-
     final textSize = switch (screenType) {
       ScreenType.mobile => 13.0,
       ScreenType.tablet => 14.0,
       ScreenType.laptop => 15.0,
       ScreenType.laptopL => 16.0,
     };
-
+    
     return Dialog(
       backgroundColor: const Color(0xFF2b2e3c),
       insetPadding: const EdgeInsets.all(16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
+      child: Container( // Plus besoin de scroll
         width: maxWidth,
         padding: const EdgeInsets.all(20),
         constraints: const BoxConstraints(minHeight: 250),
@@ -69,13 +74,13 @@ class PlayerInfoModal extends StatelessWidget {
                 Container(
                   width: avatarSize,
                   height: avatarSize,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Color(0xFF4dd0e1),
+                    color: player != null ? const Color(0xFF4dd0e1) : Colors.grey[700],
                   ),
                   alignment: Alignment.center,
                   child: Text(
-                    playerData['Nom']![0],
+                    nom.isNotEmpty ? nom[0] : '?',
                     style: TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.bold,
@@ -89,32 +94,34 @@ class PlayerInfoModal extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        playerData['Nom']!,
+                        nom,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: titleSize,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Text(
-                        "${playerData['Poste']} • ${playerData['Âge']} • ${playerData['Contrat']}",
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: textSize - 1,
+                      if (player != null)
+                        Text(
+                          "$poste • $age ans • $contrat",
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: textSize - 1,
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),
                 const SizedBox(width: 8),
-                Wrap(
-                  spacing: 6,
-                  children: [
-                    _buildRatingBadge(playerData['Note']!, screenType),
-                    _buildRatingBadge(playerData['Potentiel']!,
-                        screenType, isPotential: true),
-                  ],
-                ),
+                if (player != null)
+                  Wrap(
+                    spacing: 6,
+                    children: [
+                      _buildRatingBadge(note, screenType, getRatingColor(player!.joueur.niveauActuel)),
+                      _buildRatingBadge(potentiel,
+                          screenType, getProgressionColor(player!.joueur.potentiel)),
+                    ],
+                  ),
               ],
             ),
 
@@ -130,9 +137,9 @@ class PlayerInfoModal extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    playerData['Rôle individuel']!,
+                    roleNom,
                     style: TextStyle(
-                      color: Colors.white70,
+                      color: Colors.white,
                       fontSize: textSize,
                       fontWeight: FontWeight.w600,
                     ),
@@ -142,7 +149,7 @@ class PlayerInfoModal extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              playerData['Description du rôle']!,
+              roleDesc,
               style: TextStyle(
                 color: Colors.white60,
                 fontSize: textSize - 1,
@@ -158,16 +165,9 @@ class PlayerInfoModal extends StatelessWidget {
 
   static Widget _buildRatingBadge(
     String value,
-    ScreenType screenType, {
-    bool isPotential = false,
-  }) {
-    final int rating = int.tryParse(value) ?? 0;
-    final Color color = rating >= 85
-        ? const Color(0xFF4caf50)
-        : (rating >= 75
-            ? const Color(0xFFffeb3b)
-            : const Color(0xFFff9800));
-
+    ScreenType screenType,
+    Color color,
+  ) {
     final double fontSize = switch (screenType) {
       ScreenType.mobile => 12,
       ScreenType.tablet => 13,

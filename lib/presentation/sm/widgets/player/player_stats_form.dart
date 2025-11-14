@@ -23,7 +23,7 @@ class PlayerStatsFormState extends State<PlayerStatsForm> {
   @override
   void initState() {
     super.initState();
-    isGardien = widget.item.joueur.postes.any((p) => p.name == 'GK');
+    isGardien = widget.item.joueur.postes.any((p) => p.name == 'G');
     _initStatsControllers();
   }
 

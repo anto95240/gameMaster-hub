@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
+import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_bloc_export.dart';
 import 'package:gamemaster_hub/presentation/presentation_export.dart';
 
 class SMPlayersHeader extends StatelessWidget {
   final JoueursSmLoaded state;
   final double width;
-  final int currentTabIndex; // ← index actuel de l’onglet
+  final int currentTabIndex;
+  final String? selectedFormation;
 
   const SMPlayersHeader({
     super.key,
     required this.state,
     required this.width,
     required this.currentTabIndex,
+    this.selectedFormation,
   });
 
   @override
@@ -29,7 +33,6 @@ class SMPlayersHeader extends StatelessWidget {
         : (screenType == ScreenType.tablet ? 24.0 : 28.0);
     final isMobile = screenType == ScreenType.mobile;
 
-    // === Détermine dynamiquement le contenu selon l'onglet ===
     String title;
     List<Widget> statCards = [];
 
@@ -49,6 +52,14 @@ class SMPlayersHeader extends StatelessWidget {
         statCards = [
           _buildStatCard(context, 'Joueurs', totalPlayers.toString(),
               Icons.people, screenType),
+          _buildStatCard(
+            context,
+            'Tactique',
+            selectedFormation ?? 'Aucune',
+            Icons.grid_view,
+            screenType,
+          ),
+
           _buildStatCard(context, 'Note',
               averageNiveauActuel.toStringAsFixed(0), Icons.star, screenType),
         ];
@@ -68,7 +79,6 @@ class SMPlayersHeader extends StatelessWidget {
         title = "Gestion";
     }
 
-    // === Responsive design ===
     if (isMobile) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.center,

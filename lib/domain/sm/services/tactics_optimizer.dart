@@ -1,23 +1,168 @@
+import 'package:gamemaster_hub/data/data_export.dart'; 
 import 'package:gamemaster_hub/domain/domain_export.dart';
 
 class OptimizedStyles {
-  final Map<String, double> general; // name -> score
+  final Map<String, double> general;
   final Map<String, double> attack;
   final Map<String, double> defense;
-  OptimizedStyles({required this.general, required this.attack, required this.defense});
+  OptimizedStyles(
+      {required this.general, required this.attack, required this.defense});
 }
 
 class OptimizedTacticsResult {
   final String formation;
   final int? modeleId;
-  final Map<int, int> joueurIdToRoleId; // joueur_id -> role_id
+  final Map<int, int> joueurIdToRoleId;
   final OptimizedStyles styles;
+  final Map<String, _JoueurStatsComplet> elevenByPoste; 
+
   OptimizedTacticsResult({
     required this.formation,
     required this.modeleId,
     required this.joueurIdToRoleId,
     required this.styles,
+    required this.elevenByPoste,
   });
+}
+
+class _JoueurStatsComplet {
+  final JoueurSm joueur;
+  final dynamic stats; 
+  final bool isGk;
+  final double averageRating;
+  final PosteEnum? preferredPoste; 
+
+  _JoueurStatsComplet(
+      {required this.joueur, required this.stats, required this.isGk})
+      : averageRating = _calculateAverageRating(stats),
+        preferredPoste = joueur.postes.isNotEmpty ? joueur.postes.first : null;
+
+  static double _calculateAverageRating(dynamic stats) {
+    if (stats == null) return 0.0;
+    try {
+      final Map<String, dynamic> json;
+      if (stats is StatsJoueurSmModel) {
+        json = stats.toMap();
+      } else if (stats is StatsGardienSmModel) {
+        json = stats.toMap();
+      } else {
+        return 0.0; 
+      }
+      
+      final values = json.values
+          .whereType<num>()
+          .map((v) => v.toDouble())
+          .where((v) => v > 0)
+          .toList();
+      if (values.isEmpty) return 0.0;
+      return values.reduce((a, b) => a + b) / values.length;
+    } catch (_) {
+      return 0.0;
+    }
+  }
+
+  bool canPlayPoste(String basePoste) {
+    const Map<String, List<String>> compatibilityMap = {
+      'G': ['G'],
+      'DC': ['DC'],
+      'DG': ['DG', 'DLG', 'DC'],
+      'DD': ['DD', 'DLD', 'DC'],
+      'DLG': ['DLG', 'DG', 'MG'],
+      'DLD': ['DLD', 'DD', 'MD'],
+      'MDC': ['MDC', 'MC', 'DC'], 
+      'MC': ['MC', 'MDC', 'MOC', 'MG', 'MD'], 
+      'MOC': ['MOC', 'MC', 'MOG', 'MOD', 'BUC', 'BUG', 'BUD'],
+      'MG': ['MG', 'MOG', 'DG', 'DLG'],
+      'MD': ['MD', 'MOD', 'DD', 'DLD'],
+      'MOG': ['MOG', 'MG', 'BUC', 'BUG', 'MOC'], 
+      'MOD': ['MOD', 'MD', 'BUC', 'BUD', 'MOC'], 
+      'BUC': ['BUC', 'BUG', 'BUD', 'MOG', 'MOD', 'MOC'],
+      'BUG': ['BUG', 'BUC', 'MOG'],
+      'BUD': ['BUD', 'BUC', 'MOD'],
+    };
+    
+    final List<String> compatibleEnumPostes = compatibilityMap[basePoste] ?? [basePoste];
+    
+    for (final playerPoste in joueur.postes) {
+      if (compatibleEnumPostes.contains(playerPoste.name)) {
+        return true; 
+      }
+    }
+    return false;
+  }
+  
+  bool isPreferredPoste(String basePoste) {
+    if (preferredPoste == null) return false;
+    
+    const Map<String, List<String>> preferredMap = {
+      'G': ['G'],
+      'DC': ['DC'],
+      'DG': ['DG', 'DLG'],
+      'DD': ['DD', 'DLD'],
+      'DLG': ['DLG', 'DG'],
+      'DLD': ['DLD', 'DD'],
+      'MDC': ['MDC'],
+      'MC': ['MC'], 
+      'MOC': ['MOC'],
+      'MG': ['MG', 'MOG'],
+      'MD': ['MD', 'MOD'],
+      'MOG': ['MOG', 'MG'],
+      'MOD': ['MOD', 'MD'], 
+      'BUC': ['BUC', 'BUG', 'BUD'],
+      'BUG': ['BUG', 'BUC'],
+      'BUD': ['BUD', 'BUC'],
+    };
+    
+    final List<String> compatibleEnumPostes = preferredMap[basePoste] ?? [basePoste];
+    return compatibleEnumPostes.contains(preferredPoste!.name);
+  }
+
+
+  bool isCorrectLateral(String basePoste) {
+    if (preferredPoste == null) return true; 
+    if (basePoste == 'DG') return preferredPoste!.name == 'DG' || preferredPoste!.name == 'DLG';
+    if (basePoste == 'DD') return preferredPoste!.name == 'DD' || preferredPoste!.name == 'DLD';
+    return true; 
+  }
+  
+  bool isCorrectWinger(String basePoste) {
+    if (preferredPoste == null) return true;
+    if (basePoste == 'MG' || basePoste == 'MOG') return preferredPoste!.name == 'MG' || preferredPoste!.name == 'MOG' || preferredPoste!.name == 'BUG';
+    if (basePoste == 'MD' || basePoste == 'MOD') return preferredPoste!.name == 'MD' || preferredPoste!.name == 'MOD' || preferredPoste!.name == 'BUD';
+    return true;
+  }
+  
+  int getStat(String statName) {
+    if (stats == null) return 0;
+    try {
+      final Map<String, dynamic> json;
+      if (stats is StatsJoueurSmModel) {
+        json = stats.toMap();
+      } else if (stats is StatsGardienSmModel) {
+        json = stats.toMap();
+      } else {
+        return 0; 
+      }
+      
+      final statKey = _statNameMapping[statName] ?? statName;
+      
+      if (json.containsKey(statKey)) {
+        return (json[statKey] as num? ?? 0).toInt();
+      }
+    } catch (_) {
+    }
+    return 0;
+  }
+
+  static const Map<String, String> _statNameMapping = {
+    'frappes_lointaines': 'frappesLointaines',
+    'passes_longues': 'passesLongues',
+    'coups_francs': 'coupsFrancs',
+    'stabilite_aerienne': 'stabiliteAerienne',
+    'distance_parcourue': 'distanceParcourue',
+    'sang_froid': 'sangFroid',
+    'autorite_surface': 'autoriteSurface'
+  };
 }
 
 class TacticsOptimizer {
@@ -27,89 +172,551 @@ class TacticsOptimizer {
   final RoleModeleSmRepository roleRepo;
   final TactiqueModeleSmRepository tactiqueModeleRepo;
 
+  final InstructionGeneralSmRepository instructionGeneralRepo;
+  final InstructionAttaqueSmRepository instructionAttaqueRepo;
+  final InstructionDefenseSmRepository instructionDefenseRepo;
+
   TacticsOptimizer({
     required this.joueurRepo,
     required this.statsRepo,
     required this.gardienRepo,
     required this.roleRepo,
     required this.tactiqueModeleRepo,
+    required this.instructionGeneralRepo,
+    required this.instructionAttaqueRepo,
+    required this.instructionDefenseRepo,
   });
 
   Future<OptimizedTacticsResult> optimize({required int saveId}) async {
+    final allPlayers = await _getCombinedPlayerData(saveId);
+
+    if (allPlayers.length < 11) {
+      throw Exception("Vous devez avoir au moins 11 joueurs pour optimiser.");
+    }
+
+    final allFormationsPossibles = await tactiqueModeleRepo.getAllTactiques();
+    
+    final allRolesPossibles = await roleRepo.getAllRoles();
+
+    final bestFormationResult =
+        _findBestFormation(allFormationsPossibles, allPlayers);
+
+    final TactiqueModeleSm bestFormationModele = bestFormationResult['modele'];
+    final List<_JoueurStatsComplet> startingEleven =
+        bestFormationResult['eleven'];
+    final Map<String, _JoueurStatsComplet> elevenByPoste =
+        bestFormationResult['elevenByPoste'];
+
+    final Map<int, int> joueurToRole = _assignBestRoles(
+      elevenByPoste,
+      allRolesPossibles,
+    );
+
+    final styles = _generateBestStyles(startingEleven);
+
+    return OptimizedTacticsResult(
+      formation: bestFormationModele.formation,
+      modeleId: bestFormationModele.id,
+      joueurIdToRoleId: joueurToRole,
+      styles: styles,
+      elevenByPoste: elevenByPoste,
+    );
+  }
+
+  Future<List<_JoueurStatsComplet>> _getCombinedPlayerData(
+      int saveId) async {
     final joueurs = await joueurRepo.getAllJoueurs(saveId);
+    
     final statsList = await statsRepo.getAllStats(saveId);
+    final gardienStatsList = await gardienRepo.getAllStats(saveId);
 
-    // Basic heuristic: ensure 1 GK then choose a default formation 4-3-3 if possible
-    String chosenFormation = '4-3-3';
-    int? modeleId;
-    final tactiques = await tactiqueModeleRepo.getAllTactiques();
-    if (tactiques.isNotEmpty) {
-      final first = tactiques.first;
-      chosenFormation = first.formation.isNotEmpty ? first.formation : chosenFormation;
-      modeleId = first.id;
-    } else {
-      chosenFormation = '4-3-3';
-      modeleId = -1;
+    final statsMap = {for (var s in statsList) s.joueurId: s};
+    final gkStatsMap = {for (var s in gardienStatsList) s.joueurId: s};
+
+    List<_JoueurStatsComplet> combinedList = [];
+    for (final j in joueurs) {
+      final isGk = j.postes.any((p) => p.name == 'G');
+      final stats = isGk ? gkStatsMap[j.id] : statsMap[j.id]; 
+      
+      combinedList.add(_JoueurStatsComplet(joueur: j, stats: stats, isGk: isGk));
+    }
+    return combinedList;
+  }
+
+  Map<String, dynamic> _findBestFormation(
+    List<TactiqueModeleSm> allFormations, 
+    List<_JoueurStatsComplet> allPlayers,
+  ) {
+    if (allFormations.isEmpty) {
+
+      allFormations.add(TactiqueModeleSm(id: 0, formation: '4-3-3'));
     }
 
-    // Assign roles by simple position-based mapping using postes and a default role per poste
-    final roles = await roleRepo.getAllRoles();
-    final Map<String, RoleModeleSm> defaultRoleByPoste = {};
-    for (final r in roles) {
-      defaultRoleByPoste.putIfAbsent(r.poste, () => r);
-    }
+    double bestFinalScore = -double.maxFinite; 
+    TactiqueModeleSm bestModele = allFormations.first;
+    List<_JoueurStatsComplet> bestEleven = [];
+    Map<String, _JoueurStatsComplet> bestElevenByPoste = {};
 
-    // Pick 11 best by naive score: niveauActuel + key stat if available
-    double scoreFor(int joueurId) {
-      final j = joueurs.firstWhere((e) => e.id == joueurId);
-      final s = statsList.where((x) => x.joueurId == joueurId).cast<StatsJoueurSm?>().firstOrNull;
-      final base = j.niveauActuel.toDouble();
-      final extra = s == null ? 0.0 : ((s.passes) + (s.positionnement) + (s.vitesse)) / 3.0;
-      return base + extra * 0.2;
-    }
+    for (final modele in allFormations) {
+      final postesKeys = _getPosteKeysForFormation(modele.formation);
+      
+      if (postesKeys.isEmpty) continue; 
 
-    final sorted = List.of(joueurs)..sort((a, b) => scoreFor(b.id).compareTo(scoreFor(a.id)));
-    final eleven = sorted.take(11).toList();
+      List<_JoueurStatsComplet> playerPool = List.from(allPlayers);
+      List<_JoueurStatsComplet> currentEleven = [];
+      Map<String, _JoueurStatsComplet> currentElevenByPoste = {};
+      double startersScore = 0.0;
+      double depthScore = 0.0;
+      bool formationFeasible = true;
 
-    final Map<int, int> joueurToRole = {};
-    for (final j in eleven) {
-      final poste = j.postes.isNotEmpty ? j.postes.first.name : 'GK';
-      final role = defaultRoleByPoste[poste];
-      if (role != null) {
-        joueurToRole[j.id] = role.id;
+      for (final posteKey in postesKeys) {
+        final basePoste = posteKey.replaceAll(RegExp(r'[0-9]'), ''); 
+
+        _JoueurStatsComplet? bestPlayerForPoste = _findBestPlayerForPoste(
+          playerPool, 
+          basePoste
+        );
+
+        if (bestPlayerForPoste != null) {
+          playerPool.remove(bestPlayerForPoste);
+          currentEleven.add(bestPlayerForPoste);
+          currentElevenByPoste[posteKey] = bestPlayerForPoste;
+          startersScore += _calculatePlayerScore(bestPlayerForPoste, basePoste);
+        } else {
+          formationFeasible = false; 
+          break;
+        }
+      }
+
+      if (!formationFeasible) continue; 
+      
+      for (final posteKey in postesKeys) {
+        final basePoste = posteKey.replaceAll(RegExp(r'[0-9]'), '');
+
+        _JoueurStatsComplet? bestBackup = _findBestPlayerForPoste(
+          playerPool, 
+          basePoste
+        );
+
+        if (bestBackup != null) {
+          playerPool.remove(bestBackup); 
+          depthScore += _calculatePlayerScore(bestBackup, basePoste);
+        } else {
+          depthScore -= 150; 
+        }
+      }
+
+      double totalFormationScore = startersScore + (depthScore * 0.5);
+
+      if (totalFormationScore > bestFinalScore) {
+        bestFinalScore = totalFormationScore;
+        bestModele = modele;
+        bestEleven = currentEleven;
+        bestElevenByPoste = currentElevenByPoste;
       }
     }
 
-    // Styles: pick placeholders with simple scores
-    final styles = OptimizedStyles(
-      general: {
-        'largeur: équilibrée': 0.7,
-        'mentalité: positive': 0.8,
-        'tempo: normal': 0.6,
-      },
-      attack: {
-        'style de passe: mixte': 0.75,
-        'jeu de construction: progressif': 0.7,
-        'contre-attaque: occasionnelle': 0.6,
-      },
-      defense: {
-        'pressing: standard': 0.65,
-        'ligne défensive: médiane': 0.7,
-        'style tacle: mesuré': 0.6,
-      },
-    );
+    if (bestEleven.isEmpty) {
+      throw Exception(
+        "Impossible de former une équipe de 11 joueurs valides avec l'effectif actuel. "
+        "Assurez-vous d'avoir au moins un Gardien (G) et suffisamment de défenseurs/milieux/attaquants."
+      );
+    }
 
-    return OptimizedTacticsResult(
-      formation: chosenFormation,
-      modeleId: modeleId,
-      joueurIdToRoleId: joueurToRole,
-      styles: styles,
-    );
+    return {
+      'modele': bestModele,
+      'eleven': bestEleven,
+      'elevenByPoste': bestElevenByPoste,
+    };
+  }
+
+  _JoueurStatsComplet? _findBestPlayerForPoste(List<_JoueurStatsComplet> pool, String basePoste) {
+    if (pool.isEmpty) return null;
+
+    _JoueurStatsComplet? bestPlayer;
+    double bestScore = -double.maxFinite;
+
+    for (final player in pool) {
+      double score = _calculatePlayerScore(player, basePoste);
+      if (score > bestScore) {
+        bestScore = score;
+        bestPlayer = player;
+      }
+    }
+    
+    if (bestScore <= -1000) {
+      return null;
+    }
+    
+    return bestPlayer;
+  }
+
+  double _calculatePlayerScore(_JoueurStatsComplet player, String basePoste) {
+    
+    if (basePoste == 'G') {
+      return player.isGk ? player.averageRating * 1.5 : -1000;
+    }
+    if (player.isGk) {
+      return -1000;
+    }
+
+    if (!player.canPlayPoste(basePoste)) {
+      return -1000; 
+    }
+
+    final keyStats = _getKeyStatsForPoste(basePoste);
+    double baseScore = 0.0;
+    
+    if (keyStats.isEmpty) {
+      baseScore = player.averageRating; 
+    } else {
+      for (final statName in keyStats) {
+        baseScore += player.getStat(statName);
+      }
+      baseScore = baseScore / keyStats.length;
+    }
+
+    if (!player.isCorrectLateral(basePoste) || !player.isCorrectWinger(basePoste)) {
+        baseScore *= 0.6;
+    }
+    
+    if (player.isPreferredPoste(basePoste)) {
+      baseScore *= 1.5; 
+    }
+    
+    switch (player.joueur.status) {
+      case StatusEnum.Titulaire:
+        baseScore *= 2.0;
+        break;
+      case StatusEnum.Remplacant:
+        baseScore *= 0.8; 
+        break;
+      case StatusEnum.Preter:
+      case StatusEnum.Vendre:
+        return -1000; 
+    }
+
+    double potentiel = player.joueur.potentiel.toDouble();
+    double niveauActuel = player.joueur.niveauActuel.toDouble();
+    if (potentiel < niveauActuel) potentiel = niveauActuel;
+    
+    double potentielMargin = potentiel - niveauActuel;
+    if (potentielMargin > 0) {
+      double potentialBonus = 1 + (potentielMargin / 200);
+      baseScore *= potentialBonus;
+    }
+
+    return baseScore;
+  }
+
+  List<String> _getKeyStatsForPoste(String poste) {
+    switch (poste) {
+      case 'G':
+        return ['arrets', 'positionnement', 'duels', 'captation', 'autorite_surface'];
+      case 'DC':
+        return ['marquage', 'tacles', 'force', 'positionnement', 'stabilite_aerienne'];
+      case 'DG':
+      case 'DD':
+      case 'DLG':
+      case 'DLD':
+        return ['vitesse', 'endurance', 'centres', 'tacles', 'marquage'];
+      case 'MDC':
+        return ['tacles', 'endurance', 'agressivite', 'passes', 'positionnement'];
+      case 'MC':
+        return ['passes', 'creativite', 'controle', 'endurance', 'deplacement'];
+      case 'MOC':
+        return ['creativite', 'dribble', 'frappes_lointaines', 'passes', 'deplacement'];
+      case 'MG':
+      case 'MD':
+      case 'MOG': 
+      case 'MOD': 
+        return ['vitesse', 'dribble', 'centres', 'creativite', 'finition'];
+      case 'BUC':
+      case 'BUG':
+      case 'BUD':
+        return ['finition', 'deplacement', 'sang_froid', 'vitesse', 'stabilite_aerienne'];
+      default:
+        return ['vitesse', 'endurance', 'force'];
+    }
+  }
+
+  Map<int, int> _assignBestRoles(
+    Map<String, _JoueurStatsComplet> elevenByPoste,
+    List<RoleModeleSm> allRoles,
+  ) {
+    final Map<int, int> joueurToRole = {};
+
+    for (final entry in elevenByPoste.entries) {
+      final String poste = entry.key.replaceAll(RegExp(r'[0-9]'), ''); 
+      final _JoueurStatsComplet player = entry.value;
+
+      final possibleRoles = allRoles.where((r) => r.poste == poste).toList();
+      if (possibleRoles.isEmpty) continue;
+
+      RoleModeleSm bestRole = possibleRoles.first;
+      double bestScore = -1.0;
+
+      for (final role in possibleRoles) {
+        double currentScore = 0.0;
+        final keyStats = _getKeyStatsForRole(role.role); 
+        
+        if (keyStats.isNotEmpty) {
+           for (final statName in keyStats) {
+            currentScore += player.getStat(statName);
+          }
+          currentScore = currentScore / keyStats.length; 
+        }
+
+        if (currentScore > bestScore) {
+          bestScore = currentScore;
+          bestRole = role;
+        }
+      }
+      joueurToRole[player.joueur.id] = bestRole.id;
+    }
+    return joueurToRole;
+  }
+
+  OptimizedStyles _generateBestStyles(List<_JoueurStatsComplet> eleven) {
+
+    final stats = _calculateTeamAverages(eleven);
+
+    final Map<String, double> general = {
+      ..._getBestLargeur(stats),
+      ..._getBestMentalite(stats),
+      ..._getBestTempo(stats),
+      ..._getBestFluidite(stats),
+      ..._getBestRythmeTravail(stats),
+      ..._getBestCreativite(stats),
+    };
+    
+    final Map<String, double> attack = {
+      ..._getBestStylePasse(stats),
+      ..._getBestStyleAttaque(stats),
+      ..._getBestAttaquants(stats),
+      ..._getBestJeuLarge(stats),
+      ..._getBestJeuConstruction(stats),
+      ..._getBestContreAttaque(stats),
+    };
+    
+    final Map<String, double> defense = {
+      ..._getBestPressing(stats),
+      ..._getBestStyleTacle(stats),
+      ..._getBestLigneDefensive(stats),
+      ..._getBestGardienLibero(stats),
+      ..._getBestPerteTemps(stats),
+    };
+
+    return OptimizedStyles(general: general, attack: attack, defense: defense);
+  }
+
+  Map<String, double> _calculateTeamAverages(List<_JoueurStatsComplet> eleven) {
+    Map<String, double> averages = {
+      'vitesse': 0, 'endurance': 0, 'agressivite': 0, 'creativite': 0,
+      'passes': 0, 'finition': 0, 'tacles': 0, 'positionnementDef': 0,
+      'deplacementOff': 0, 'passesLongues': 0, 'centres': 0,
+      'controle': 0, 'dribble': 0, 'sangFroid': 0, 'frappesLointaines': 0,
+      'gk_distribution': 0, 'gk_arrets': 0, 'gk_vitesse': 0
+    };
+    int fieldPlayers = 0;
+    
+    for (final p in eleven) {
+      if (p.isGk) {
+        averages['gk_distribution'] = (averages['gk_distribution'] ?? 0) + p.getStat('distribution');
+        averages['gk_arrets'] = (averages['gk_arrets'] ?? 0) + p.getStat('arrets');
+        averages['gk_vitesse'] = (averages['gk_vitesse'] ?? 0) + p.getStat('vitesse');
+      } else {
+        averages['vitesse'] = (averages['vitesse'] ?? 0) + p.getStat('vitesse');
+        averages['endurance'] = (averages['endurance'] ?? 0) + p.getStat('endurance');
+        averages['agressivite'] = (averages['agressivite'] ?? 0) + p.getStat('agressivite');
+        averages['creativite'] = (averages['creativite'] ?? 0) + p.getStat('creativite');
+        averages['passes'] = (averages['passes'] ?? 0) + p.getStat('passes');
+        averages['finition'] = (averages['finition'] ?? 0) + p.getStat('finition');
+        averages['tacles'] = (averages['tacles'] ?? 0) + p.getStat('tacles');
+        averages['positionnementDef'] = (averages['positionnementDef'] ?? 0) + p.getStat('positionnement');
+        averages['deplacementOff'] = (averages['deplacementOff'] ?? 0) + p.getStat('deplacement');
+        averages['passesLongues'] = (averages['passesLongues'] ?? 0) + p.getStat('passes_longues');
+        averages['centres'] = (averages['centres'] ?? 0) + p.getStat('centres');
+        averages['controle'] = (averages['controle'] ?? 0) + p.getStat('controle');
+        averages['dribble'] = (averages['dribble'] ?? 0) + p.getStat('dribble');
+        averages['sangFroid'] = (averages['sangFroid'] ?? 0) + p.getStat('sang_froid');
+        averages['frappesLointaines'] = (averages['frappesLointaines'] ?? 0) + p.getStat('frappes_lointaines');
+        fieldPlayers++;
+      }
+    }
+
+    if (fieldPlayers > 0) {
+      averages.forEach((key, value) {
+        if (!key.startsWith('gk_')) {
+          averages[key] = value / fieldPlayers;
+        }
+      });
+    }
+    return averages;
+  }
+  
+  Map<String, double> _getBestLargeur(Map<String, double> stats) {
+    double avgCentres = stats['centres'] ?? 50;
+    if (avgCentres > 65) return {'Largeur: Jeu large': 1.0};
+    if (avgCentres < 45) return {'Largeur: Étroit': 1.0};
+    return {'Largeur: Normal': 1.0};
+  }
+
+  Map<String, double> _getBestMentalite(Map<String, double> stats) {
+    double avgCreativite = stats['creativite'] ?? 50;
+    double avgFinition = stats['finition'] ?? 50;
+    double avgTacles = stats['tacles'] ?? 50;
+    if (avgCreativite > 75 && avgFinition > 70) return {'Mentalité: Très offensive': 1.0};
+    if (avgCreativite > 60 || avgFinition > 60) return {'Mentalité: Offensive': 1.0};
+    if (avgTacles > 75 && avgCreativite < 40) return {'Mentalité: Très défensive': 1.0};
+    if (avgTacles > 60 && avgCreativite < 50) return {'Mentalité: Défensive': 1.0};
+    return {'Mentalité: Normal': 1.0};
+  }
+
+  Map<String, double> _getBestTempo(Map<String, double> stats) {
+    double avgVitesse = stats['vitesse'] ?? 50;
+    if (avgVitesse > 65) return {'Tempo: Rapide': 1.0};
+    if (avgVitesse < 45) return {'Tempo: Lent': 1.0};
+    return {'Tempo: Normal': 1.0};
+  }
+  
+  Map<String, double> _getBestFluidite(Map<String, double> stats) {
+    double avgDeplacement = stats['deplacementOff'] ?? 50;
+    if (avgDeplacement > 65) return {'Fluidité de la formation: Aventureux': 1.0};
+    if (avgDeplacement < 45) return {'Fluidité de la formation: Discipliné': 1.0};
+    return {'Fluidité de la formation: Normal': 1.0};
+  }
+  
+  Map<String, double> _getBestRythmeTravail(Map<String, double> stats) {
+    double avgEndurance = stats['endurance'] ?? 50;
+    if (avgEndurance > 65) return {'Rythme de travail: Rapide': 1.0};
+    if (avgEndurance < 45) return {'Rythme de travail: Lent': 1.0};
+    return {'Rythme de travail: Normal': 1.0};
+  }
+
+  Map<String, double> _getBestCreativite(Map<String, double> stats) {
+    double avgCreativite = stats['creativite'] ?? 50;
+    if (avgCreativite > 65) return {'Créativité: Audacieux': 1.0};
+    if (avgCreativite < 45) return {'Créativité: Prudent': 1.0};
+    return {'Créativité: Équilibré': 1.0};
+  }
+
+  Map<String, double> _getBestStylePasse(Map<String, double> stats) {
+    double avgPasses = stats['passes'] ?? 50;
+    double avgPassesLongues = stats['passesLongues'] ?? 50;
+    if (avgPassesLongues > 70 && avgPasses < 60) return {'Style de passe: Ballon longs': 1.0};
+    if (avgPasses > 70 && avgPassesLongues < 60) return {'Style de passe: Court': 1.0};
+    if (avgPasses > 60 && avgPassesLongues > 60) return {'Style de passe: Direct': 1.0};
+    return {'Style de passe: Polyvalent': 1.0};
+  }
+  
+  Map<String, double> _getBestStyleAttaque(Map<String, double> stats) {
+    double avgDribble = stats['dribble'] ?? 50;
+    double avgCentres = stats['centres'] ?? 50;
+    if(avgDribble > 65 && avgCentres > 65) return {'Style d\'attaque: Sur les deux ailes': 1.0};
+    if(avgDribble > 60) return {'Style d\'attaque: Par l\'axe': 1.0};
+    return {'Style d\'attaque: Polyvalent': 1.0};
+  }
+
+  Map<String, double> _getBestAttaquants(Map<String, double> stats) {
+    double avgFinition = stats['finition'] ?? 50;
+    double avgFrappesLointaines = stats['frappesLointaines'] ?? 50;
+    if (avgFinition > 65) return {'Attaquants: Jouer le ballon dans la surface': 1.0};
+    if (avgFrappesLointaines > 65) return {'Attaquants: Tirer à vue': 1.0};
+    return {'Attaquants: Polyvalents': 1.0};
+  }
+  
+  Map<String, double> _getBestJeuLarge(Map<String, double> stats) {
+    double avgCentres = stats['centres'] ?? 50;
+    if (avgCentres > 65) return {'Jeu large: Centres de la ligne de touche': 1.0};
+    return {'Jeu large: Polyvalent': 1.0};
+  }
+
+  Map<String, double> _getBestJeuConstruction(Map<String, double> stats) {
+    double avgControle = stats['controle'] ?? 50;
+    if (avgControle > 65) return {'Jeu en contruction: Lent': 1.0}; 
+    if (avgControle < 45) return {'Jeu en contruction: Rapide': 1.0};
+    return {'Jeu en contruction: Normal': 1.0};
+  }
+  
+  Map<String, double> _getBestContreAttaque(Map<String, double> stats) {
+    double avgVitesse = stats['vitesse'] ?? 50;
+    if (avgVitesse > 65) return {'Contre-attaque: Oui': 1.0};
+    return {'Contre-attaque: Non': 1.0};
+  }
+  
+  Map<String, double> _getBestPressing(Map<String, double> stats) {
+    double avgEndurance = stats['endurance'] ?? 50;
+    if (avgEndurance > 70) return {'Pressing: Partout': 1.0};
+    if (avgEndurance > 55) return {'Pressing: Propre moitié de terrain': 1.0};
+    return {'Pressing: Propre surface de réparation': 1.0};
+  }
+
+  Map<String, double> _getBestStyleTacle(Map<String, double> stats) {
+    double avgAgressivite = stats['agressivite'] ?? 50;
+    double avgTacles = stats['tacles'] ?? 50;
+    if (avgAgressivite > 75 && avgTacles > 65) return {'Style tacle: Agressif': 1.0};
+    if (avgAgressivite > 65) return {'Style tacle: Rugeux': 1.0};
+    return {'Style tacle: Normal': 1.0};
+  }
+
+  Map<String, double> _getBestLigneDefensive(Map<String, double> stats) {
+    double avgVitesseDef = stats['vitesse'] ?? 50; 
+    if (avgVitesseDef > 65) return {'Ligne défensive: Haut': 1.0};
+    if (avgVitesseDef < 45) return {'Ligne défensive: Bas': 1.0};
+    return {'Ligne défensive: Normal': 1.0};
+  }
+  
+  Map<String, double> _getBestGardienLibero(Map<String, double> stats) {
+    double avgGkVit = stats['gk_vitesse'] ?? 50;
+    if (avgGkVit > 60) return {'Gardien libéro: Oui': 1.0};
+    return {'Gardien libéro: Non': 1.0};
+  }
+  
+  Map<String, double> _getBestPerteTemps(Map<String, double> stats) {
+    double avgMentalite = (stats['creativite'] ?? 50) + (stats['finition'] ?? 50);
+    if (avgMentalite > 130) return {'Perte de temps: Faible': 1.0};
+    if (avgMentalite < 100) return {'Perte de temps: Haut': 1.0};
+    return {'Perte de temps: Normal': 1.0};
+  }
+
+  List<String> _getPosteKeysForFormation(String formation) {
+    final map = {
+      '4-4-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MG', 'MC1', 'MC2', 'MD', 'BUC1', 'BUC2'],
+      '4-3-1-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MC1', 'MC2', 'MC3', 'MOC', 'BUC1', 'BUC2'],
+      '4-2-3-1': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MDC1', 'MDC2', 'MOG', 'MOC', 'MOD', 'BUC'],
+      '4-2-2-2': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MDC1', 'MDC2', 'MOC1', 'MOC2', 'BUC1', 'BUC2'],
+      '4-3-3': ['G', 'DG', 'DC1', 'DC2', 'DD', 'MC1', 'MC2', 'MC3', 'MOG', 'MOD', 'BUC'],
+      '3-4-3': ['G', 'DC1', 'DC2', 'DC3', 'MG', 'MC1', 'MC2', 'MD', 'MOG', 'MOD', 'BUC'],
+      '3-5-2': ['G', 'DC1', 'DC2', 'DC3', 'MG', 'MDC', 'MC1', 'MC2', 'MD', 'BUC1', 'BUC2'],
+      '3-3-3-1': ['G', 'DC1', 'DC2', 'DC3', 'MDC1', 'MDC2', 'MDC3', 'MOG', 'MOC', 'MOD', 'BUC'],
+      '3-2-4-1': ['G', 'DC1', 'DC2', 'DC3', 'MDC1', 'MDC2', 'MOG', 'MOC1', 'MOC2', 'MOD', 'BUC'],
+    };
+    return map[formation] ?? map['4-3-3']!; 
+  }
+
+  List<String> _getKeyStatsForRole(String roleName) {
+    switch (roleName) {
+      case 'Gardien':
+        return ['arrets', 'positionnement', 'duels'];
+      case 'Défenseur central':
+        return ['marquage', 'tacles', 'force'];
+      case 'Défenseur relanceur':
+        return ['marquage', 'passes', 'controle'];
+      case 'Latéral':
+        return ['vitesse', 'endurance', 'centres'];
+      case 'Milieu récupérateur':
+        return ['tacles', 'endurance', 'agressivite'];
+      case 'Meneur de jeu':
+        return ['passes', 'creativite', 'controle'];
+      case 'Milieu offensif':
+        return ['creativite', 'dribble', 'frappes_lointaines'];
+      case 'Ailier':
+        return ['vitesse', 'dribble', 'centres'];
+      case 'Buteur':
+        return ['finition', 'deplacement', 'sang_froid'];
+      default:
+        return ['vitesse', 'endurance', 'force'];
+    }
   }
 }
-
-extension _FirstOrNull<E> on Iterable<E> {
-  E? get firstOrNull => isEmpty ? null : first;
-}
-
-

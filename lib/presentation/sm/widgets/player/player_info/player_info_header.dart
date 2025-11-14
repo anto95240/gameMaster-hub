@@ -6,6 +6,7 @@ class PlayerInfoHeader extends StatelessWidget {
   final bool isEditing;
   final ValueChanged<bool> onEditingChanged;
   final TextEditingController? nameController;
+  final TextEditingController? ageController;
 
   const PlayerInfoHeader({
     super.key,
@@ -13,6 +14,7 @@ class PlayerInfoHeader extends StatelessWidget {
     required this.isEditing,
     required this.onEditingChanged,
     this.nameController,
+    this.ageController,
   });
 
   @override
@@ -21,6 +23,11 @@ class PlayerInfoHeader extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final headerColor =
         isDark ? const Color(0xFF2C2C3A) : const Color(0xFFE5E7EB);
+
+    final nameCtrl =
+        nameController ?? TextEditingController(text: joueur.nom);
+    final ageCtrl =
+        ageController ?? TextEditingController(text: joueur.age.toString());
 
     return Container(
       width: double.infinity,
@@ -33,32 +40,72 @@ class PlayerInfoHeader extends StatelessWidget {
         ),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             child: isEditing
                 ? TextField(
-                    controller: nameController ?? TextEditingController(text: joueur.nom),
+                    controller: nameCtrl,
                     decoration: const InputDecoration(
                       labelText: 'Nom du joueur',
                       border: OutlineInputBorder(),
+                      isDense: true,
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                     ),
                     style: Theme.of(context)
                         .textTheme
-                        .headlineSmall
+                        .titleLarge
                         ?.copyWith(fontWeight: FontWeight.bold),
                   )
                 : Text(
                     joueur.nom,
                     style: Theme.of(context)
                         .textTheme
-                        .headlineSmall
+                        .titleLarge
                         ?.copyWith(fontWeight: FontWeight.bold),
                   ),
           ),
+
           const SizedBox(width: 16),
+
+          SizedBox(
+            width: 80,
+            child: isEditing
+                ? TextField(
+                    controller: ageCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Âge',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    ),
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w600),
+                  )
+                : Text(
+                    "${joueur.age} ans",
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(
+                          color: isDark ? Colors.white70 : Colors.black87,
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+          ),
+
+          const SizedBox(width: 12),
+
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(Icons.close),
+            tooltip: 'Fermer',
           ),
         ],
       ),

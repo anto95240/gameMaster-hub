@@ -18,7 +18,8 @@ class InstructionDefenseSmRemoteDataSource {
   }
 
   Future<void> insertInstruction(InstructionDefenseSmModel instruction) async {
-    await supabase.from('instruction_defense_sm').insert(instruction.toMap()).execute();
+    final data = instruction.toMap()..remove('id');
+    await supabase.from('instruction_defense_sm').insert(data).execute();
   }
 
   Future<void> updateInstruction(InstructionDefenseSmModel instruction) async {

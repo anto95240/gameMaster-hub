@@ -1,4 +1,3 @@
-// SM Repositories Exports
 export 'instruction_attaque_sm_repository.dart';
 export 'instruction_defense_sm_repository.dart';
 export 'instruction_general_sm_repository.dart';
