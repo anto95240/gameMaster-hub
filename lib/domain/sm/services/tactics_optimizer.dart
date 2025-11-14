@@ -512,9 +512,15 @@ class TacticsOptimizer {
       for (final role in possibleRoles) {
         double currentScore = 0.0;
         final keyStats = _getKeyStatsForRole(role.role); 
-        for (final statName in keyStats) {
-          currentScore += player.getStat(statName);
+        
+        // MODIFICATION : Calcul de la moyenne au lieu de la somme
+        if (keyStats.isNotEmpty) {
+           for (final statName in keyStats) {
+            currentScore += player.getStat(statName);
+          }
+          currentScore = currentScore / keyStats.length; // Calcul de la moyenne
         }
+        // FIN MODIFICATION
 
         if (currentScore > bestScore) {
           bestScore = currentScore;
