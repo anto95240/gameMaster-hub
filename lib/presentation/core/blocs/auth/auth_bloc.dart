@@ -3,7 +3,6 @@ import 'package:equatable/equatable.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-// Events
 abstract class AuthEvent extends Equatable {
   const AuthEvent();
 
@@ -26,7 +25,7 @@ class AuthSignUpRequested extends AuthEvent {
 }
 class AuthSignOutRequested extends AuthEvent {}
 
-// States
+
 abstract class AuthState extends Equatable {
   const AuthState();
   @override List<Object> get props => [];
@@ -46,7 +45,7 @@ class AuthError extends AuthState {
   @override List<Object> get props => [message];
 }
 
-// Bloc
+
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final SupabaseClient _supabase = Supabase.instance.client;
 

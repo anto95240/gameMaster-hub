@@ -17,7 +17,8 @@ class TactiqueJoueurSmRemoteDataSource {
   }
 
   Future<void> insert(TactiqueJoueurSmModel tj) async {
-    await supabase.from('tactique_joueur_sm').insert(tj.toMap()).execute();
+    final data = tj.toMap()..remove('id');
+    await supabase.from('tactique_joueur_sm').insert(data).execute();
   }
 
   Future<void> update(TactiqueJoueurSmModel tj) async {
@@ -26,5 +27,9 @@ class TactiqueJoueurSmRemoteDataSource {
 
   Future<void> delete(int id) async {
     await supabase.from('tactique_joueur_sm').delete().eq('id', id).execute();
+  }
+  
+  Future<void> deleteBySaveId(int saveId) async {
+    await supabase.from('tactique_joueur_sm').delete().eq('save_id', saveId).execute();
   }
 }

@@ -28,7 +28,7 @@ class JoueursSmBloc extends Bloc<JoueursSmEvent, JoueursSmState> {
       final List<JoueurSmWithStats> joueursWithStats = [];
 
       for (final joueur in joueurs) {
-        final bool isGK = joueur.postes.any((p) => p.name == 'GK');
+        final bool isGK = joueur.postes.any((p) => p.name == 'G');
 
         final dynamic stats = isGK
             ? await gardienRepository.getStatsByJoueurId(joueur.id, event.saveId)
@@ -48,7 +48,7 @@ class JoueursSmBloc extends Bloc<JoueursSmEvent, JoueursSmState> {
     try {
       await joueurRepository.insertJoueur(event.joueur);
 
-      final isGK = event.joueur.postes.any((p) => p.name == 'GK');
+      final isGK = event.joueur.postes.any((p) => p.name == 'G');
 
       if (isGK) {
         final newStats = StatsGardienSm(
@@ -101,7 +101,7 @@ class JoueursSmBloc extends Bloc<JoueursSmEvent, JoueursSmState> {
       UpdateJoueurSmEvent event, Emitter<JoueursSmState> emit) async {
     try {
       await joueurRepository.updateJoueur(event.joueur);
-      final bool isGK = event.joueur.postes.any((p) => p.name == 'GK');
+      final bool isGK = event.joueur.postes.any((p) => p.name == 'G');
 
       if (event.stats.isNotEmpty) {
         if (isGK) {

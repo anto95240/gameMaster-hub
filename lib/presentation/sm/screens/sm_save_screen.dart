@@ -39,26 +39,22 @@ class SmSaveScreen extends StatelessWidget {
               builder: (context, constraints) {
                 final screenWidth = constraints.maxWidth;
 
-                // 🧩 Responsive grid layout
                 int crossAxisCount;
                 double spacing;
                 double verticalSpacing;
                 double cardHeight;
 
                 if (screenWidth < 480) {
-                  // 📱 Mobile
                   crossAxisCount = 1;
                   spacing = 18.0;
                   verticalSpacing = 20.0;
                   cardHeight = 190;
                 } else if (screenWidth < 900) {
-                  // 💻 Tablette
                   crossAxisCount = 2;
                   spacing = 16.0;
                   verticalSpacing = 18.0;
                   cardHeight = 180;
                 } else {
-                  // 🖥️ Desktop
                   crossAxisCount = 3;
                   spacing = 12.0;
                   verticalSpacing = 14.0;

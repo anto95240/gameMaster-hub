@@ -9,7 +9,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool showLogo;
   final VoidCallback? onBackPressed;
   final VoidCallback? onSync;
-  final PreferredSizeWidget? bottom; // ✅ ajouté pour TabBar
+  final PreferredSizeWidget? bottom; 
 
   const CustomAppBar({
     super.key,
@@ -68,11 +68,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: isMobileOrTablet
           ? _buildMobileActions(context, isDark)
           : _buildDesktopActions(context, isDark),
-      bottom: bottom, // ✅ support du TabBar
+      bottom: bottom,
     );
   }
 
-  // 🔹 Actions mobile (menu burger)
   List<Widget> _buildMobileActions(BuildContext context, bool isDark) {
     return [
       PopupMenuButton<String>(
@@ -128,7 +127,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     ];
   }
 
-  // 🔹 Actions desktop
   List<Widget> _buildDesktopActions(BuildContext context, bool isDark) {
     return [
       IconButton(

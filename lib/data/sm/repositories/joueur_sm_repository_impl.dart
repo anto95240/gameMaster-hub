@@ -22,7 +22,7 @@ class JoueurSmRepositoryImpl implements JoueurSmRepository {
         saveId: saveId,
         nom: 'Inconnu',
         age: 0,
-        postes: [PosteEnum.GK],
+        postes: [PosteEnum.G],
         niveauActuel: 0,
         potentiel: 0,
         montantTransfert: 0,

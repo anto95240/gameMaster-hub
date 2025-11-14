@@ -15,5 +15,3 @@ class TactiqueUserSm {
     required this.saveId,
   });
 }
-
-

@@ -16,54 +16,101 @@ class JoueurSmModel extends JoueurSm {
     required super.userId,
   });
 
-  JoueurSm toEntity() => this;
-
-  factory JoueurSmModel.fromEntity(JoueurSm joueur) => JoueurSmModel(
-        id: joueur.id,
-        saveId: joueur.saveId,
-        nom: joueur.nom,
-        age: joueur.age,
-        postes: joueur.postes,
-        niveauActuel: joueur.niveauActuel,
-        potentiel: joueur.potentiel,
-        montantTransfert: joueur.montantTransfert,
-        status: joueur.status,
-        dureeContrat: joueur.dureeContrat,
-        salaire: joueur.salaire,
-        userId: joueur.userId,
-      );
-
   factory JoueurSmModel.fromMap(Map<String, dynamic> map) {
+    final postesList = map['postes'] as List<dynamic>?;
+    final List<PosteEnum> postes;
+    if (postesList == null || postesList.isEmpty) {
+      postes = [PosteEnum.G]; 
+    } else {
+      postes = postesList
+          .map((e) {
+            try {
+              return PosteEnum.values.firstWhere((p) => p.name == e);
+            } catch (err) {
+              return PosteEnum.G; 
+            }
+          })
+          .toList();
+    }
+
+    final statusString = map['status'] as String?;
+    
+    StatusEnum status; 
+    
+    if (statusString == null) {
+      status = StatusEnum.Remplacant;
+    } else {
+      try {
+        status = StatusEnum.values.firstWhere((e) => e.name == statusString);
+      } catch (e) {
+        status = StatusEnum.Remplacant; 
+      }
+    }
+
     return JoueurSmModel(
-      id: map['id'],
-      saveId: map['save_id'],
-      nom: map['nom'],
-      age: map['age'],
-      postes: (map['postes'] as List<dynamic>)
-          .map((p) => PosteEnum.values.firstWhere((e) => e.name == p))
-          .toList(),
-      niveauActuel: map['niveau_actuel'],
-      potentiel: map['potentiel'],
-      montantTransfert: map['montant_transfert'],
-      status: StatusEnum.values.firstWhere((e) => e.name == map['status']),
-      dureeContrat: map['duree_contrat'],
-      salaire: map['salaire'],
-      userId: map['user_id'],
+      id: map['id'] ?? 0,
+      saveId: map['save_id'] ?? 0, 
+      nom: map['nom'] ?? 'Sans Nom',
+      age: map['age'] ?? 0,
+      postes: postes, 
+      niveauActuel: map['niveau_actuel'] ?? 0, 
+      potentiel: map['potentiel'] ?? 0,
+      montantTransfert: map['montant_transfert'] ?? 0,
+      status: status, 
+      dureeContrat: map['duree_contrat'] ?? 0,
+      salaire: map['salaire'] ?? 0,
+      userId: map['user_id'] ?? '',
     );
   }
 
-  Map<String, dynamic> toMap() => {
-    'id': id,
-    'save_id': saveId,
-    'nom': nom,
-    'age': age,
-    'postes': postes.map((p) => p.name).toList(),
-    'niveau_actuel': niveauActuel,
-    'potentiel': potentiel,
-    'montant_transfert': montantTransfert,
-    'status': status.name,
-    'duree_contrat': dureeContrat,
-    'salaire': salaire,
-    'user_id': userId,
-  };
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'save_id': saveId,
+      'nom': nom,
+      'age': age,
+      'postes': postes.map((e) => e.name).toList(),
+      'niveau_actuel': niveauActuel,
+      'potentiel': potentiel,
+      'montant_transfert': montantTransfert,
+      'status': status.name,
+      'duree_contrat': dureeContrat,
+      'salaire': salaire,
+      'user_id': userId,
+    };
+  }
+
+  JoueurSm toEntity() {
+    return JoueurSm(
+      id: id,
+      saveId: saveId,
+      nom: nom,
+      age: age,
+      postes: postes,
+      niveauActuel: niveauActuel,
+      potentiel: potentiel,
+      montantTransfert: montantTransfert,
+      status: status,
+      dureeContrat: dureeContrat,
+      salaire: salaire,
+      userId: userId,
+    );
+  }
+
+  factory JoueurSmModel.fromEntity(JoueurSm entity) {
+    return JoueurSmModel(
+      id: entity.id,
+      saveId: entity.saveId,
+      nom: entity.nom,
+      age: entity.age,
+      postes: entity.postes,
+      niveauActuel: entity.niveauActuel,
+      potentiel: entity.potentiel,
+      montantTransfert: entity.montantTransfert,
+      status: entity.status,
+      dureeContrat: entity.dureeContrat,
+      salaire: entity.salaire,
+      userId: entity.userId,
+    );
+  }
 }

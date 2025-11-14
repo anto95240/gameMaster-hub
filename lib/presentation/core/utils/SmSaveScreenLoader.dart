@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gamemaster_hub/domain/domain_export.dart';
 import 'package:gamemaster_hub/presentation/presentation_export.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_bloc.dart';
-import 'package:gamemaster_hub/presentation/sm/blocs/save/saves_event.dart';
-import 'package:gamemaster_hub/presentation/sm/screens/sm_save_screen.dart';
 
 class SmSaveScreenLoader extends StatelessWidget {
   final int gameId;

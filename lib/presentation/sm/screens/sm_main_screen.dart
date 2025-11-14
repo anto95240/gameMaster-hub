@@ -39,6 +39,7 @@ class _SMMainScreenState extends State<SMMainScreen>
         setState(() => _currentTabIndex = _tabController.index);
       }
     });
+    
     _initializeData();
   }
 
@@ -63,6 +64,8 @@ class _SMMainScreenState extends State<SMMainScreen>
         });
         return;
       }
+
+      if (!mounted) return;
 
       final gameBloc = context.read<GameBloc>();
       final games = gameBloc.state is GamesLoaded
@@ -94,19 +97,20 @@ class _SMMainScreenState extends State<SMMainScreen>
   }
 
   void _handleTabSelection(int index) {
-    final notEnoughForTactics = _currentPlayerCount < 11;
-    final notEnoughForStats = _currentPlayerCount < 15;
+    final tacticsState = context.read<TacticsSmBloc>().state;
+    final notEnoughForTactics = _currentPlayerCount < 22; 
+    final tacticsNotDone = tacticsState.status != TacticsStatus.loaded ||
+        tacticsState.assignedPlayersByPoste.isEmpty; 
 
     if ((index == 1 && notEnoughForTactics) ||
-        (index == 2 && notEnoughForStats)) {
-      // Bloque le changement d’onglet
+        (index == 2 && tacticsNotDone)) {
       Future.microtask(() => _tabController.animateTo(0));
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             index == 1
-                ? "Vous devez avoir au moins 11 joueurs pour accéder à la tactique."
-                : "Vous devez avoir au moins 15 joueurs pour accéder aux statistiques.",
+                ? "Vous devez avoir au moins 22 joueurs pour accéder à la tactique." 
+                : "Vous devez d'abord optimiser une tactique pour accéder à l'analyse.",
           ),
           duration: const Duration(seconds: 2),
         ),
@@ -117,6 +121,8 @@ class _SMMainScreenState extends State<SMMainScreen>
   @override
   Widget build(BuildContext context) {
     final joueursState = context.watch<JoueursSmBloc>().state;
+    final tacticsState = context.watch<TacticsSmBloc>().state; 
+
     if (joueursState is JoueursSmLoaded) {
       _currentPlayerCount = joueursState.joueurs.length;
     }
@@ -146,20 +152,29 @@ class _SMMainScreenState extends State<SMMainScreen>
             ],
           ),
         ),
+        floatingActionButton: _buildFab(context),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       );
     }
 
-    final disableTactics = _currentPlayerCount < 11;
-    final disableStats = _currentPlayerCount < 15;
+    final disableTactics = _currentPlayerCount < 22;
+    final disableStats = tacticsState.status != TacticsStatus.loaded ||
+        tacticsState.assignedPlayersByPoste.isEmpty;
 
     return Scaffold(
       appBar: CustomAppBar(
         title: '${currentGame!.name} - ${currentSave!.name}',
         onBackPressed: () =>
             context.go('/saves/${currentGame!.gameId}', extra: currentGame),
-        onSync: () async {
-          setState(() => isLoading = true);
-          await _initializeData();
+        onSync: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Synchronisation des données...'),
+                duration: Duration(seconds: 1)),
+          );
+          _initializeData();
+          context.read<JoueursSmBloc>().add(LoadJoueursSmEvent(widget.saveId));
+          context.read<TacticsSmBloc>().add(LoadTactics(widget.saveId));
         },
         bottom: TabBar(
           controller: _tabController,
@@ -176,11 +191,10 @@ class _SMMainScreenState extends State<SMMainScreen>
             ),
             Tab(
               icon: Icon(Icons.bar_chart,
-                  color: disableStats ? Colors.white38 : null),
+                  color: disableStats ? Colors.white38 : null), 
               text: 'Analyse',
             ),
           ],
-          labelColor: Colors.white,
           indicatorColor: Colors.amberAccent,
         ),
       ),
@@ -189,30 +203,53 @@ class _SMMainScreenState extends State<SMMainScreen>
         children: [
           SMPlayersTab(
             saveId: widget.saveId,
-            game: currentGame!,
             currentTabIndex: _currentTabIndex,
           ),
           disableTactics
-              ? _lockedTabMessage("Tactique", 11)
+              ? _lockedTabMessage("Tactique", 22)  
               : SMTacticsTab(
                   saveId: widget.saveId,
                   game: currentGame!,
                   currentTabIndex: _currentTabIndex,
                 ),
           disableStats
-              ? _lockedTabMessage("Statistiques", 15)
+              ? _lockedTabMessage("Analyse", 0,
+                  "Vous devez d'abord optimiser une tactique.")
               : SMAnalyseTab(
                   saveId: widget.saveId,
-                  game: currentGame!,
                   currentTabIndex: _currentTabIndex,
                 ),
         ],
       ),
+      floatingActionButton: _buildFab(context),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
-  /// Message affiché si la section est verrouillée (pas assez de joueurs)
-  Widget _lockedTabMessage(String tabName, int requiredCount) {
+  Widget? _buildFab(BuildContext context) {
+    if (_currentTabIndex == 0) {
+      return FloatingActionButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (BuildContext dialogContext) {
+              return BlocProvider.value(
+                value: context.read<JoueursSmBloc>(),
+                child: AddPlayerDialog(saveId: widget.saveId),
+              );
+            },
+          );
+        },
+        child: const Icon(Icons.add, color: Colors.white),
+      );
+    }
+    return null;
+  }
+
+  Widget _lockedTabMessage(String tabName, int requiredCount,
+      [String? customMessage]) {
+    final message = customMessage ??
+        "Ajoutez au moins $requiredCount joueurs pour accéder à cette section.";
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -224,10 +261,13 @@ class _SMMainScreenState extends State<SMMainScreen>
             style: const TextStyle(fontSize: 20, color: Colors.white70),
           ),
           const SizedBox(height: 8),
-          Text(
-            "Ajoutez au moins $requiredCount joueurs pour accéder à cette section.",
-            style: const TextStyle(fontSize: 14, color: Colors.white54),
-            textAlign: TextAlign.center,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Text(
+              message,
+              style: const TextStyle(fontSize: 14, color: Colors.white54),
+              textAlign: TextAlign.center,
+            ),
           ),
         ],
       ),

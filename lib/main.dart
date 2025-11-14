@@ -66,11 +66,9 @@ Future<void> main() async {
   final statsRepository =
       StatsJoueurSmRepositoryImpl(StatsJoueurSmRemoteDataSource(supabaseClient));
 
-  // Repository gardien
   final statsGardienRepository = StatsGardienSmRepositoryImpl(
       StatsGardienSmRemoteDataSource(supabaseClient));
 
-  // SM Tactics related repositories
   final roleRepository =
       RoleModeleSmRepositoryImpl(RoleModeleSmRemoteDataSource(supabaseClient));
   final tactiqueModeleRepository = TactiqueModeleSmRepositoryImpl(
@@ -121,7 +119,21 @@ Future<void> main() async {
             ),
           ),
           BlocProvider(create: (_) => GameBloc(gameRepository)..add(LoadGames())),
-        ],
+          BlocProvider(
+            create: (_) => TacticsSmBloc(
+              joueurRepo: joueurRepository,
+              statsRepo: statsRepository,
+              gardienRepo: statsGardienRepository,
+              roleRepo: roleRepository,
+              tactiqueModeleRepo: tactiqueModeleRepository,
+              instructionGeneralRepo: instrGeneralRepository,
+              instructionAttaqueRepo: instrAttaqueRepository,
+              instructionDefenseRepo: instrDefenseRepository,
+              tactiqueUserRepo: tactiqueUserRepository,
+              tactiqueJoueurRepo: tactiqueJoueurRepository,
+            ),
+          ),
+        ],        
         child: const GameMasterHubApp(),
       ),
     ),

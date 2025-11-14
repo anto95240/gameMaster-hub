@@ -3,8 +3,9 @@ import 'package:gamemaster_hub/presentation/core/utils/responsive_layout.dart';
 
 class FootballFieldPainter extends CustomPainter {
   final ScreenType screenType;
+  final ThemeData theme;
 
-  FootballFieldPainter(this.screenType);
+  FootballFieldPainter(this.screenType, {required this.theme});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -15,86 +16,24 @@ class FootballFieldPainter extends CustomPainter {
       ScreenType.laptopL => 1.8,
     };
 
-    final paint = Paint()
-      ..color = Colors.white.withOpacity(0.9)
+    final fieldColor = theme.cardColor;
+    final stripeColor = theme.dividerColor;
+    final lineColor = theme.colorScheme.onSurface.withOpacity(0.3); 
+
+    final paintLine = Paint()
+      ..color = lineColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth;
 
-    // Rectangle extérieur du terrain
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
-
-    // Ligne médiane
-    canvas.drawLine(
-      Offset(0, size.height / 2),
-      Offset(size.width, size.height / 2),
-      paint,
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Paint()..color = fieldColor,
     );
 
-    // Cercle central (ajusté selon largeur)
-    canvas.drawCircle(
-      Offset(size.width / 2, size.height / 2),
-      size.width * 0.12,
-      paint,
-    );
-
-    // Point central
-    final pointPaint = Paint()
-      ..color = Colors.white.withOpacity(0.9)
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(Offset(size.width / 2, size.height / 2), 2.5, pointPaint);
-
-    // 🥅 Surface de réparation BAS
-    _drawBox(
-      canvas,
-      paint,
-      x: size.width * 0.22,
-      y: size.height * 0.82,
-      w: size.width * 0.56,
-      h: size.height * 0.18,
-    );
-
-    // Petite surface BAS
-    _drawBox(
-      canvas,
-      paint,
-      x: size.width * 0.36,
-      y: size.height * 0.935,
-      w: size.width * 0.28,
-      h: size.height * 0.065,
-    );
-
-    // 🥅 Surface de réparation HAUT
-    _drawBox(
-      canvas,
-      paint,
-      x: size.width * 0.22,
-      y: 0,
-      w: size.width * 0.56,
-      h: size.height * 0.18,
-    );
-
-    // Petite surface HAUT
-    _drawBox(
-      canvas,
-      paint,
-      x: size.width * 0.36,
-      y: 0,
-      w: size.width * 0.28,
-      h: size.height * 0.065,
-    );
-
-    // Bandes de pelouse horizontales (adaptées à la hauteur)
     final stripePaint = Paint()
-      ..color = Colors.white.withOpacity(0.03)
+      ..color = stripeColor
       ..style = PaintingStyle.fill;
-
-    final stripeCount = switch (screenType) {
-      ScreenType.mobile => 10,
-      ScreenType.tablet => 12,
-      ScreenType.laptop => 14,
-      ScreenType.laptopL => 16,
-    };
-
+    const stripeCount = 10; 
     for (int i = 0; i < stripeCount; i++) {
       if (i % 2 == 0) {
         canvas.drawRect(
@@ -108,13 +47,46 @@ class FootballFieldPainter extends CustomPainter {
         );
       }
     }
+
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paintLine);
+    canvas.drawLine(
+      Offset(size.width / 2, 0),
+      Offset(size.width / 2, size.height),
+      paintLine,
+    );
+    canvas.drawCircle(
+      Offset(size.width / 2, size.height / 2),
+      size.height * 0.2, 
+      paintLine,
+    );
+    canvas.drawCircle(
+      Offset(size.width / 2, size.height / 2),
+      2.5,
+      Paint()
+        ..color = lineColor
+        ..style = PaintingStyle.fill,
+    );
+    _drawGoalBox(canvas, paintLine, 0, size);
+    _drawGoalBox(canvas, paintLine, size.width, size);
   }
 
-  void _drawBox(Canvas canvas, Paint paint,
-      {required double x, required double y, required double w, required double h}) {
-    canvas.drawRect(Rect.fromLTWH(x, y, w, h), paint);
+  void _drawGoalBox(Canvas canvas, Paint paint, double x, Size size) {
+    final double boxWidth = size.width * 0.17; 
+    final double boxHeight = size.height * 0.7;
+
+    if (x == 0) {
+      canvas.drawRect(
+          Rect.fromLTWH(0, (size.height - boxHeight) / 2, boxWidth, boxHeight),
+          paint);
+    } else {
+      canvas.drawRect(
+          Rect.fromLTWH(size.width - boxWidth, (size.height - boxHeight) / 2,
+              boxWidth, boxHeight),
+          paint);
+    }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant FootballFieldPainter oldDelegate) =>
+      oldDelegate.theme != theme || oldDelegate.screenType != screenType;
 }

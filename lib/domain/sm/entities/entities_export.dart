@@ -1,4 +1,3 @@
-// SM Entities Exports
 export 'instruction_attaque_sm.dart';
 export 'instruction_defense_sm.dart';
 export 'instruction_general_sm.dart';
