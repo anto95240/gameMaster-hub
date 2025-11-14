@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamemaster_hub/data/data_export.dart'; 
 import 'package:gamemaster_hub/presentation/presentation_export.dart';
 import 'package:gamemaster_hub/presentation/sm/widgets/sm_analyse_tab/sm_analyse_layout.dart';
 
@@ -38,43 +37,28 @@ class SMAnalyseTab extends StatelessWidget {
       return const Center(child: Text("Chargement des données..."));
     }
 
-    return FutureBuilder<AnalyseResult>(
-      future: SMAnalyseLogic.analyser(
-        saveId: saveId,
+    try {
+      final result = SMAnalyseLogic.analyser(
         joueursState: joueursState,
         tacticsState: tacticsState,
-        joueurRepo: context.read<StatsJoueurSmRepositoryImpl>(),
-        gardienRepo: context.read<StatsGardienSmRepositoryImpl>(),
-      ),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
+      );
 
-        if (snapshot.hasError) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                "Erreur lors de l'analyse: ${snapshot.error}",
-                style: const TextStyle(color: Colors.red),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          );
-        }
-
-        if (snapshot.hasData) {
-          final result = snapshot.data!;
-          return AnalyseLayout(
-            forces: result.forces,
-            faiblesses: result.faiblesses,
-            manques: result.manques,
-          );
-        }
-
-        return const Center(child: Text("Aucune donnée d'analyse."));
-      },
-    );
+      return AnalyseLayout(
+        forces: result.forces,
+        faiblesses: result.faiblesses,
+        manques: result.manques,
+      );
+    } catch (e) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            "Erreur lors de l'analyse: $e",
+            style: const TextStyle(color: Colors.red),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
   }
 }

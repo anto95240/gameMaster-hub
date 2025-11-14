@@ -120,4 +120,37 @@ class StatsJoueurSm {
       leadership: leadership ?? this.leadership,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'joueur_id': joueurId,
+      'save_id': saveId,
+      'marquage': marquage,
+      'deplacement': deplacement,
+      'frappes_lointaines': frappesLointaines,
+      'passes_longues': passesLongues,
+      'coups_francs': coupsFrancs,
+      'tacles': tacles,
+      'finition': finition,
+      'centres': centres,
+      'passes': passes,
+      'corners': corners,
+      'positionnement': positionnement,
+      'dribble': dribble,
+      'controle': controle,
+      'penalties': penalties,
+      'creativite': creativite,
+      'stabilite_aerienne': stabiliteAerienne,
+      'vitesse': vitesse,
+      'endurance': endurance,
+      'force': force,
+      'distance_parcourue': distanceParcourue,
+      'agressivite': agressivite,
+      'sang_froid': sangFroid,
+      'concentration': concentration,
+      'flair': flair,
+      'leadership': leadership,
+    };
+  }
 }
