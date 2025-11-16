@@ -22,7 +22,7 @@ class StatsGardienSm extends Equatable {
   const StatsGardienSm({
     required this.id,
     required this.joueurId,
-    required this.saveId, // ✅ ajouté
+    required this.saveId, 
     this.autoriteSurface = 0,
     this.distribution = 0,
     this.captation = 0,

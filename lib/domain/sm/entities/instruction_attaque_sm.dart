@@ -2,6 +2,7 @@ class InstructionAttaqueSm {
   final int id;
   final int tactiqueId;
   final int saveId;
+  final String? userId;
   final String? stylePasse;
   final String? styleAttaque;
   final String? attaquants;
@@ -13,6 +14,7 @@ class InstructionAttaqueSm {
     required this.id,
     required this.tactiqueId,
     required this.saveId,
+    this.userId,
     this.stylePasse,
     this.styleAttaque,
     this.attaquants,

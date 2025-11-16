@@ -66,9 +66,23 @@ Future<void> main() async {
   final statsRepository =
       StatsJoueurSmRepositoryImpl(StatsJoueurSmRemoteDataSource(supabaseClient));
 
-  // Repository gardien
   final statsGardienRepository = StatsGardienSmRepositoryImpl(
       StatsGardienSmRemoteDataSource(supabaseClient));
+
+  final roleRepository =
+      RoleModeleSmRepositoryImpl(RoleModeleSmRemoteDataSource(supabaseClient));
+  final tactiqueModeleRepository = TactiqueModeleSmRepositoryImpl(
+      TactiqueModeleSmRemoteDataSource(supabaseClient));
+  final tactiqueJoueurRepository = TactiqueJoueurSmRepositoryImpl(
+      TactiqueJoueurSmRemoteDataSource(supabaseClient));
+  final tactiqueUserRepository = TactiqueUserSmRepositoryImpl(
+      TactiqueUserSmRemoteDataSource(supabaseClient));
+  final instrGeneralRepository = InstructionGeneralSmRepositoryImpl(
+      InstructionGeneralSmRemoteDataSource(supabaseClient));
+  final instrAttaqueRepository = InstructionAttaqueSmRepositoryImpl(
+      InstructionAttaqueSmRemoteDataSource(supabaseClient));
+  final instrDefenseRepository = InstructionDefenseSmRepositoryImpl(
+      InstructionDefenseSmRemoteDataSource(supabaseClient));
 
   // Lancement de l’app
   runApp(
@@ -79,6 +93,19 @@ Future<void> main() async {
         RepositoryProvider<JoueurSmRepositoryImpl>.value(value: joueurRepository),
         RepositoryProvider<StatsJoueurSmRepositoryImpl>.value(value: statsRepository),
         RepositoryProvider<StatsGardienSmRepositoryImpl>.value(value: statsGardienRepository),
+        RepositoryProvider<RoleModeleSmRepositoryImpl>.value(value: roleRepository),
+        RepositoryProvider<TactiqueModeleSmRepositoryImpl>.value(
+            value: tactiqueModeleRepository),
+        RepositoryProvider<TactiqueJoueurSmRepositoryImpl>.value(
+            value: tactiqueJoueurRepository),
+        RepositoryProvider<TactiqueUserSmRepositoryImpl>.value(
+            value: tactiqueUserRepository),
+        RepositoryProvider<InstructionGeneralSmRepositoryImpl>.value(
+            value: instrGeneralRepository),
+        RepositoryProvider<InstructionAttaqueSmRepositoryImpl>.value(
+            value: instrAttaqueRepository),
+        RepositoryProvider<InstructionDefenseSmRepositoryImpl>.value(
+            value: instrDefenseRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -92,7 +119,21 @@ Future<void> main() async {
             ),
           ),
           BlocProvider(create: (_) => GameBloc(gameRepository)..add(LoadGames())),
-        ],
+          BlocProvider(
+            create: (_) => TacticsSmBloc(
+              joueurRepo: joueurRepository,
+              statsRepo: statsRepository,
+              gardienRepo: statsGardienRepository,
+              roleRepo: roleRepository,
+              tactiqueModeleRepo: tactiqueModeleRepository,
+              instructionGeneralRepo: instrGeneralRepository,
+              instructionAttaqueRepo: instrAttaqueRepository,
+              instructionDefenseRepo: instrDefenseRepository,
+              tactiqueUserRepo: tactiqueUserRepository,
+              tactiqueJoueurRepo: tactiqueJoueurRepository,
+            ),
+          ),
+        ],        
         child: const GameMasterHubApp(),
       ),
     ),

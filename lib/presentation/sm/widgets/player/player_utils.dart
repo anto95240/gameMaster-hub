@@ -3,14 +3,16 @@ import 'package:flutter/material.dart';
 Color getPositionColor(String position) {
   switch (position) {
     case 'ATT':
-    case 'BU':
+    case 'BUG':
+    case 'BUD':
+    case 'BUC':
     case 'MOD':
     case 'MOG':
+    case 'MOC':
       return Colors.red;
     case 'MIL':
     case 'MC':
     case 'MDC':
-    case 'MOC':
     case 'MD':
     case 'MG':
       return Colors.green;

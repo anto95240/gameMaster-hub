@@ -4,6 +4,7 @@ class TactiqueJoueurSm {
   final int joueurId;
   final int saveId;
   final int? roleId;
+  final String? userId;
 
   TactiqueJoueurSm({
     required this.id,
@@ -11,6 +12,6 @@ class TactiqueJoueurSm {
     required this.joueurId,
     required this.saveId,
     this.roleId,
-
+    this.userId,
   });
 }

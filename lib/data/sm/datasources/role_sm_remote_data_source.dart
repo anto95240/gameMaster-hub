@@ -6,11 +6,10 @@ class RoleModeleSmRemoteDataSource {
 
   RoleModeleSmRemoteDataSource(this.supabase);
 
-  Future<List<RoleModeleSmModel>> fetchRoles(int saveId) async {
+  Future<List<RoleModeleSmModel>> fetchRoles() async {
     final response = await supabase
         .from('role_modele_sm')
         .select()
-        .eq('save_id', saveId)
         .execute();
     final data = response.data as List<dynamic>;
     return data.map((e) => RoleModeleSmModel.fromMap(e)).toList();

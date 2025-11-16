@@ -1,5 +1,5 @@
 enum PosteEnum {
-  GK,
+  G,
   DC,
   DG,
   DD,
@@ -12,7 +12,9 @@ enum PosteEnum {
   MOC,
   MOD,
   MOG,
-  BU,
+  BUC,
+  BUD,
+  BUG
 }
 
 enum StatusEnum {

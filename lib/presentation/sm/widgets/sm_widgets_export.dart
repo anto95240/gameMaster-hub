@@ -1,4 +1,3 @@
-// SM Widgets Exports
 export 'add_player_dialog/add_player_dialog.dart';
 export 'add_player_dialog/player_form_fields.dart';
 export 'add_player_dialog/player_submit_handler.dart';
@@ -27,3 +26,8 @@ export 'tactics/football_field.dart';
 export 'tactics/player_info_modal.dart';
 export 'tactics/tactics_cards_row.dart';
 export 'tactics/tactics_header.dart';
+export 'tactics/field_player_card.dart';
+export 'tactics/field_position_mapper.dart';
+export 'sm_analyse_tab/sm_analyse_logic.dart';
+export 'sm_analyse_tab/sm_analyse_layout.dart';
+export 'sm_analyse_tab/sm_analyse_card.dart';
