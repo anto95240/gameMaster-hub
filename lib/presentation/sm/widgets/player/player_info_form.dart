@@ -28,7 +28,8 @@ class PlayerInfoFormState extends State<PlayerInfoForm> {
   late TextEditingController _valueController;
   late TextEditingController _dureeContratController;
   late TextEditingController _salaireController;
-  late String _selectedStatus;
+  
+  late StatusEnum _selectedStatus;
   
   Map<String, int> _ratingsData = {};
   int _valueData = 0;
@@ -51,7 +52,8 @@ class PlayerInfoFormState extends State<PlayerInfoForm> {
     _valueController = TextEditingController(text: joueur.montantTransfert.toString());
     _dureeContratController = TextEditingController(text: joueur.dureeContrat.toString());
     _salaireController = TextEditingController(text: joueur.salaire.toString());
-    _selectedStatus = joueur.status.name;
+    
+    _selectedStatus = joueur.status;
     
     _ratingsData = {
       'niveau_actuel': joueur.niveauActuel,
@@ -84,14 +86,21 @@ class PlayerInfoFormState extends State<PlayerInfoForm> {
       'montant_transfert': _valueData,
       'duree_contrat': _durationData,
       'salaire': _salaryData,
-      'status': _selectedStatus,
+      'status': _selectedStatus.name,
       'postes': _postesData.map((p) => p.name).toList(),
     };
   }
   
   void _onRatingsChanged(Map<String, int> ratings) {
     setState(() {
-      _ratingsData = ratings;
+      _ratingsData = {
+        'niveau_actuel': ratings['niveau_actuel'] ?? _ratingsData['niveau_actuel']!,
+        'potentiel': ratings['potentiel'] ?? _ratingsData['potentiel']!,
+      };
+      
+      if (ratings.containsKey('status')) {
+        _selectedStatus = StatusEnum.values[ratings['status']!];
+      }
     });
   }
   

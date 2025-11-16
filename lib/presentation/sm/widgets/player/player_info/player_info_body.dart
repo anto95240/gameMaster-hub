@@ -6,6 +6,7 @@ class PlayerInfoBody extends StatelessWidget {
   final JoueurSmWithStats item;
   final bool isEditing;
   final ValueChanged<bool> onEditingChanged;
+  
   final Function(Map<String, int>)? onRatingsChanged;
   final Function(int, int)? onValueSalaryChanged;
   final Function(List<PosteEnum>)? onPostesChanged;
@@ -43,18 +44,22 @@ class PlayerInfoBody extends StatelessWidget {
                   onPostesChanged: onPostesChanged,
                 ),
                 const SizedBox(height: 12),
+                
                 PlayerContractSection(
                   joueur: joueur, 
                   isEditing: isEditing,
                   onDurationChanged: onDurationChanged,
                 ),
                 const SizedBox(height: 12),
+                
                 PlayerRatingsSection(
                   joueur: joueur,
                   isEditing: isEditing,
-                  onRatingsChanged: onRatingsChanged ?? (map) {},
+                  onRatingsChanged: onRatingsChanged ?? (map) {}, 
+                  
                 ),
                 const SizedBox(height: 12),
+                
                 PlayerValueSalarySection(
                   joueur: joueur,
                   isEditing: isEditing,

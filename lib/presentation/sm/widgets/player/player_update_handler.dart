@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:gamemaster_hub/presentation/presentation_export.dart';
+import 'package:gamemaster_hub/presentation/sm/blocs/joueurs/joueurs_sm_bloc_export.dart';
 
 Future<void> handlePlayerUpdate(
   BuildContext context,
@@ -13,7 +14,7 @@ Future<void> handlePlayerUpdate(
 ) async {
   try {
     final playerId = item.joueur.id;
-    final isGK = item.joueur.postes.any((p) => p.name == 'GK');
+    final isGK = item.joueur.postes.any((p) => p.name == 'G');
 
     await Supabase.instance.client.from('joueur_sm').update({
       'nom': playerData['nom'],
@@ -77,7 +78,7 @@ Future<void> handlePlayerUpdate(
     if (context.mounted) {
       context.read<JoueursSmBloc>().add(LoadJoueursSmEvent(saveId));
       
-      onUpdateSuccess?.call();
+      onUpdateSuccess?.call(); 
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
