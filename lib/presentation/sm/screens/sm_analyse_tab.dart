@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamemaster_hub/data/data_export.dart'; 
+import 'package:gamemaster_hub/data/data_export.dart';
 import 'package:gamemaster_hub/presentation/presentation_export.dart';
-import 'package:gamemaster_hub/presentation/sm/widgets/sm_analyse_tab/sm_analyse_layout.dart';
 
 class SMAnalyseTab extends StatelessWidget {
   final int saveId;
@@ -45,6 +44,7 @@ class SMAnalyseTab extends StatelessWidget {
         tacticsState: tacticsState,
         joueurRepo: context.read<StatsJoueurSmRepositoryImpl>(),
         gardienRepo: context.read<StatsGardienSmRepositoryImpl>(),
+        roleRepo: context.read<RoleModeleSmRepositoryImpl>(), 
       ),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
