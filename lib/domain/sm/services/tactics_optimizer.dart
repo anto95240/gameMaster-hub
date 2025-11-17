@@ -1,4 +1,5 @@
-import 'dart:math'; // Ajout pour pow() (Moyenne géométrique)
+// lib/domain/sm/services/tactics_optimizer.dart
+import 'dart:math';
 import 'package:gamemaster_hub/data/data_export.dart';
 import 'package:gamemaster_hub/domain/domain_export.dart';
 
@@ -25,6 +26,12 @@ class OptimizedTacticsResult {
     required this.elevenByPoste,
   });
 }
+
+const List<String> _allBasePostes = [
+  'G', 'DC', 'DG', 'DD', 'DLG', 'DLD', 
+  'MDC', 'MC', 'MOC', 'MG', 'MD', 'MOG', 'MOD', 
+  'BUC', 'BUG', 'BUD'
+];
 
 class _JoueurStatsComplet {
   final JoueurSm joueur;
@@ -62,26 +69,24 @@ class _JoueurStatsComplet {
     }
   }
 
-  // ### AMÉLIORATION 1 : COMPATIBILITÉ DE POSTE PLUS STRICTE ###
   bool canPlayPoste(String basePoste) {
-    // La carte est beaucoup plus restrictive pour éviter les aberrations
     const Map<String, List<String>> compatibilityMap = {
       'G': ['G'],
-      'DC': ['DC', 'MDC'],
+      'DC': ['DC'],
       'DG': ['DG', 'DLG'],
       'DD': ['DD', 'DLD'],
-      'DLG': ['DLG', 'DG', 'MG'],
-      'DLD': ['DLD', 'DD', 'MD'],
-      'MDC': ['MDC', 'MC', 'DC'],
-      'MC': ['MC', 'MDC', 'MOC'], // Ne peut plus jouer sur les ailes par défaut
-      'MOC': ['MOC', 'MC', 'MOG', 'MOD', 'BUC'],
-      'MG': ['MG', 'MOG', 'DLG'],
-      'MD': ['MD', 'MOD', 'DLD'],
-      'MOG': ['MOG', 'MG', 'MOC', 'BUG'],
-      'MOD': ['MOD', 'MD', 'MOC', 'BUD'],
-      'BUC': ['BUC', 'MOC', 'MOG', 'MOD'],
-      'BUG': ['BUG', 'BUC', 'MOG'],
-      'BUD': ['BUD', 'BUC', 'MOD'],
+      'DLG': ['DLG', 'DG'],
+      'DLD': ['DLD', 'DD'],
+      'MDC': ['MDC'],
+      'MC': ['MC', 'MDC', 'MOC'],
+      'MOC': ['MOC', 'MC'],
+      'MG': ['MG'],
+      'MD': ['MD'],
+      'MOG': ['MOG', 'MG'],
+      'MOD': ['MOD', 'MD'],
+      'BUC': ['BUC', 'BUG', 'BUD'],
+      'BUG': ['BUG', 'BUC'],
+      'BUD': ['BUD', 'BUC'],
     };
 
     final List<String> compatibleEnumPostes =
@@ -216,11 +221,9 @@ class TacticsOptimizer {
         bestFormationResult['eleven'];
     final Map<String, _JoueurStatsComplet> elevenByPoste =
         bestFormationResult['elevenByPoste'];
-
-    final Map<int, int> joueurToRole = _assignBestRoles(
-      elevenByPoste,
-      allRolesPossibles,
-    );
+    
+    final Map<int, int> joueurToRole =
+        bestFormationResult['joueurIdToRoleId'];
 
     final styles = _generateBestStyles(startingEleven);
 
@@ -267,6 +270,7 @@ class TacticsOptimizer {
     TactiqueModeleSm bestModele = allFormations.first;
     List<_JoueurStatsComplet> bestEleven = [];
     Map<String, _JoueurStatsComplet> bestElevenByPoste = {};
+    Map<int, int> bestJoueurIdToRoleId = {};
 
     for (final modele in allFormations) {
       final postesKeys = _getPosteKeysForFormation(modele.formation);
@@ -276,6 +280,7 @@ class TacticsOptimizer {
       List<_JoueurStatsComplet> playerPool = List.from(allPlayers);
       List<_JoueurStatsComplet> currentEleven = [];
       Map<String, _JoueurStatsComplet> currentElevenByPoste = {};
+      Map<int, _PlayerScoreAndRole> bestRolesForStarters = {};
       double startersScore = 0.0;
       double depthScore = 0.0;
       bool formationFeasible = true;
@@ -283,15 +288,16 @@ class TacticsOptimizer {
       for (final posteKey in postesKeys) {
         final basePoste = posteKey.replaceAll(RegExp(r'[0-9]'), '');
 
-        _JoueurStatsComplet? bestPlayerForPoste =
+        final bestSelection =
             _findBestPlayerForPoste(playerPool, basePoste, allRoles);
 
-        if (bestPlayerForPoste != null) {
-          playerPool.remove(bestPlayerForPoste);
-          currentEleven.add(bestPlayerForPoste);
-          currentElevenByPoste[posteKey] = bestPlayerForPoste;
-          startersScore +=
-              _calculatePlayerScore(bestPlayerForPoste, basePoste, allRoles);
+        if (bestSelection != null) {
+          final bestPlayer = bestSelection.player;
+          playerPool.remove(bestPlayer);
+          currentEleven.add(bestPlayer);
+          currentElevenByPoste[posteKey] = bestPlayer;
+          startersScore += bestSelection.score;
+          bestRolesForStarters[bestPlayer.joueur.id] = bestSelection;
         } else {
           formationFeasible = false;
           break;
@@ -300,18 +306,20 @@ class TacticsOptimizer {
 
       if (!formationFeasible) continue;
 
+      final Map<int, int> currentJoueurIdToRoleId =
+          _assignOptimalRoles(currentElevenByPoste, allRoles);
+
       for (final posteKey in postesKeys) {
         final basePoste = posteKey.replaceAll(RegExp(r'[0-9]'), '');
 
-        _JoueurStatsComplet? bestBackup =
+        final bestBackupSelection =
             _findBestPlayerForPoste(playerPool, basePoste, allRoles);
 
-        if (bestBackup != null) {
-          playerPool.remove(bestBackup);
-          depthScore +=
-              _calculatePlayerScore(bestBackup, basePoste, allRoles);
+        if (bestBackupSelection != null) {
+          playerPool.remove(bestBackupSelection.player);
+          depthScore += bestBackupSelection.score;
         } else {
-          depthScore -= 150;
+          depthScore -= 500;
         }
       }
 
@@ -322,6 +330,7 @@ class TacticsOptimizer {
         bestModele = modele;
         bestEleven = currentEleven;
         bestElevenByPoste = currentElevenByPoste;
+        bestJoueurIdToRoleId = currentJoueurIdToRoleId;
       }
     }
 
@@ -335,10 +344,11 @@ class TacticsOptimizer {
       'modele': bestModele,
       'eleven': bestEleven,
       'elevenByPoste': bestElevenByPoste,
+      'joueurIdToRoleId': bestJoueurIdToRoleId,
     };
   }
 
-  _JoueurStatsComplet? _findBestPlayerForPoste(
+  _PlayerScoreAndRole? _findBestPlayerForPoste(
     List<_JoueurStatsComplet> pool,
     String basePoste,
     List<RoleModeleSm> allRoles,
@@ -347,88 +357,148 @@ class TacticsOptimizer {
 
     _JoueurStatsComplet? bestPlayer;
     double bestScore = -double.maxFinite;
+    RoleModeleSm? bestRole;
 
     for (final player in pool) {
-      double score =
+      final scoreAndRole =
           _calculatePlayerScore(player, basePoste, allRoles);
-      if (score > bestScore) {
-        bestScore = score;
+          
+      if (scoreAndRole.score > bestScore) {
+        bestScore = scoreAndRole.score;
         bestPlayer = player;
+        bestRole = scoreAndRole.role;
       }
     }
 
-    if (bestScore <= -1000) {
+    if (bestScore <= -1000 || bestPlayer == null) {
       return null;
     }
 
-    return bestPlayer;
+    return _PlayerScoreAndRole(player: bestPlayer!, score: bestScore, role: bestRole);
   }
 
-  // ### AMÉLIORATION 2 : HARMONIE DES RÔLES (MOYENNE GÉOMÉTRIQUE) ###
-
-  // Nouvelle fonction helper pour calculer le score de rôle (Moyenne Géométrique)
-  double _calculateRoleScore(_JoueurStatsComplet player, List<String> keyStats) {
-    if (keyStats.isEmpty) {
-      return player.averageRating;
+  double _getGeoMean(_JoueurStatsComplet player, List<String> statNames) {
+    if (statNames.isEmpty) {
+      return 50.0;
     }
-    
     double score = 1.0;
     int statsCount = 0;
-    
-    for (final statName in keyStats) {
+    for (final statName in statNames) {
       double statVal = player.getStat(statName).toDouble();
-      // On utilise 1.0 si la stat est 0 ou négative pour ne pas fausser la multiplication
-      score *= (statVal <= 0 ? 1.0 : statVal); 
+      score *= (statVal <= 0 ? 1.0 : statVal);
       statsCount++;
     }
-
-    if (statsCount == 0) return player.averageRating;
-
-    // pow(score, 1/N) -> Moyenne géométrique
+    if (statsCount == 0) return 50.0;
     return pow(score, 1.0 / statsCount).toDouble();
   }
+  
+  double _calculateRoleScore(_JoueurStatsComplet player, Map<String, List<String>> keyStats) {
+    final primaryStats = keyStats['primary'] ?? [];
+    final secondaryStats = keyStats['secondary'] ?? [];
+    final tertiaryStats = keyStats['tertiary'] ?? [];
 
+    if (primaryStats.isEmpty && secondaryStats.isEmpty && tertiaryStats.isEmpty) {
+      return player.averageRating;
+    }
 
-  double _calculatePlayerScore(
+    final primaryScore = _getGeoMean(player, primaryStats);
+    final secondaryScore = _getGeoMean(player, secondaryStats);
+    final tertiaryScore = _getGeoMean(player, tertiaryStats);
+
+    double totalScore = 0;
+    double totalWeight = 0;
+
+    if (primaryStats.isNotEmpty) {
+      totalScore += primaryScore * 0.60;
+      totalWeight += 0.60;
+    }
+    if (secondaryStats.isNotEmpty) {
+      totalScore += secondaryScore * 0.30;
+      totalWeight += 0.30;
+    }
+    if (tertiaryStats.isNotEmpty) {
+      totalScore += tertiaryScore * 0.10;
+      totalWeight += 0.10;
+    }
+
+    if (totalWeight == 0) return player.averageRating;
+    return totalScore / totalWeight;
+  }
+
+  _PlayerScoreAndRole _calculateBestRoleScoreForPoste(
+    _JoueurStatsComplet player,
+    String basePoste,
+    List<RoleModeleSm> allRoles,
+  ) {
+    if (basePoste == 'G' && !player.isGk) return _PlayerScoreAndRole(player: player, score: 0.0, role: null);
+    if (player.isGk && basePoste != 'G') return _PlayerScoreAndRole(player: player, score: 0.0, role: null);
+
+    final possibleRoles = allRoles.where((r) => r.poste == basePoste).toList();
+    
+    if (possibleRoles.isEmpty) {
+      final keyStatsList = _getKeyStatsForPoste(basePoste);
+      final List<String> allStats = [
+        ...keyStatsList['primary'] ?? [], 
+        ...keyStatsList['secondary'] ?? [],
+        ...keyStatsList['tertiary'] ?? []
+      ];
+      return _PlayerScoreAndRole(player: player, score: _getGeoMean(player, allStats), role: null);
+    }
+
+    double bestRoleScore = -1.0;
+    RoleModeleSm? bestRole;
+
+    for (final role in possibleRoles) {
+      final keyStats = _getKeyStatsForRole(role.role);
+      double currentRoleScore = _calculateRoleScore(player, keyStats);
+      
+      if (currentRoleScore > bestRoleScore) {
+        bestRoleScore = currentRoleScore;
+        bestRole = role;
+      }
+    }
+    return _PlayerScoreAndRole(player: player, score: bestRoleScore, role: bestRole);
+  }
+
+  _PlayerScoreAndRole _calculatePlayerScore(
     _JoueurStatsComplet player,
     String basePoste,
     List<RoleModeleSm> allRoles,
   ) {
     if (basePoste == 'G') {
-      return player.isGk ? player.averageRating * 1.5 : -1000;
+      final score = player.isGk ? player.averageRating * 1.5 : -1000.0;
+      return _PlayerScoreAndRole(player: player, score: score, role: null);
     }
     if (player.isGk) {
-      return -1000;
+      return _PlayerScoreAndRole(player: player, score: -1000.0, role: null);
     }
 
-    // Utilise la nouvelle méthode canPlayPoste (plus stricte)
     if (!player.canPlayPoste(basePoste)) {
-      return -1000;
+      return _PlayerScoreAndRole(player: player, score: -1000.0, role: null);
     }
 
-    double baseScore = 0.0;
-    final possibleRoles = allRoles.where((r) => r.poste == basePoste).toList();
+    final primaryRoleScore = _calculateBestRoleScoreForPoste(player, basePoste, allRoles);
+    if (primaryRoleScore.score <= 0) return _PlayerScoreAndRole(player: player, score: -1000.0, role: null);
+
+    final double roleScore = primaryRoleScore.score;
+    final double overallNote = player.joueur.niveauActuel.toDouble();
     
-    if (possibleRoles.isEmpty) {
-      // Fallback : utiliser l'ancienne logique de poste
-      final keyStats = _getKeyStatsForPoste(basePoste);
-      baseScore = _calculateRoleScore(player, keyStats); // Utilise la nouvelle fonction
-    } else {
-      // Calculer le score pour chaque rôle et prendre le meilleur
-      double bestRoleScore = -1.0;
-      for (final role in possibleRoles) {
-        final keyStats = _getKeyStatsForRole(role.role);
-        // Utilise la nouvelle fonction de moyenne géométrique
-        double currentRoleScore = _calculateRoleScore(player, keyStats);
-        
-        if (currentRoleScore > bestRoleScore) {
-          bestRoleScore = currentRoleScore;
-        }
+    double baseScore = (roleScore * 0.6) + (overallNote * 0.4);
+
+    double nextBestScore = 0.0;
+    for (final otherPoste in _allBasePostes) {
+      if (otherPoste == basePoste) continue;
+      if (!player.canPlayPoste(otherPoste)) continue;
+      
+      double otherScore = _calculateBestRoleScoreForPoste(player, otherPoste, allRoles).score;
+      if (otherScore > nextBestScore) {
+        nextBestScore = otherScore;
       }
-      baseScore = bestRoleScore;
     }
+
+    double specialistBonus = (roleScore - nextBestScore) * 0.5;
+    baseScore += max(0, specialistBonus);
     
-    // Pondération (statut, potentiel, etc.)
     if (!player.isCorrectLateral(basePoste) ||
         !player.isCorrectWinger(basePoste)) {
       baseScore *= 0.6;
@@ -447,120 +517,194 @@ class TacticsOptimizer {
         break;
       case StatusEnum.Preter:
       case StatusEnum.Vendre:
-        return -1000;
+        return _PlayerScoreAndRole(player: player, score: -1000.0, role: null);
+    }
+    
+    final age = player.joueur.age;
+    if (age >= 24 && age <= 29) {
+      baseScore *= 1.1;
     }
 
     double potentiel = player.joueur.potentiel.toDouble();
-    double niveauActuel = player.joueur.niveauActuel.toDouble();
-    if (potentiel < niveauActuel) potentiel = niveauActuel;
+    if (potentiel < overallNote) potentiel = overallNote;
 
-    double potentielMargin = potentiel - niveauActuel;
+    double potentielMargin = potentiel - overallNote;
     if (potentielMargin > 0) {
       double potentialBonus = 1 + (potentielMargin / 200);
+      
+      if (age < 22) {
+        potentialBonus *= 1.2;
+      }
+      
       baseScore *= potentialBonus;
     }
 
-    return baseScore;
+    return _PlayerScoreAndRole(player: player, score: baseScore, role: primaryRoleScore.role);
   }
 
-  // Gardé comme fallback pour _calculatePlayerScore
-  List<String> _getKeyStatsForPoste(String poste) {
+  Map<String, List<String>> _getKeyStatsForPoste(String poste) {
     switch (poste) {
       case 'G':
-        return [
-          'arrets',
-          'positionnement',
-          'duels',
-          'captation',
-          'autorite_surface'
-        ];
+        return {'primary': ['arrets', 'positionnement', 'duels'], 'secondary': ['captation', 'autorite_surface'], 'tertiary': []};
       case 'DC':
-        return [
-          'marquage',
-          'tacles',
-          'force',
-          'positionnement',
-          'stabilite_aerienne'
-        ];
+        return {'primary': ['marquage', 'tacles', 'force'], 'secondary': ['positionnement', 'stabilite_aerienne'], 'tertiary': ['agressivite']};
       case 'DG':
       case 'DD':
       case 'DLG':
       case 'DLD':
-        return ['vitesse', 'endurance', 'centres', 'tacles', 'marquage'];
+        return {'primary': ['vitesse', 'tacles', 'marquage'], 'secondary': ['endurance', 'centres'], 'tertiary': ['positionnement']};
       case 'MDC':
-        return [
-          'tacles',
-          'endurance',
-          'agressivite',
-          'passes',
-          'positionnement'
-        ];
+        return {'primary': ['tacles', 'agressivite', 'positionnement'], 'secondary': ['endurance', 'passes', 'force'], 'tertiary': ['marquage']};
       case 'MC':
-        return ['passes', 'creativite', 'controle', 'endurance', 'deplacement'];
+        return {'primary': ['passes', 'creativite', 'controle'], 'secondary': ['endurance', 'deplacement'], 'tertiary': ['tacles', 'frappes_lointaines']};
       case 'MOC':
-        return [
-          'creativite',
-          'dribble',
-          'frappes_lointaines',
-          'passes',
-          'deplacement'
-        ];
+        return {'primary': ['creativite', 'dribble', 'passes'], 'secondary': ['frappes_lointaines', 'deplacement'], 'tertiary': ['finition', 'sang_froid']};
       case 'MG':
       case 'MD':
+        return {'primary': ['vitesse', 'dribble', 'centres', 'endurance'], 'secondary': ['creativite', 'passes'], 'tertiary': ['tacles', 'marquage']};
       case 'MOG': 
       case 'MOD': 
-        return ['vitesse', 'dribble', 'centres', 'creativite', 'finition'];
+        return {'primary': ['vitesse', 'dribble', 'centres'], 'secondary': ['creativite', 'finition', 'deplacement'], 'tertiary': ['passes']};
       case 'BUC':
       case 'BUG':
       case 'BUD':
-        return [
-          'finition',
-          'deplacement',
-          'sang_froid',
-          'vitesse',
-          'stabilite_aerienne'
-        ];
+        return {'primary': ['finition', 'deplacement', 'sang_froid'], 'secondary': ['vitesse', 'stabilite_aerienne'], 'tertiary': ['force', 'controle']};
       default:
-        return ['vitesse', 'endurance', 'force'];
+        return {'primary': ['vitesse', 'endurance', 'force'], 'secondary': [], 'tertiary': []};
     }
   }
 
-  Map<int, int> _assignBestRoles(
+  Set<List<T>> _generateRolePermutations<T>(List<T> items, int length) {
+    if (length == 0) {
+      return {[]};
+    }
+    if (length > items.length) {
+      length = items.length;
+    }
+
+    final allPerms = <List<T>>{};
+
+    for (int i = 0; i < items.length; i++) {
+      final currentItem = items[i];
+      
+      final remainingItems = List<T>.from(items)..removeAt(i);
+      
+      final permsOfRest = _generateRolePermutations(remainingItems, length - 1);
+
+      for (final perm in permsOfRest) {
+        allPerms.add([currentItem, ...perm]);
+      }
+    }
+    
+    return allPerms.map((list) => List<T>.from(list)).toSet();
+  }
+
+  Map<int, int> _assignOptimalRoles(
     Map<String, _JoueurStatsComplet> elevenByPoste,
     List<RoleModeleSm> allRoles,
   ) {
-    final Map<int, int> joueurToRole = {};
+    final Map<int, int> joueurToRoleId = {};
+    final Map<String, List<_JoueurStatsComplet>> groupedPlayers = {};
 
     for (final entry in elevenByPoste.entries) {
-      final String poste = entry.key.replaceAll(RegExp(r'[0-9]'), '');
+      final String basePoste = entry.key.replaceAll(RegExp(r'[0-9]'), '');
       final _JoueurStatsComplet player = entry.value;
 
-      final possibleRoles = allRoles.where((r) => r.poste == poste).toList();
-      if (possibleRoles.isEmpty) continue;
+      if (!groupedPlayers.containsKey(basePoste)) {
+        groupedPlayers[basePoste] = [];
+      }
+      groupedPlayers[basePoste]!.add(player);
+    }
 
-      RoleModeleSm bestRole = possibleRoles.first;
-      double bestScore = -1.0;
+    for (final entry in groupedPlayers.entries) {
+      final String basePoste = entry.key;
+      final List<_JoueurStatsComplet> playersInGroup = entry.value;
+      final List<RoleModeleSm> rolesForPoste = allRoles.where((r) => r.poste == basePoste).toList();
 
-      for (final role in possibleRoles) {
-        final keyStats = _getKeyStatsForRole(role.role);
+      if (rolesForPoste.isEmpty) {
+        for (final player in playersInGroup) {
+          final bestRoleScore = _calculateBestRoleScoreForPoste(player, basePoste, allRoles);
+          if (bestRoleScore.role != null) {
+            joueurToRoleId[player.joueur.id] = bestRoleScore.role!.id;
+          }
+        }
+        continue;
+      }
+
+      if (playersInGroup.length == 1) {
+          final player = playersInGroup.first;
+          final bestRoleScore = _calculateBestRoleScoreForPoste(player, basePoste, allRoles);
+          if (bestRoleScore.role != null) {
+            joueurToRoleId[player.joueur.id] = bestRoleScore.role!.id;
+          }
+          continue;
+      }
+
+      final List<RoleModeleSm> rolesToAssign = rolesForPoste.length >= playersInGroup.length
+        ? rolesForPoste
+        : List.generate(playersInGroup.length, (index) => rolesForPoste[index % rolesForPoste.length]);
+
+      final rolePermutations = _generateRolePermutations(rolesToAssign, playersInGroup.length).toSet();
+      
+      double bestCombinationScore = -double.maxFinite;
+      List<RoleModeleSm> bestRoleCombination = [];
+
+      for (final perm in rolePermutations) {
+        double currentCombinationScore = 0;
+        final playersPermutation = _generateRolePermutations(playersInGroup, playersInGroup.length).toSet();
         
-        // Utilise la nouvelle fonction de moyenne géométrique
-        double currentScore = _calculateRoleScore(player, keyStats);
+        double bestPlayerPermScore = -double.maxFinite;
 
-        if (currentScore > bestScore) {
-          bestScore = currentScore;
-          bestRole = role;
+        for (final playerPerm in playersPermutation) {
+          double currentPlayerPermScore = 0;
+          for (int i = 0; i < playerPerm.length; i++) {
+            final player = playerPerm[i];
+            final role = perm[i];
+            final keyStats = _getKeyStatsForRole(role.role);
+            currentPlayerPermScore += _calculateRoleScore(player, keyStats);
+          }
+          if (currentPlayerPermScore > bestPlayerPermScore) {
+            bestPlayerPermScore = currentPlayerPermScore;
+          }
+        }
+        currentCombinationScore = bestPlayerPermScore;
+
+        if (currentCombinationScore > bestCombinationScore) {
+          bestCombinationScore = currentCombinationScore;
+          bestRoleCombination = perm.toList();
         }
       }
-      joueurToRole[player.joueur.id] = bestRole.id;
-    }
-    return joueurToRole;
-  }
 
-  // ### AMÉLIORATION 3 : HARMONIE DES STYLES (PRISE EN COMPTE DU MINIMUM) ###
+      if (bestRoleCombination.isNotEmpty) {
+        
+        final playersPermutation = _generateRolePermutations(playersInGroup, playersInGroup.length).toSet();
+        List<_JoueurStatsComplet> bestPlayerPerm = playersInGroup;
+        double bestPlayerPermScore = -double.maxFinite;
+
+         for (final playerPerm in playersPermutation) {
+          double currentPlayerPermScore = 0;
+          for (int i = 0; i < playerPerm.length; i++) {
+            final player = playerPerm[i];
+            final role = bestRoleCombination[i];
+            final keyStats = _getKeyStatsForRole(role.role);
+            currentPlayerPermScore += _calculateRoleScore(player, keyStats);
+          }
+          if (currentPlayerPermScore > bestPlayerPermScore) {
+            bestPlayerPermScore = currentPlayerPermScore;
+            bestPlayerPerm = playerPerm.toList();
+          }
+        }
+
+        for (int i = 0; i < bestPlayerPerm.length; i++) {
+          joueurToRoleId[bestPlayerPerm[i].joueur.id] = bestRoleCombination[i].id;
+        }
+      }
+    }
+    
+    return joueurToRoleId;
+  }
   
   OptimizedStyles _generateBestStyles(List<_JoueurStatsComplet> eleven) {
-    // La fonction _calculateTeamAverages retourne maintenant des moyennes ET des minimums
     final stats = _calculateTeamAverages(eleven);
 
     final Map<String, double> general = {
@@ -582,9 +726,9 @@ class TacticsOptimizer {
     };
     
     final Map<String, double> defense = {
-      ..._getBestPressing(stats), // Logique améliorée
+      ..._getBestPressing(stats),
       ..._getBestStyleTacle(stats),
-      ..._getBestLigneDefensive(stats), // Logique améliorée
+      ..._getBestLigneDefensive(stats),
       ..._getBestGardienLibero(stats),
       ..._getBestPerteTemps(stats),
     };
@@ -592,7 +736,6 @@ class TacticsOptimizer {
     return OptimizedStyles(general: general, attack: attack, defense: defense);
   }
 
-  // AMÉLIORATION : Calcule des moyennes ET des minimums
   Map<String, double> _calculateTeamAverages(List<_JoueurStatsComplet> eleven) {
     Map<String, double> averages = {
       'avgVitesse_All': 0, 'avgEndurance_All': 0, 'avgAgressivite_All': 0, 'avgCreativite_All': 0,
@@ -604,7 +747,6 @@ class TacticsOptimizer {
       'avgVitesse_Att': 0, 'avgFinition_Att': 0,
       'gk_distribution': 0, 'gk_arrets': 0, 'gk_vitesse': 0,
       
-      // Nouvelles stats MINIMALES
       'minEndurance_All': 100.0,
       'minVitesse_Def': 100.0,
     };
@@ -625,7 +767,6 @@ class TacticsOptimizer {
       final stats = p.stats as StatsJoueurSmModel?;
       if (stats == null) continue;
 
-      // --- Calcul des Stats Générales (Moyennes) ---
       averages['avgVitesse_All'] = (averages['avgVitesse_All'] ?? 0) + stats.vitesse;
       averages['avgEndurance_All'] = (averages['avgEndurance_All'] ?? 0) + stats.endurance;
       averages['avgAgressivite_All'] = (averages['avgAgressivite_All'] ?? 0) + stats.agressivite;
@@ -642,12 +783,10 @@ class TacticsOptimizer {
       averages['avgSangFroid_All'] = (averages['avgSangFroid_All'] ?? 0) + stats.sangFroid;
       averages['avgFrappesLointaines_All'] = (averages['avgFrappesLointaines_All'] ?? 0) + stats.frappesLointaines;
 
-      // --- Calcul des Stats Minimales ---
       if (stats.endurance < averages['minEndurance_All']!) {
         averages['minEndurance_All'] = stats.endurance.toDouble();
       }
 
-      // --- Calcul des Stats par Ligne ---
       if (poste.startsWith('D')) {
         defCount++;
         averages['avgVitesse_Def'] = (averages['avgVitesse_Def'] ?? 0) + stats.vitesse;
@@ -667,10 +806,8 @@ class TacticsOptimizer {
       }
     }
 
-    // --- Finalisation des calculs (Moyennes) ---
     if (fieldPlayers > 0) {
       averages.forEach((key, value) {
-        // Ne diviser que les stats 'avg' et pas les 'min'
         if (key.startsWith('avg') && !key.contains('_Def') && !key.contains('_Mid') && !key.contains('_Att')) {
           averages[key] = value / fieldPlayers;
         }
@@ -679,7 +816,7 @@ class TacticsOptimizer {
     if (defCount > 0) {
       averages['avgVitesse_Def'] = averages['avgVitesse_Def']! / defCount;
     } else {
-       averages['minVitesse_Def'] = averages['minEndurance_All']!; // Fallback si pas de def
+       averages['minVitesse_Def'] = averages['minEndurance_All']!;
     }
     if (defCount + midCount > 0) {
        averages['avgPassesLongues_Def'] = averages['avgPassesLongues_Def']! / (defCount + midCount);
@@ -693,15 +830,12 @@ class TacticsOptimizer {
       averages['avgFinition_Att'] = averages['avgFinition_Att']! / attCount;
     }
     
-    // --- Fallbacks pour les stats par ligne (au cas où) ---
     if (averages['avgVitesse_Def'] == 0) averages['avgVitesse_Def'] = averages['avgVitesse_All'] ?? 50;
     if (averages['avgVitesse_Att'] == 0) averages['avgVitesse_Att'] = averages['avgVitesse_All'] ?? 50;
     if (averages['avgPassesLongues_Def'] == 0) averages['avgPassesLongues_Def'] = averages['avgPassesLongues_All'] ?? 50;
 
     return averages;
   }
-  
-  // (Resserrement des fourchettes "Normal" -> 50-60)
   
   Map<String, double> _getBestLargeur(Map<String, double> stats) {
     double avgCentres = stats['avgCentres_All'] ?? 50;
@@ -794,13 +928,11 @@ class TacticsOptimizer {
     return {'Contre-attaque: Non': 1.0};
   }
   
-  // AMÉLIORATION : Logique combinatoire ET vérification du MINIMUM
   Map<String, double> _getBestPressing(Map<String, double> stats) {
     double avgEndurance = stats['avgEndurance_All'] ?? 50;
     double minEndurance = stats['minEndurance_All'] ?? 50;
     double avgAgressivite = stats['avgAgressivite_All'] ?? 50;
     
-    // Ne peut presser "partout" que si personne n'a une endurance trop faible
     if (avgEndurance > 65 && minEndurance > 50 && avgAgressivite > 60) {
       return {'Pressing: Partout': 1.0};
     }
@@ -818,16 +950,13 @@ class TacticsOptimizer {
     return {'Style tacle: Normal': 1.0};
   }
 
-  // AMÉLIORATION : Utilise la vitesse des défenseurs ET vérification du MINIMUM
   Map<String, double> _getBestLigneDefensive(Map<String, double> stats) {
     double avgVitesseDef = stats['avgVitesse_Def'] ?? 50;
     double minVitesseDef = stats['minVitesse_Def'] ?? 50;
     
-    // Ne peut jouer "Haut" que si aucun défenseur n'est trop lent
     if (avgVitesseDef > 60 && minVitesseDef > 55) {
       return {'Ligne défensive: Haut': 1.0};
     }
-    // Si la moyenne est basse OU si un seul joueur est trop lent
     if (avgVitesseDef < 50 || minVitesseDef < 45) {
       return {'Ligne défensive: Bas': 1.0};
     }
@@ -842,8 +971,8 @@ class TacticsOptimizer {
   
   Map<String, double> _getBestPerteTemps(Map<String, double> stats) {
     double avgMentalite = (stats['avgCreativite_All'] ?? 50) + (stats['avgFinition_All'] ?? 50);
-    if (avgMentalite > 120) return {'Perte de temps: Faible': 1.0}; // Mentalité offensive
-    if (avgMentalite < 100) return {'Perte de temps: Haut': 1.0}; // Mentalité défensive
+    if (avgMentalite > 120) return {'Perte de temps: Faible': 1.0};
+    if (avgMentalite < 100) return {'Perte de temps: Haut': 1.0};
     return {'Perte de temps: Normal': 1.0};
   }
 
@@ -862,38 +991,79 @@ class TacticsOptimizer {
     return map[formation] ?? map['4-3-3']!; 
   }
 
-  List<String> _getKeyStatsForRole(String roleName) {
-    // (Mise à jour pour être plus précis et harmonieux)
+  Map<String, List<String>> _getKeyStatsForRole(String roleName) {
     switch (roleName) {
       case 'Gardien':
-        return ['arrets', 'positionnement', 'duels'];
-      case 'Défenseur central':
-        return ['marquage', 'tacles', 'force', 'positionnement', 'stabilite_aerienne'];
-      case 'Défenseur relanceur':
-        return ['marquage', 'passes', 'controle', 'creativite', 'sang_froid'];
-      case 'Latéral':
-        return ['vitesse', 'endurance', 'centres', 'tacles', 'marquage'];
-      case 'Latéral offensif':
-        return ['vitesse', 'endurance', 'centres', 'dribble', 'creativite', 'deplacement'];
-      case 'Milieu récupérateur':
-        return ['tacles', 'endurance', 'agressivite', 'positionnement', 'force'];
-      case 'Meneur de jeu':
-        return ['passes', 'creativite', 'controle', 'deplacement', 'sang_froid'];
-      case 'Milieu polyvalent': // Box-to-Box
-        return ['passes', 'endurance', 'tacles', 'deplacement', 'frappes_lointaines', 'finition'];
-      case 'Milieu offensif':
-        return ['creativite', 'dribble', 'frappes_lointaines', 'passes', 'deplacement'];
-      case 'Ailier':
-        return ['vitesse', 'dribble', 'centres', 'creativite', 'deplacement'];
+        return {'primary': ['arrets', 'positionnement'], 'secondary': ['duels', 'autorite_surface'], 'tertiary': ['sang_froid']};
+      case 'Gardien libéro':
+        return {'primary': ['arrets', 'vitesse', 'distribution'], 'secondary': ['controle', 'sang_froid'], 'tertiary': ['passes']};
+
+      case 'stoppeur':
+        return {'primary': ['marquage', 'tacles', 'force'], 'secondary': ['agressivite', 'stabilite_aerienne'], 'tertiary': ['positionnement']};
+      case 'défenseur relanceur':
+        return {'primary': ['passes', 'creativite', 'controle'], 'secondary': ['marquage', 'sang_froid'], 'tertiary': ['dribble', 'tacles']};
+      case 'désenseur':
+        return {'primary': ['marquage', 'tacles', 'positionnement'], 'secondary': ['force', 'endurance'], 'tertiary': ['passes']};
+
+      case 'latéral offensif':
+        return {'primary': ['vitesse', 'centres', 'dribble'], 'secondary': ['endurance', 'creativite'], 'tertiary': ['deplacement', 'passes']};
+      case 'défenseur latéral':
+        return {'primary': ['tacles', 'marquage', 'positionnement'], 'secondary': ['endurance', 'vitesse'], 'tertiary': ['centres', 'agressivite']};
+
+      case 'meneur de jeu en retrait':
+        return {'primary': ['passes', 'passes_longues', 'creativite'], 'secondary': ['controle', 'sang_froid'], 'tertiary': ['positionnement']};
+      case 'milieu récupérateur':
+        return {'primary': ['tacles', 'agressivite', 'positionnement'], 'secondary': ['endurance', 'force'], 'tertiary': ['marquage']};
+      case 'milieu de terrain relayeur':
+        return {'primary': ['endurance', 'deplacement', 'passes'], 'secondary': ['tacles', 'dribble'], 'tertiary': ['finition', 'frappes_lointaines']};
+      case 'milieu de terrain':
+        return {'primary': ['passes', 'tacles', 'endurance'], 'secondary': ['deplacement', 'positionnement'], 'tertiary': ['force']};
+      case 'meneur de jeu':
+        return {'primary': ['passes', 'creativite', 'sang_froid'], 'secondary': ['passes_longues', 'controle'], 'tertiary': ['deplacement']};
+      case 'meneur de jeu avancé':
+        return {'primary': ['creativite', 'passes', 'dribble'], 'secondary': ['controle', 'deplacement'], 'tertiary': ['finition', 'frappes_lointaines']};
+      case 'milieu latéral':
+        return {'primary': ['endurance', 'centres', 'vitesse'], 'secondary': ['passes', 'tacles', 'marquage'], 'tertiary': ['positionnement']};
+
       case 'Attaquant intérieur':
-        return ['vitesse', 'dribble', 'finition', 'frappes_lointaines', 'deplacement', 'sang_froid'];
-      case 'Buteur': // Renard des surfaces
-        return ['finition', 'deplacement', 'sang_froid', 'stabilite_aerienne', 'vitesse'];
-      case 'Attaquant de soutien': // Faux 9
-        return ['finition', 'deplacement', 'creativite', 'passes', 'controle', 'dribble'];
+        return {'primary': ['vitesse', 'finition', 'deplacement'], 'secondary': ['dribble', 'sang_froid'], 'tertiary': ['passes', 'frappes_lointaines']};
+      case 'Ailier':
+        return {'primary': ['vitesse', 'dribble', 'centres'], 'secondary': ['endurance', 'controle'], 'tertiary': ['deplacement', 'creativite']};
+      case 'Finisseur':
+        return {'primary': ['finition', 'deplacement', 'sang_froid'], 'secondary': ['vitesse', 'stabilite_aerienne'], 'tertiary': ['force']};
+      case 'Attaquant en retrait':
+        return {'primary': ['deplacement', 'passes', 'creativite'], 'secondary': ['controle', 'dribble'], 'tertiary': ['finition', 'sang_froid']};
+      case 'Attaquant de pointe':
+        return {'primary': ['force', 'stabilite_aerienne', 'finition'], 'secondary': ['controle', 'passes'], 'tertiary': ['deplacement']};
+      case 'Attaquant':
+        return {'primary': ['finition', 'vitesse', 'deplacement'], 'secondary': ['force', 'dribble'], 'tertiary': ['passes']};
+        
+      case 'Défenseur central':
+        return {'primary': ['marquage', 'tacles', 'force'], 'secondary': ['positionnement', 'stabilite_aerienne'], 'tertiary': ['agressivite']};
+      case 'Latéral':
+        return {'primary': ['vitesse', 'endurance', 'centres'], 'secondary': ['tacles', 'marquage'], 'tertiary': ['dribble']};
+      case 'Milieu polyvalent': 
+        return {'primary': ['passes', 'endurance', 'tacles'], 'secondary': ['deplacement', 'frappes_lointaines'], 'tertiary': ['finition']};
+      case 'Milieu offensif':
+        return {'primary': ['creativite', 'dribble', 'passes'], 'secondary': ['frappes_lointaines', 'deplacement'], 'tertiary': ['finition']};
+      case 'Buteur': 
+        return {'primary': ['finition', 'deplacement', 'sang_froid'], 'secondary': ['vitesse', 'stabilite_aerienne'], 'tertiary': ['force']};
+      case 'Attaquant de soutien': 
+        return {'primary': ['finition', 'deplacement', 'creativite'], 'secondary': ['passes', 'controle'], 'tertiary': ['dribble']};
       default:
-        // Fallback générique
-        return ['vitesse', 'endurance', 'force', 'passes', 'creativite', 'finition', 'tacles'];
+        return {'primary': ['vitesse', 'endurance', 'force'], 'secondary': ['passes', 'creativite', 'finition', 'tacles'], 'tertiary': []};
     }
   }
+}
+
+class _PlayerScoreAndRole {
+  final _JoueurStatsComplet player;
+  final double score;
+  final RoleModeleSm? role;
+
+  _PlayerScoreAndRole({
+    required this.player,
+    required this.score,
+    required this.role,
+  });
 }

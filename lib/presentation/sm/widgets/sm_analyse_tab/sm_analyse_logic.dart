@@ -1,4 +1,5 @@
-import 'dart:math'; // Ajout pour pow() (Moyenne géométrique)
+// lib/presentation/sm/widgets/sm_analyse_tab/sm_analyse_logic.dart
+import 'dart:math';
 import 'package:gamemaster_hub/data/data_export.dart';
 import 'package:gamemaster_hub/domain/domain_export.dart';
 import 'package:gamemaster_hub/presentation/presentation_export.dart';
@@ -31,7 +32,12 @@ class SMAnalyseLogic {
 
     int nbDef = 0, nbMil = 0, nbAtt = 0, nbGk = 0;
     double defRating = 0, midRating = 0, attRating = 0;
-    int nbJeunes = 0, nbVieux = 0;
+    
+    int nbTalents = 0;
+    int nbEclosion = 0;
+    int nbPrime = 0;
+    int nbVeterans = 0;
+    
     double ageMoyen = 0;
     final postesCount = <String, int>{};
 
@@ -40,7 +46,6 @@ class SMAnalyseLogic {
     int defCount = 0;
     int fieldPlayersCount = 0;
 
-    // --- ANALYSE DE L'EFFECTIF GLOBAL ---
     for (final j in joueurs) {
       final joueur = j.joueur;
       if (joueur.postes.isEmpty) continue;
@@ -50,8 +55,15 @@ class SMAnalyseLogic {
 
       postesCount[poste] = (postesCount[poste] ?? 0) + 1;
 
-      if (age < 23) nbJeunes++;
-      if (age > 30) nbVieux++;
+      if (age < 20) {
+        nbTalents++;
+      } else if (age >= 20 && age <= 23) {
+        nbEclosion++;
+      } else if (age >= 24 && age <= 29) {
+        nbPrime++;
+      } else if (age >= 30) {
+        nbVeterans++;
+      }
 
       if (poste == 'G') {
         nbGk++;
@@ -164,21 +176,10 @@ class SMAnalyseLogic {
       faiblesses.add("Manque de réalisme offensif (effectif)");
     }
 
-    if (nbJeunes / total > 0.5) forces.add("Effectif jeune et prometteur");
-    if (nbVieux / total > 0.4) {
-      forces.add("Effectif expérimenté, bonne stabilité");
-    }
-    if (nbVieux / total > 0.6) {
-      faiblesses.add("Effectif vieillissant, à renouveler");
-    }
-    if (ageMoyen < 24) {
-      faiblesses.add("Manque d’expérience dans les grands matchs");
-    }
-
-    if (nbGk == 0) manques.add("Aucun gardien disponible");
-    if (nbDef < 3) manques.add("Pas assez de défenseurs centraux");
-    if (nbMil < 3) manques.add("Milieu de terrain insuffisant");
-    if (nbAtt < 3) manques.add("Manque d’attaquants");
+    if (nbGk == 0) manques.add("Aucun gardien disponible.");
+    if (nbDef < 3) manques.add("Pas assez de défenseurs centraux.");
+    if (nbMil < 3) manques.add("Milieu de terrain insuffisant.");
+    if (nbAtt < 3) manques.add("Manque d’attaquants.");
 
     final doublons = postesCount.entries
         .where((e) => e.value > 3)
@@ -195,8 +196,38 @@ class SMAnalyseLogic {
     if (absents.isNotEmpty) {
       manques.add("Aucun joueur à ces postes : ${absents.join(', ')}");
     }
+    
+    if (nbTalents > 5) {
+      forces.add("Excellent vivier de jeunes talents (< 20 ans).");
+    } else if (nbTalents < 2) {
+      manques.add("Manque de jeunes talents (< 20 ans) pour préparer le futur.");
+    }
+    
+    if (nbEclosion > 5) {
+      forces.add("Bon noyau de joueurs en pleine éclosion (20-23 ans).");
+    } else if (nbEclosion < 3) {
+      manques.add("Peu de joueurs en phase d'éclosion (20-23 ans).");
+    }
 
-    // --- ANALYSE TACTIQUE (MOYENNES) ---
+    if (nbPrime > 8) {
+      forces.add("Majorité de l'effectif dans son prime (24-29 ans), prête pour la performance immédiate.");
+    } else if (nbPrime < 5) {
+      manques.add("Manque de joueurs au sommet de leur carrière (24-29 ans).");
+    }
+    
+    if (nbVeterans > 5) {
+      forces.add("Équipe très expérimentée (Vétérans >= 30 ans).");
+    } else if (nbVeterans < 2) {
+      manques.add("Manque d'expérience (Vétérans >= 30 ans) pour encadrer l'équipe.");
+    }
+    
+    if ((nbVeterans / total) > 0.6) {
+      faiblesses.add("Effectif vieillissant (moyenne d'âge : ${ageMoyen.toStringAsFixed(1)} ans), risque sur l'endurance et les blessures.");
+    }
+    if (ageMoyen < 23) {
+      faiblesses.add("Effectif très jeune (moyenne d'âge : ${ageMoyen.toStringAsFixed(1)} ans), manque d'expérience global.");
+    }
+
     final stylesAtt = tacticsState.stylesAttack;
     final stylesDef = tacticsState.stylesDefense;
     final formation = tacticsState.selectedFormation;
@@ -222,8 +253,6 @@ class SMAnalyseLogic {
         }
       }
 
-      // ### AMÉLIORATION DRASITQUE : ANALYSE INDIVIDUELLE (TITULAIRES) ###
-
       for (final entry in tacticsState.assignedPlayersByPoste.entries) {
         final String posteKey = entry.key;
         final JoueurSmWithStats? playerWithStats = entry.value;
@@ -237,7 +266,6 @@ class SMAnalyseLogic {
 
         if (stats == null) continue;
 
-        // 1. Vérification Adéquation Style / Joueur (Point faible individuel)
         if (stylesDef.keys.any((k) => k.contains('Pressing: Partout'))) {
           final endurance = _getStat(stats, 'endurance');
           if (endurance > 0 && endurance < 55) {
@@ -247,7 +275,7 @@ class SMAnalyseLogic {
         }
 
         if (stylesDef.keys.any((k) => k.contains('Ligne défensive: Haut'))) {
-          if (posteKey.startsWith('D')) { // Si le joueur est un défenseur
+          if (posteKey.startsWith('D')) {
             final vitesse = _getStat(stats, 'vitesse');
             if (vitesse > 0 && vitesse < 60) {
               faiblesses.add(
@@ -272,11 +300,8 @@ class SMAnalyseLogic {
           }
         }
 
-        // 2. Vérification Adéquation Rôle / Joueur (Logique d'Harmonie)
         if (assignedRole != null) {
           final keyStats = _getKeyStatsForRole(assignedRole.role);
-
-          // ### AMÉLIORATION : Utilisation de la moyenne géométrique pour l'analyse ###
           final avgRoleScore = _calculateRoleScore(stats, keyStats);
 
           if (avgRoleScore > 0 && avgRoleScore < 60) {
@@ -288,7 +313,6 @@ class SMAnalyseLogic {
           }
         }
       }
-      // Fin de la nouvelle section d'analyse individuelle
 
       if (tacticsState.assignedPlayersByPoste.length < 11) {
         manques.add(
@@ -297,7 +321,7 @@ class SMAnalyseLogic {
     }
 
     return AnalyseResult(
-        forces: forces.toSet().toList(), // Éviter les doublons
+        forces: forces.toSet().toList(),
         faiblesses: faiblesses.toSet().toList(),
         manques: manques.toSet().toList());
   }
@@ -306,26 +330,52 @@ class SMAnalyseLogic {
     return stats.creativite > 75 && stats.passes > 75 && stats.dribble > 70;
   }
 
-  // ### AMÉLIORATION : Helper Moyenne Géométrique (copié de l'optimiseur) ###
-  static double _calculateRoleScore(dynamic stats, List<String> keyStats) {
-    // Note : on ne peut pas accéder à player.averageRating ici,
-    // donc on retourne 50.0 comme fallback si pas de stats clés.
-    if (keyStats.isEmpty) {
+  static double _getGeoMean(dynamic stats, List<String> statNames) {
+    if (statNames.isEmpty) {
       return 50.0;
     }
-
     double score = 1.0;
     int statsCount = 0;
-
-    for (final statName in keyStats) {
+    for (final statName in statNames) {
       double statVal = _getStat(stats, statName).toDouble();
       score *= (statVal <= 0 ? 1.0 : statVal);
       statsCount++;
     }
-
     if (statsCount == 0) return 50.0;
-
     return pow(score, 1.0 / statsCount).toDouble();
+  }
+  
+  static double _calculateRoleScore(dynamic stats, Map<String, List<String>> keyStats) {
+    final primaryStats = keyStats['primary'] ?? [];
+    final secondaryStats = keyStats['secondary'] ?? [];
+    final tertiaryStats = keyStats['tertiary'] ?? [];
+
+    if (primaryStats.isEmpty && secondaryStats.isEmpty && tertiaryStats.isEmpty) {
+      return 50.0;
+    }
+
+    final primaryScore = _getGeoMean(stats, primaryStats);
+    final secondaryScore = _getGeoMean(stats, secondaryStats);
+    final tertiaryScore = _getGeoMean(stats, tertiaryStats);
+
+    double totalScore = 0;
+    double totalWeight = 0;
+
+    if (primaryStats.isNotEmpty) {
+      totalScore += primaryScore * 0.60;
+      totalWeight += 0.60;
+    }
+    if (secondaryStats.isNotEmpty) {
+      totalScore += secondaryScore * 0.30;
+      totalWeight += 0.30;
+    }
+    if (tertiaryStats.isNotEmpty) {
+      totalScore += tertiaryScore * 0.10;
+      totalWeight += 0.10;
+    }
+
+    if (totalWeight == 0) return 50.0;
+    return totalScore / totalWeight;
   }
 
   static int _getStat(dynamic stats, String statName) {
@@ -337,7 +387,7 @@ class SMAnalyseLogic {
       } else if (stats is StatsGardienSmModel) {
         json = stats.toMap();
       } else {
-        return 0; // Type de stats inconnu
+        return 0;
       }
 
       final statKey = _statNameMapping[statName] ?? statName;
@@ -359,37 +409,67 @@ class SMAnalyseLogic {
     'autorite_surface': 'autoriteSurface'
   };
 
-  // ### AMÉLIORATION : Mappage des rôles/stats mis à jour pour être cohérent ###
-  static List<String> _getKeyStatsForRole(String roleName) {
+  static Map<String, List<String>> _getKeyStatsForRole(String roleName) {
     switch (roleName) {
       case 'Gardien':
-        return ['arrets', 'positionnement', 'duels'];
-      case 'Défenseur central':
-        return ['marquage', 'tacles', 'force', 'positionnement', 'stabilite_aerienne'];
-      case 'Défenseur relanceur':
-        return ['marquage', 'passes', 'controle', 'creativite', 'sang_froid'];
-      case 'Latéral':
-        return ['vitesse', 'endurance', 'centres', 'tacles', 'marquage'];
-      case 'Latéral offensif':
-        return ['vitesse', 'endurance', 'centres', 'dribble', 'creativite', 'deplacement'];
-      case 'Milieu récupérateur':
-        return ['tacles', 'endurance', 'agressivite', 'positionnement', 'force'];
-      case 'Meneur de jeu':
-        return ['passes', 'creativite', 'controle', 'deplacement', 'sang_froid'];
-      case 'Milieu polyvalent': // Box-to-Box
-        return ['passes', 'endurance', 'tacles', 'deplacement', 'frappes_lointaines', 'finition'];
-      case 'Milieu offensif':
-        return ['creativite', 'dribble', 'frappes_lointaines', 'passes', 'deplacement'];
-      case 'Ailier':
-        return ['vitesse', 'dribble', 'centres', 'creativite', 'deplacement'];
+        return {'primary': ['arrets', 'positionnement'], 'secondary': ['duels', 'autorite_surface'], 'tertiary': ['sang_froid']};
+      case 'Gardien libéro':
+        return {'primary': ['arrets', 'vitesse', 'distribution'], 'secondary': ['controle', 'sang_froid'], 'tertiary': ['passes']};
+
+      case 'stoppeur':
+        return {'primary': ['marquage', 'tacles', 'force'], 'secondary': ['agressivite', 'stabilite_aerienne'], 'tertiary': ['positionnement']};
+      case 'défenseur relanceur':
+        return {'primary': ['passes', 'creativite', 'controle'], 'secondary': ['marquage', 'sang_froid'], 'tertiary': ['dribble', 'tacles']};
+      case 'désenseur':
+        return {'primary': ['marquage', 'tacles', 'positionnement'], 'secondary': ['force', 'endurance'], 'tertiary': ['passes']};
+
+      case 'latéral offensif':
+        return {'primary': ['vitesse', 'centres', 'dribble'], 'secondary': ['endurance', 'creativite'], 'tertiary': ['deplacement', 'passes']};
+      case 'défenseur latéral':
+        return {'primary': ['tacles', 'marquage', 'positionnement'], 'secondary': ['endurance', 'vitesse'], 'tertiary': ['centres', 'agressivite']};
+
+      case 'meneur de jeu en retrait':
+        return {'primary': ['passes', 'passes_longues', 'creativite'], 'secondary': ['controle', 'sang_froid'], 'tertiary': ['positionnement']};
+      case 'milieu récupérateur':
+        return {'primary': ['tacles', 'agressivite', 'positionnement'], 'secondary': ['endurance', 'force'], 'tertiary': ['marquage']};
+      case 'milieu de terrain relayeur':
+        return {'primary': ['endurance', 'deplacement', 'passes'], 'secondary': ['tacles', 'dribble'], 'tertiary': ['finition', 'frappes_lointaines']};
+      case 'milieu de terrain':
+        return {'primary': ['passes', 'tacles', 'endurance'], 'secondary': ['deplacement', 'positionnement'], 'tertiary': ['force']};
+      case 'meneur de jeu':
+        return {'primary': ['passes', 'creativite', 'sang_froid'], 'secondary': ['passes_longues', 'controle'], 'tertiary': ['deplacement']};
+      case 'meneur de jeu avancé':
+        return {'primary': ['creativite', 'passes', 'dribble'], 'secondary': ['controle', 'deplacement'], 'tertiary': ['finition', 'frappes_lointaines']};
+      case 'milieu latéral':
+        return {'primary': ['endurance', 'centres', 'vitesse'], 'secondary': ['passes', 'tacles', 'marquage'], 'tertiary': ['positionnement']};
+
       case 'Attaquant intérieur':
-        return ['vitesse', 'dribble', 'finition', 'frappes_lointaines', 'deplacement', 'sang_froid'];
-      case 'Buteur': // Renard des surfaces
-        return ['finition', 'deplacement', 'sang_froid', 'stabilite_aerienne', 'vitesse'];
-      case 'Attaquant de soutien': // Faux 9
-        return ['finition', 'deplacement', 'creativite', 'passes', 'controle', 'dribble'];
+        return {'primary': ['vitesse', 'finition', 'deplacement'], 'secondary': ['dribble', 'sang_froid'], 'tertiary': ['passes', 'frappes_lointaines']};
+      case 'Ailier':
+        return {'primary': ['vitesse', 'dribble', 'centres'], 'secondary': ['endurance', 'controle'], 'tertiary': ['deplacement', 'creativite']};
+      case 'Finisseur':
+        return {'primary': ['finition', 'deplacement', 'sang_froid'], 'secondary': ['vitesse', 'stabilite_aerienne'], 'tertiary': ['force']};
+      case 'Attaquant en retrait':
+        return {'primary': ['deplacement', 'passes', 'creativite'], 'secondary': ['controle', 'dribble'], 'tertiary': ['finition', 'sang_froid']};
+      case 'Attaquant de pointe':
+        return {'primary': ['force', 'stabilite_aerienne', 'finition'], 'secondary': ['controle', 'passes'], 'tertiary': ['deplacement']};
+      case 'Attaquant':
+        return {'primary': ['finition', 'vitesse', 'deplacement'], 'secondary': ['force', 'dribble'], 'tertiary': ['passes']};
+        
+      case 'Défenseur central':
+        return {'primary': ['marquage', 'tacles', 'force'], 'secondary': ['positionnement', 'stabilite_aerienne'], 'tertiary': ['agressivite']};
+      case 'Latéral':
+        return {'primary': ['vitesse', 'endurance', 'centres'], 'secondary': ['tacles', 'marquage'], 'tertiary': ['dribble']};
+      case 'Milieu polyvalent': 
+        return {'primary': ['passes', 'endurance', 'tacles'], 'secondary': ['deplacement', 'frappes_lointaines'], 'tertiary': ['finition']};
+      case 'Milieu offensif':
+        return {'primary': ['creativite', 'dribble', 'passes'], 'secondary': ['frappes_lointaines', 'deplacement'], 'tertiary': ['finition']};
+      case 'Buteur': 
+        return {'primary': ['finition', 'deplacement', 'sang_froid'], 'secondary': ['vitesse', 'stabilite_aerienne'], 'tertiary': ['force']};
+      case 'Attaquant de soutien': 
+        return {'primary': ['finition', 'deplacement', 'creativite'], 'secondary': ['passes', 'controle'], 'tertiary': ['dribble']};
       default:
-        return [];
+        return {'primary': ['vitesse', 'endurance', 'force'], 'secondary': ['passes', 'creativite', 'finition', 'tacles'], 'tertiary': []};
     }
   }
 }
